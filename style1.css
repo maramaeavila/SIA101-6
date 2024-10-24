@@ -1,17 +1,31 @@
 /* General Styles */
 body {
-    height: 100vh;
+
     font-family: 'Arial', sans-serif;
-    background-image: url('image/bg.png');
-    margin-top: auto;
-    background-size: cover; 
-    background-repeat: no-repeat; 
-    background-position: center center; 
+}
+
+*{
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
 /* Navbar Styles */
+
+.nav-link {
+    display: flex; 
+    align-items: center; 
+    margin-left: 10px;
+}
+
+.nav-link i {
+    margin-right: 8px; 
+}
+
+.nav-buttons{
+    margin-left: 60%;
+}
+
 .navbar {
     background-color: #0c77aB;
     padding: 10px 20px;
@@ -31,31 +45,6 @@ body {
 
 .navbar-nav .nav-link:hover,
 .navbar-nav .nav-link:focus {
-    background-color: #0c77aB;
-    color: #fff;
-    border-radius: 5px;
-}
-
-.navbar-nav .dropdown-menu {
-    background-color: #0c77aB;
-    border: none;
-}
-
-.navbar-nav .dropdown-menu .dropdown-item {
-    color: white;
-    padding: 10px 20px;
-    transition: background-color 0.3s ease-in-out;
-}
-
-.navbar-nav .dropdown-menu .dropdown-item:hover {
-    background-color: #003d80;
-}
-
-.navbar-toggler {
-    border-color: white;
-}
-
-.navbar-toggler-icon {
     color: #003d80;
 }
 
@@ -74,15 +63,234 @@ button:hover {
     cursor: pointer;
 }
 
-/* Section Styles */
 section {
     margin: 30px auto;
     padding: 20px;
     background-color: white;
     border-radius: 10px;
-    max-width: 1200px;
+    max-width: 100%;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+
+/* Home section */
+
+#home {
+    background-image: url(image/bghome.png);
+    margin-top: auto;
+    background-size: cover; 
+    background-repeat: no-repeat; 
+    background-position: center center; 
+    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+}
+
+.right-content {
+    flex: 1; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5%;
+}
+
+#login-form {
+    width: 80%;
+    max-width: 400px; 
+    background-color: transparent;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 1);
+}
+
+#login-form h2 {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+/* About Us Section */
+
+#about-us {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    padding: 20px 0;
+    gap: 20px;
+}
+
+.services-section {
+    padding: 5%;
+    background-color: #f9f9f9;
+    text-align: center;
+
+}
+
+.section-title {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    color: #333;
+    margin-top: 10%;
+}
+
+.services-wrapper {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    gap: 20px;
+    padding: 20px;
+}
+
+.service-card {
+    position: relative;
+    min-width: 300px;
+    height: 400px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px;
+    scroll-snap-align: center;
+    flex: 0 0 24%;
+    overflow: hidden;
+    transition: transform 0.3s ease-in-out;
+}
+
+.overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    text-align: center;
+}
+
+.service-card:hover .overlay {
+    opacity: 1;
+}
+
+.overlay h3 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+.overlay p {
+    font-size: 1.2rem;
+    line-height: 1.4;
+}
+
+.service-card:hover {
+    transform: scale(1.05);
+}
+
+#general-checkup {
+    background-image: url('image/general.png');
+}
+
+#pre-natal-checkup {
+    background-image: url('image/prenatal.png');
+}
+
+#babies-vaccination {
+    background-image: url('image/babies.png');
+}
+
+#dental-checkup {
+    background-image: url('image/dental.png');
+}
+
+/* Contact Us Section */
+
+#contact{
+    width: 100%;
+    height: 100vh;
+    padding: 10% 0;
+}
+
+.contact-section {
+    background-color: #f9f9f9;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.section-description {
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+    color: #666;
+}
+
+.contact-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; 
+    margin-top: 20px; 
+}
+
+.contact-info {
+    flex: 1; 
+    padding-right: 20px; 
+    text-align: left;
+}
+
+.info-item {
+    margin-bottom: 20px;
+}
+
+.info-item i {
+    font-size: 2rem;
+    color: #0c77ab;
+    margin-bottom: 10px;
+}
+
+.info-item p {
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.contact-form {
+    flex: 1; 
+    padding-left: 20px; 
+}
+
+.contact-form .form-group {
+    margin-bottom: 20px;
+}
+
+.contact-form .form-control {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1.1rem;
+}
+
+.contact-form button {
+    background-color: #0c77ab;
+    color: #fff;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.contact-form button:hover {
+    background-color: #005e93;
+}
+
 
 /* Table Styles */
 table {
@@ -123,15 +331,38 @@ footer {
 
 /* Responsive Styles */
 @media (max-width: 768px) {
-    .navbar-nav {
-        text-align: center;
+    .nav-link {
+        justify-content: center; 
     }
-    .navbar-nav .nav-link {
-        padding: 10px;
+    #home {
+        flex-direction: column; 
     }
-    .dropdown-menu {
-        position: static;
-        float: none;
-        background-color: #0c77aB;
+
+    .left-content, .right-content {
+        flex: 1 1 100%; 
+        padding: 20px;
+    }
+
+    #login-form {
+        width: 100%;
+        max-width: 100%; 
+    }
+    .service-card {
+        min-width: 80%; 
+    }
+    .services-wrapper {
+        flex-wrap: nowrap;
+    }
+    
+    .service-card {
+        flex: 0 0 80%;
+    }
+    .contact-content {
+        flex-direction: column;
+    }
+    .contact-info,
+    .contact-form {
+        padding: 0; 
+        margin-bottom: 20px;
     }
 }

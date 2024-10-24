@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient List</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Firebase JS SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+</head>
+<body>
+
+    
+    <div class="container mt-5">
+        <h2 class="text-center">List of Patients</h2>
+        <table class="table table-bordered mt-4">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Patient ID</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Age</th>
+                    <th>Contact</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="patient-list">
+                <!-- Patient data will be appended here by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Firebase Configuration -->
+    <!-- <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyDiOsr6bY5BDKdiBPRzDgSpurHdkkUlc3k",
+            authDomain: "sia101-d60a1.firebaseapp.com",
+            projectId: "sia101-d60a1",
+            storageBucket: "sia101-d60a1.appspot.com",
+            messagingSenderId: "258109532727",
+            appId: "1:258109532727:web:73d735dc749d2cb4ebedb2",
+            databaseURL: "https://sia101-d60a1.firebaseio.com" 
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        var database = firebase.database();
+
+        function fetchPatients() {
+            database.ref('patients').once('value', function(snapshot) {
+                const patientList = document.getElementById('patient-list');
+                patientList.innerHTML = "";  
+
+                snapshot.forEach(function(childSnapshot) {
+                    const patient = childSnapshot.val();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${childSnapshot.key}</td>
+                        <td>${patient.firstName}</td>
+                        <td>${patient.lastName}</td>
+                        <td>${patient.age}</td>
+                        <td>${patient.contact}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" onclick="viewPatient('${childSnapshot.key}')">View</button>
+                            <button class="btn btn-danger btn-sm" onclick="deletePatient('${childSnapshot.key}')">Delete</button>
+                        </td>
+                    `;
+                    patientList.appendChild(row);
+                });
+            });
+        }
+
+        function viewPatient(patientId) {
+            alert('View patient details for ' + patientId);
+        }
+
+        function deletePatient(patientId) {
+            if (confirm('Are you sure you want to delete this patient?')) {
+                database.ref('patients/' + patientId).remove()
+                .then(function() {
+                    alert('Patient deleted successfully.');
+                    fetchPatients(); 
+                })
+                .catch(function(error) {
+                    alert('Error deleting patient: ' + error.message);
+                });
+            }
+        }
+        window.onload = fetchPatients;
+    </script> -->
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

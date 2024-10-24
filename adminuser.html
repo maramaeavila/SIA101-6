@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Firebase JS SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+</head>
+<body>
+
+    <!-- Navbar Section -->
+    <nav class="navbar navbar-expand-lg py-3" style="background-color: #0c77aB;">
+        <a class="navbar-brand"><img src="image/logo.png" style="width: 80px; height: 80px;"></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav">
+
+                <!-- Dashboard -->
+                <li class="nav-item px-2">
+                    <a class="nav-link" href="#">Dashboard</a>
+                </li>
+
+                <!-- Patient Management -->
+                <li class="nav-item dropdown px-2">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownPatient" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Patient Management
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownPatient">
+                        <a class="dropdown-item" href="patientlist.html">List of Patients</a>
+                        <a class="dropdown-item" href="patientregistration.html">Patient Registration/Details</a>
+                        <a class="dropdown-item" href="patientmedicalhistory.html">Medical History</a>
+                    </div>
+                </li>
+
+                <!-- User Management -->
+                <li class="nav-item dropdown px-2">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUser" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        User Management
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownUser">
+                        <a class="dropdown-item" href="adminuser.html">Admin and Staff Users</a>
+                        <a class="dropdown-item" href="userregistration.html">Admin and Staff Registration</a>
+                        <a class="dropdown-item" href="#">Roles and Permissions</a>
+                    </div>
+                </li>
+
+                <!-- Doctor, Midwife, Nurse Management -->
+                <li class="nav-item dropdown px-2">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownDoctor" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Doctor, Midwife, Nurse Management
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownDoctor">
+                        <a class="dropdown-item" href="#">Doctor Profiles (specializations, schedule)</a>
+                        <a class="dropdown-item" href="#">Pre-checkup</a>
+                    </div>
+                </li>
+
+                <!-- Appointment Management -->
+                <li class="nav-item dropdown px-2">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAppointment" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Appointment Management
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownAppointment">
+                        <a class="dropdown-item" href="#">Schedule Appointments</a>
+                        <a class="dropdown-item" href="#">Appointment Calendar/Overview</a>
+                        <a class="dropdown-item" href="#">Appointment Details</a>
+                    </div>
+                </li>
+
+                <!-- Medical Records -->
+                <li class="nav-item dropdown px-2">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMedicalRecords" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Medical Records
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMedicalRecords">
+                        <a class="dropdown-item" href="#">Patient Medical Records</a>
+                        <a class="dropdown-item" href="#">Prescription Management</a>
+                    </div>
+                </li>
+
+                <!-- Reports -->
+                <li class="nav-item dropdown px-2">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownReports" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Reports
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownReports">
+                        <a class="dropdown-item" href="#">Patient Reports</a>
+                        <a class="dropdown-item" href="#">Appointment Reports</a>
+                    </div>
+                </li>
+
+                <!-- Inventory Management -->
+                <li class="nav-item dropdown px-2">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownInventory" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Inventory
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownInventory">
+                        <a class="dropdown-item" href="#">Medicine Stock Levels</a>
+                        <a class="dropdown-item" href="#">Medicine Details</a>
+                        <a class="dropdown-item" href="#">Restocking Alerts</a>
+                        <a class="dropdown-item" href="#">Medicine Request</a>
+                    </div>
+                </li>
+
+            </ul>
+        </div>
+    </nav> 
+    <!-- End of Navbar -->
+
+    <div class="container mt-5">
+        <h2 class="text-center">Admin Dashboard</h2>
+        <div class="mt-4">
+            <h4>Patient Management</h4>
+            <table class="table table-bordered mt-3">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Patient ID</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Contact</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="patient-list">
+                    <!-- Patient data will be dynamically populated here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4">
+            <h4>User Management</h4>
+            <table class="table table-bordered mt-3">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>User ID</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="user-list">
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn btn-danger mt-4" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyDiOsr6bY5BDKdiBPRzDgSpurHdkkUlc3k",
+            authDomain: "sia101-d60a1.firebaseapp.com",
+            projectId: "sia101-d60a1",
+            storageBucket: "sia101-d60a1.appspot.com",
+            messagingSenderId: "258109532727",
+            appId: "1:258109532727:web:73d735dc749d2cb4ebedb2",
+            databaseURL: "https://sia101-d60a1.firebaseio.com"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        var database = firebase.database();
+
+        function fetchPatients() {
+            database.ref('patients').once('value', function(snapshot) {
+                const patientList = document.getElementById('patient-list');
+                patientList.innerHTML = ""; 
+
+                snapshot.forEach(function(childSnapshot) {
+                    const patient = childSnapshot.val();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${childSnapshot.key}</td>
+                        <td>${patient.firstName} ${patient.lastName}</td>
+                        <td>${patient.age}</td>
+                        <td>${patient.contact}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deletePatient('${childSnapshot.key}')">Delete</button>
+                        </td>
+                    `;
+                    patientList.appendChild(row);
+                });
+            });
+        }
+
+        function fetchUsers() {
+            database.ref('users').once('value', function(snapshot) {
+                const userList = document.getElementById('user-list');
+                userList.innerHTML = ""; 
+
+                snapshot.forEach(function(childSnapshot) {
+                    const user = childSnapshot.val();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${childSnapshot.key}</td>
+                        <td>${user.email}</td>
+                        <td>${user.role}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editUserRole('${childSnapshot.key}', '${user.role}')">Change Role</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteUser('${childSnapshot.key}')">Delete</button>
+                        </td>
+                    `;
+                    userList.appendChild(row);
+                });
+            });
+        }
+
+        // Delete patient
+        function deletePatient(patientId) {
+            if (confirm("Are you sure you want to delete this patient?")) {
+                database.ref('patients/' + patientId).remove().then(() => {
+                    alert("Patient deleted successfully.");
+                    fetchPatients();  
+                });
+            }
+        }
+
+        // Delete user
+        function deleteUser(userId) {
+            if (confirm("Are you sure you want to delete this user?")) {
+                database.ref('users/' + userId).remove().then(() => {
+                    alert("User deleted successfully.");
+                    fetchUsers();  
+                });
+            }
+        }
+
+        function editUserRole(userId, currentRole) {
+            const newRole = currentRole === 'user' ? 'admin' : 'user';
+            database.ref('users/' + userId).update({ role: newRole }).then(() => {
+                alert("User role updated to " + newRole);
+                fetchUsers(); 
+            });
+        }
+
+        function logout() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = "login.html"; 
+            });
+        }
+
+        window.onload = function() {
+            fetchPatients();
+            fetchUsers();
+        };
+    </script> -->
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
