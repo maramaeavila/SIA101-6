@@ -1,0 +1,113 @@
+body {
+    background-color: #f4f4f4;
+}
+
+h1 {
+    color: #0c77a8;
+}
+
+table {
+    width: 100%;
+    margin-top: 15px;
+}
+
+td, th {
+    text-align: center;
+}
+
+.card-header {
+    font-size: 1.5rem;
+}
+
+.btn-primary {
+    background-color: #82d4ed;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #3abae3;
+}
+
+.text-end button {
+    background-color: #3abae3;
+    border-color: #3abae3;
+}
+
+.text-end button:hover {
+    background-color: #0c77a8;
+    border-color: #0c77a8;
+}
+
+.edit-btn {
+    background-color: #ffc107;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+}
+
+.edit-btn:hover, .delete-btn:hover {
+    opacity: 0.8;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.action-buttons .edit-btn, .action-buttons .delete-btn {
+    margin: 0 5px;
+}
+.navbar {
+    background-color: #0c77aB;
+    padding: 10px 20px;
+}
+
+.navbar-brand {
+    color: white;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+    color: white;
+    font-weight: 500;
+    padding: 10px 15px;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus {
+    background-color: #0c77aB;
+    color: #fff;
+    border-radius: 5px;
+}
+
+.navbar-nav .dropdown-menu {
+    background-color: #0c77aB;
+    border: none;
+}
+
+.navbar-nav .dropdown-menu .dropdown-item {
+    color: white;
+    padding: 10px 20px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.navbar-nav .dropdown-menu .dropdown-item:hover {
+    background-color: #003d80;
+}
+
+.navbar-toggler {
+    border-color: white;
+}
+
+.navbar-toggler-icon {
+    color: #003d80;
+}
+
