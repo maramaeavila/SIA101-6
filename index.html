@@ -12,68 +12,49 @@
 </head>
 <body>
 
-    <!-- Navbar-->
-
+<!-- Navbar -->
 <nav class="navbar navbar-expand-lg py-2 fixed-top">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#"><img src="image/logo.png" style="width: 80px; height: 80px;"></a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse nav-buttons" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <!-- Home -->
-            <li class="nav-item">
-                <a class="nav-link d-flex align-items-center fs-5" href="#home">
-                    <i class="fa-solid fa-house mr-2"></i> 
-                    Home
-                </a>
-            </li>
-    
-            <!-- Services -->
-            <li class="nav-item">
-                <a class="nav-link d-flex align-items-center fs-5" href="#about-us">
-                    <i class="fa-solid fa-house-medical mr-2"></i> 
-                    Services
-                </a>
-            </li>
-    
-            <!-- Contact Us -->
-            <li class="nav-item">
-                <a class="nav-link d-flex align-items-center fs-5" href="#contact-us">
-                    <i class="fa-solid fa-phone mr-2"></i> 
-                    Contact Us
-                </a>
-            </li>
-
-            <!-- User -->
-            <li class="nav-item">
-                <a class="nav-link d-flex align-items-center fs-5" href="#">
-                    <i class="fa-solid fa-user"></i>
-                    Login
-                </a>
-            </li>
-        </ul>
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#"><img src="image/logo.png" style="width: 80px; height: 80px;"></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse nav-buttons" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <!-- Home -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center fs-5" href="#home">
+                        <i class="fa-solid fa-house mr-2"></i> 
+                        Home
+                    </a>
+                </li>
+                <!-- Services -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center fs-5" href="#about-us">
+                        <i class="fa-solid fa-house-medical mr-2"></i> 
+                        Services
+                    </a>
+                </li>
+                <!-- Contact Us -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center fs-5" href="#contact-us">
+                        <i class="fa-solid fa-phone mr-2"></i> 
+                        Contact Us
+                    </a>
+                </li>
+                <!-- User -->
+                <li class="nav-item">
+                    <a id="loginBtn" class="nav-link d-flex align-items-center fs-5" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        <i class="fa-solid fa-user"></i>
+                        Login
+                    </a>
+                </li>
+            </ul>
+        </div>
     </div>
-  </div>
 </nav>
 
-<section id="home" class="d-flex">
-    <div class="right-content">
-        <form id="login-form">
-            <h2>Login</h2>
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" class="form-control" id="email" placeholder="Enter email" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" class="form-control" id="password" placeholder="Enter password" required>
-            </div>
-            <button type="submit" class="btn btn-primary btn-block">Login</button>
-        </form>
-    </div>
-</section>
+<section id="home" class="d-flex"></section>
 
 <section id="about-us" class="services-section">
     <div class="container">
@@ -157,18 +138,161 @@
     </div>
 </section>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">OLD CAPITOL HEALTH CENTER</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="login-form">
+                    <div class="form-group mb-3">
+                        <input type="text" class="form-control" id="username" placeholder="Enter username" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <input type="password" class="form-control" id="password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                    <div id="message" class="mt-3"></div>
+                    <p class="text-center mt-3">Don't have an account? <a href="#" data-bs-toggle="modal" data-bs-target="#registrationModal" data-bs-dismiss="modal">Register here</a></p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Registration Modal -->
+<div class="modal fade" id="registrationModal" tabindex="-1" aria-labelledby="registrationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="registrationModalLabel">User Registration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="registration-form">
+                    <div class="form-group mb-3">
+                        <input type="text" class="form-control" id="username" placeholder="Enter username" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <input type="email" class="form-control" id="email" placeholder="Enter email" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <input type="password" class="form-control" id="password" placeholder="Enter password" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="userType">User Type</label>
+                        <select id="userType" class="form-control" required>
+                            <option value="" disabled selected>Select user type</option>
+                            <option value="resident">Resident</option>
+                            <option value="admin">Admin</option>
+                            <option value="bhw">BHW</option>
+                            <option value="doctor">Doctor</option>
+                            <option value="midwife">Midwife</option>
+                            <option value="dns">DNS</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3" id="departmentDiv" style="display: none;">
+                        <label for="department">Department</label>
+                        <select id="department" class="form-control">
+                            <option value="health">Health</option>
+                            <option value="administration">Administration</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3" id="authPasswordDiv" style="display: none;">
+                        <input type="password" class="form-control" id="authPassword" placeholder="Enter authentication password">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 
-    <!-- Firebase Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const saltRounds = 10;
 
-    <!-- JS file for database connection -->
-    <script src="index.js"></script>
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            bcrypt.hash(password, saltRounds, function(err, hash) {
+                if (err) {
+                    console.error('Error hashing password:', err);
+                    return;
+                }
+                console.log('Hashed password:', hash);
+            });
+        });
+
+        // Modal logic
+        var modal = document.getElementById("loginModal");
+        var btn = document.getElementById("loginBtn");
+        var span = document.getElementsByClassName("close")[0];
+
+        btn.onclick = function() {
+            modal.style.display = "block";
+        };
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        };
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        };
+
+        document.getElementById('registration-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const userType = document.getElementById('userType').value;
+            const department = document.getElementById('department').value || null;
+            const authPassword = document.getElementById('authPassword').value;
+
+            registerUser(username, email, password, userType, department, authPassword);
+        });
+
+        document.getElementById('userType').addEventListener('change', function() {
+            const userType = this.value;
+            const departmentDiv = document.getElementById('departmentDiv');
+            const authPasswordDiv = document.getElementById('authPasswordDiv');
+
+            if (['doctor', 'midwife', 'dns'].includes(userType)) {
+                departmentDiv.style.display = 'block';
+            } else {
+                departmentDiv.style.display = 'none';
+            }
+
+            if (['admin', 'bhw', 'doctor', 'midwife', 'dns'].includes(userType)) {
+                authPasswordDiv.style.display = 'block';
+            } else {
+                authPasswordDiv.style.display = 'none';
+            }
+        });
+    });
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<!-- Firebase Scripts -->
+<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+<!-- JS file for database connection -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bcrypt.js/5.0.1/bcrypt.min.js"></script>
+<script src="index.js"></script>
 
 </body>
 </html>

@@ -95,23 +95,6 @@ section {
     padding: 5%;
 }
 
-#login-form {
-    width: 80%;
-    max-width: 400px; 
-    background-color: transparent;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0px 0px 15px rgba(0, 0, 0, 1);
-}
-
-#login-form h2 {
-    margin-bottom: 20px;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
 /* About Us Section */
 
 #about-us {
@@ -230,6 +213,7 @@ section {
     font-size: 2.5rem;
     margin-bottom: 20px;
     color: #0c77aB;
+    text-shadow: 2px 2px #fff;
     font-weight: bolder;
 }
 
@@ -237,6 +221,7 @@ section {
     font-size: 1.2rem;
     margin-bottom: 40px;
     color: #0c77aB;
+    text-shadow: 1px 1px #fff;
     font-weight: bold;
 }
 
@@ -260,12 +245,14 @@ section {
 .info-item i {
     font-size: 2rem;
     color: #0c77ab;
+    text-shadow: 1px 1px #fff;
     margin-bottom: 10px;
 }
 
 .info-item p {
     font-size: 1.1rem;
-    color: #0c77aB;
+    color:  #0c77ab;
+    text-shadow: 1px 1px #fff;
 }
 
 .contact-form {
