@@ -1,5 +1,4 @@
-import bcrypt from "bcrypt";
-
+// Firebase configuration (keep your existing config)
 var firebaseConfig = {
   apiKey: "AIzaSyDiOsr6bY5BDKdiBPRzDgSpurHdkkUlc3k",
   authDomain: "sia101-d60a1.firebaseapp.com",
@@ -14,95 +13,50 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const authPasswords = {
-  admin: "Admin123!",
-  bhw: "BHWPassword!",
-  doctor: "DoctorPass!",
-  midwife: "MidwifePass!",
-  dns: "DNSPass!",
+console.log(bcrypt.hashSync(password, 10)); // Check if bcrypt works
+
+// Function to generate a random patient ID
+function generatePatientID() {
+  return Math.floor(1000 + Math.random() * 9000); // Generates a number between 1000 and 9999
+}
+
+// User types as strings
+const userTypes = {
+  resident: "Resident",
+  admin: "Admin",
+  bhw: "BHW",
+  doctor: "Doctor",
+  midwife: "Midwife",
+  dns: "DNS",
 };
 
-function generateUserID(userType) {
-  const prefix =
-    {
-      resident: "RES",
-      admin: "ADM",
-      bhw: "BHW",
-      doctor: "DOC",
-      midwife: "MID",
-      dns: "DNS",
-    }[userType] || "UNK";
-  const uniqueID = prefix + "-" + Math.floor(1000 + Math.random() * 9000);
-  return uniqueID;
-}
-
-function registerUser(
-  username,
-  email,
-  password,
-  userType,
-  department,
-  authPassword
-) {
-  const userID = generateUserID(userType);
-
-  console.log("Registering user:", {
-    username,
-    email,
-    password,
-    userType,
-    department,
-  });
-
-  bcrypt.hash(password, 12, function (err, hashedPassword) {
-    if (err) {
-      console.error("Error hashing password:", err);
-      alert("Error during registration. Please try again.");
-      return;
-    }
-
-    const userData = {
-      userID,
-      username,
-      email,
-      password: hashedPassword,
-      userType,
-      department: department || "N/A",
-      createdAt: new Date().toISOString(),
-    };
-
-    console.log("User data to be saved:", userData);
-
-    db.ref("6-HealthUsers/" + userID).set(userData, function (error) {
-      if (error) {
-        console.error("Error saving data: ", error);
-        alert("Registration failed. Please try again.");
-      } else {
-        alert("User registered successfully with ID: " + userID);
-        console.log("User data saved successfully:", userData);
-      }
-    });
-  });
-}
-
+// Function to handle user registration
 document
   .getElementById("registration-form")
   .addEventListener("submit", function (event) {
-    event.preventDefault();
+    event.preventDefault(); // Prevent the default form submission
 
-    const username = document.getElementById("username").value;
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
     const userType = document.getElementById("userType").value;
-    const department = document.getElementById("department")
-      ? document.getElementById("department").value
-      : null;
-    const authPassword = document.getElementById("authPassword").value;
 
-    if (authPasswords[userType] && authPassword !== authPasswords[userType]) {
-      alert("Incorrect authentication password for " + userType + ".");
-      return;
-    }
+    // Hash the password
+    const hashedPassword = bcrypt.hashSync(password, 10); // bcrypt to hash the password
 
-    registerUser(username, email, password, userType, department);
+    // Generate a random patient ID
+    const patientID = generatePatientID();
+
+    // Store user data in Firebase Realtime Database
+    db.ref("6-Users/" + patientID)
+      .set({
+        email: email,
+        password: hashedPassword,
+        userType: userTypes[userType], // Use the string directly for user type
+      })
+      .then(() => {
+        console.log("User registered successfully with Patient ID:", patientID);
+      })
+      .catch((error) => {
+        console.error("Error registering user:", error);
+      });
   });
