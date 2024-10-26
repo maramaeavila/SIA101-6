@@ -1,4 +1,3 @@
-// Firebase configuration (keep your existing config)
 var firebaseConfig = {
   apiKey: "AIzaSyDiOsr6bY5BDKdiBPRzDgSpurHdkkUlc3k",
   authDomain: "sia101-d60a1.firebaseapp.com",
@@ -11,16 +10,14 @@ var firebaseConfig = {
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+var db = firebase.database();
 
-console.log(bcrypt.hashSync(password, 10)); // Check if bcrypt works
-
-// Function to generate a random patient ID
-function generatePatientID() {
-  return Math.floor(1000 + Math.random() * 9000); // Generates a number between 1000 and 9999
+function getElementVal(id) {
+  const value = document.getElementById(id).value;
+  console.log(`Value for ${id}:`, value);
+  return value;
 }
 
-// User types as strings
 const userTypes = {
   resident: "Resident",
   admin: "Admin",
@@ -30,33 +27,64 @@ const userTypes = {
   dns: "DNS",
 };
 
-// Function to handle user registration
-document
-  .getElementById("registration-form")
-  .addEventListener("submit", function (event) {
-    event.preventDefault(); // Prevent the default form submission
+function generatePatientID() {
+  return Math.floor(10000 + Math.random() * 90000);
+}
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const userType = document.getElementById("userType").value;
+document.addEventListener("DOMContentLoaded", () => {
+  const registrationForm = document.getElementById("registrationForm");
+  registrationForm.addEventListener("submit", submitForm);
 
-    // Hash the password
-    const hashedPassword = bcrypt.hashSync(password, 10); // bcrypt to hash the password
+  document.getElementById("userType").addEventListener("change", function () {
+    const selectedUserType = this.value;
+    const departmentDiv = document.getElementById("departmentDiv");
 
-    // Generate a random patient ID
-    const patientID = generatePatientID();
-
-    // Store user data in Firebase Realtime Database
-    db.ref("6-Users/" + patientID)
-      .set({
-        email: email,
-        password: hashedPassword,
-        userType: userTypes[userType], // Use the string directly for user type
-      })
-      .then(() => {
-        console.log("User registered successfully with Patient ID:", patientID);
-      })
-      .catch((error) => {
-        console.error("Error registering user:", error);
-      });
+    if (selectedUserType === "admin") {
+      departmentDiv.style.display = "block";
+    } else {
+      departmentDiv.style.display = "none";
+    }
   });
+});
+
+function submitForm(e) {
+  e.preventDefault();
+
+  var username = getElementVal("username");
+  var password = getElementVal("password");
+  var email = getElementVal("email");
+  var userType = getElementVal("userType");
+  var department = userType === "admin" ? getElementVal("department") : null;
+
+  if (!username || !password || !email || !userType) {
+    alert("Please fill in all required fields.");
+    return;
+  }
+
+  console.log("Username:", username);
+  console.log("Password:", password);
+  console.log("Email:", email);
+  console.log("User Type:", userType);
+  console.log("Department:", department);
+
+  var patientID = generatePatientID();
+
+  // Save data to Firebase
+  db.ref("6-Users/" + patientID)
+    .set({
+      username: username,
+      email: email,
+      password: password,
+      userType: userTypes[userType],
+      department: department,
+    })
+    .then(() => {
+      console.log("User registered successfully with Patient ID:", patientID);
+      alert("User registered successfully!");
+      document.getElementById("registrationForm").reset();
+    })
+    .catch((error) => {
+      console.error("Error registering user:", error);
+      alert("Error registering user. Please try again.");
+    });
+}

@@ -2,5 +2,11 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "firebase": "^10.14.1"
+  },
+  "devDependencies": {
+    "lite-server": "^2.6.1"
+  },
+  "scripts": {
+    "start": "lite-server"
   }
 }
