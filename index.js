@@ -107,10 +107,10 @@ async function checkUsernameExists(username) {
     .orderByChild("username")
     .equalTo(username)
     .once("value");
-  return snapshot.exists(); // Returns true if the username exists
+  return snapshot.exists();
 }
 
-// Login function
+// Login function with dynamic redirection based on user type
 async function loginUser() {
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
@@ -125,23 +125,42 @@ async function loginUser() {
   const hashedInputPassword = CryptoJS.MD5(password).toString();
 
   try {
-    // Retrieve user data from Firebase
     const snapshot = await db
-      .ref(`6-Users`)
+      .ref("6-Users")
       .orderByChild("username")
       .equalTo(username)
       .once("value");
 
     if (snapshot.exists()) {
       const userData = snapshot.val();
-      const userKey = Object.keys(userData)[0]; // Get the first user's key
+      const userKey = Object.keys(userData)[0];
       const storedHashedPassword = userData[userKey].password;
+      const userType = userData[userKey].userType.toLowerCase();
 
-      // Compare hashed passwords
       if (hashedInputPassword === storedHashedPassword) {
         swal("Success", "Login successful!", "success").then(() => {
-          // Redirect to resident.html after confirmation
-          window.location.href = "resident.html";
+          switch (userType) {
+            case "resident":
+              window.location.href = "resident.html";
+              break;
+            case "admin":
+              window.location.href = "admin.html";
+              break;
+            case "bhw":
+              window.location.href = "bhw.html";
+              break;
+            case "doctor":
+              window.location.href = "doctor.html";
+              break;
+            case "midwife":
+              window.location.href = "midwife.html";
+              break;
+            case "dns":
+              window.location.href = "dns.html";
+              break;
+            default:
+              swal("Error", "Unknown user type.", "error");
+          }
         });
       } else {
         swal("Error", "Incorrect password. Please try again.", "error");
