@@ -26,43 +26,37 @@
     </div>
     <ul class="navbar-nav flex-column">
         <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#">
-                <i class="fa-solid fa-house mr-2"></i> 
-                Dashboard
+            <a class="nav-link d-flex align-items-center" href="#" onclick="showSection('personalInfoSection')">
+                <i class="fa-solid fa-user mr-2"></i> 
+                Personal Information
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#">
-                <i class="fa-solid fa-house-medical mr-2"></i> 
-                Patient
+            <a class="nav-link d-flex align-items-center" href="#" onclick="showSection('medicalHistorySection')">
+                <i class="fa-solid fa-file-medical mr-2"></i> 
+                Medical History
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#">
-                <i class="fa-solid fa-phone mr-2"></i> 
-                Appointment
+            <a class="nav-link d-flex align-items-center" href="#" onclick="showSection('dailyReportSection')">
+                <i class="fa-solid fa-calendar-day mr-2"></i> 
+                Daily Reports
             </a>
-        </li>
+        </li> 
         <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#">
-                <i class="fa-solid fa-user-nurse mr-2"></i> 
-                Healthcare Workers
+            <a class="nav-link d-flex align-items-center" href="#" onclick="showSection('recordsSection')">
+                <i class="fa-solid fa-file-alt mr-2"></i>
+                Records
             </a>
-        </li>
+        </li>     
         <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#">
-                <i class="fa-solid fa-envelope mr-2"></i> 
-                Request
+            <a class="nav-link d-flex align-items-center" href="#" onclick="showSection('medicineSection')">
+                <i class="fa-solid fa-pills mr-2"></i>
+                Medicine
             </a>
-        </li>
+        </li>    
         <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#">
-                <i class="fa-solid fa-file-alt mr-2"></i> 
-                Reports
-            </a>
-        </li>
-        <li class="nav-item">
-            <a id="loginBtn" class="nav-link d-flex align-items-center" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
+            <a id="logoutBtn" class="nav-link d-flex align-items-center" onclick="logoutUser()">
                 <i class="fa-solid fa-user"></i>
                 Logout
             </a>
@@ -72,17 +66,95 @@
 
 <!-- Main Content Area -->
 <div class="content">
-    <h1>Welcome to BHCMS Old Capitol</h1>
-    <p>This is the main content area. Use the sidebar to navigate through different sections.</p>
+    <!-- Personal Information Section -->
+    <div id="personalInfoSection" class="content-section">
+        <h1 class="mt-5">Resident Information</h1>
+        <form id="patientForm">
+            <div class="mb-3">
+                <label for="patientID" class="form-label">Enter Patient ID</label>
+                <input type="text" class="form-control" id="patientID" placeholder="Enter Patient ID">
+            </div>
+            <button type="button" class="btn btn-primary" id="fetchDataBtn" onclick="fetchPatientData()">Fetch Patient Data</button>
+        </form>
+
+        <hr>
+
+        <!-- Resident Data -->
+        <div id="residentData" style="display:none;">
+            <h3>Personal Information</h3>
+            <p><strong>Name:</strong> <span id="name"></span></p>
+            <p><strong>Age:</strong> <span id="age"></span></p>
+            <p><strong>Birthdate:</strong> <span id="birthdate"></span></p>
+            <p><strong>Address:</strong> <span id="address"></span></p>
+            <p><strong>Mobile Number:</strong> <span id="mobileNumber"></span></p>
+            <p><strong>Civil Status:</strong> <span id="civilStatus"></span></p>
+            <p><strong>Sex:</strong> <span id="sex"></span></p>
+            <p><strong>Status:</strong> <span id="status"></span></p>
+        </div>
+    </div>
+
+    <!-- Medical History Section -->
+    <div id="medicalHistorySection" class="content-section" style="display:none;">
+        <h1 class="mt-5">Medical History</h1>
+        <h4>Diagnosis & Treatment</h4>
+        <p><strong>Diagnosis:</strong> <span id="diagnosis"></span></p>
+        <p><strong>Treatment Plan:</strong> <span id="treatmentPlan"></span></p>
+        <p><strong>Medications:</strong> <span id="medications"></span></p>
+        <hr>
+        <form id="healthForm">
+            <input type="hidden" id="patientIDHidden">
+            <div class="mb-3">
+                <label for="healthCondition" class="form-label">Health Condition</label>
+                <input type="text" class="form-control" id="healthCondition" required>
+            </div>
+            <div class="mb-3">
+                <label for="precheckupNotes" class="form-label">Precheckup Notes</label>
+                <textarea class="form-control" id="precheckupNotes" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Save Information</button>
+        </form>
+    </div>
+
+    <!-- Daily Report Section -->
+    <div id="dailyReportSection" class="content-section" style="display:none;">
+        <h1 class="mt-5">Daily Report</h1>
+        <h4>Daily Observations</h4>
+        <p><strong>Morning Report:</strong> <span id="morningReport"></span></p>
+        <p><strong>Evening Report:</strong> <span id="eveningReport"></span></p>
+        <hr>
+        <form id="dailyReportForm">
+            <div class="mb-3">
+                <label for="morningReportInput" class="form-label">Morning Report</label>
+                <textarea class="form-control" id="morningReportInput" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="eveningReportInput" class="form-label">Evening Report</label>
+                <textarea class="form-control" id="eveningReportInput" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Save Report</button>
+        </form>
+    </div>
+
+    <!-- Patient Records Section -->
+    <div id="recordsSection" class="content-section" style="display:none;">
+        <h1 class="mt-5">Patient Records</h1>
+        <p>This section will display patient records information.</p>
+    </div>
+
+    <!-- Medicine Section -->
+    <div id="medicineSection" class="content-section" style="display:none;">
+        <h1 class="mt-5">Medicine Section</h1>
+        <p>This section will display prescribed medicines and related information.</p>
+    </div>
 </div>
 
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
-<!-- Your JS file -->
-<script src="index.js"></script>
+<script src="resident.js"></script>
 
 </body>
 </html>

@@ -29,24 +29,20 @@ function getElementVal(id) {
   return value;
 }
 
-// Toggle department visibility based on user type
 function toggleDepartment() {
   const userType = getElementVal("userType");
   document.getElementById("departmentDiv").style.display =
     userType === "admin" ? "block" : "none";
 }
 
-// Generate a random Patient ID
 function generatePatientID() {
   return Math.floor(10000 + Math.random() * 90000);
 }
 
-// Validate form fields
 function validateForm(username, password, email, userType) {
   return username && password && email && userType && userTypes[userType];
 }
 
-// Submit form
 async function submitForm() {
   const username = getElementVal("username");
   const password = getElementVal("password");
@@ -54,7 +50,6 @@ async function submitForm() {
   const userType = getElementVal("userType");
   const department = userType === "admin" ? getElementVal("department") : null;
 
-  // Validate input
   if (!validateForm(username, password, email, userType)) {
     swal(
       "Validation Error",
@@ -66,7 +61,6 @@ async function submitForm() {
 
   const patientID = generatePatientID();
 
-  // Check if the username already exists
   const usernameExists = await checkUsernameExists(username);
   if (usernameExists) {
     swal(
@@ -77,10 +71,8 @@ async function submitForm() {
     return;
   }
 
-  // Hash the password using MD5
   const hashedPassword = CryptoJS.MD5(password).toString();
 
-  // Save data to Firebase
   try {
     await db.ref(`6-Users/${patientID}`).set({
       username,
@@ -100,7 +92,6 @@ async function submitForm() {
   }
 }
 
-// Function to check if a username already exists in the database
 async function checkUsernameExists(username) {
   const snapshot = await db
     .ref("6-Users")
@@ -110,18 +101,15 @@ async function checkUsernameExists(username) {
   return snapshot.exists();
 }
 
-// Login function with dynamic redirection based on user type
 async function loginUser() {
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
 
-  // Validate input
   if (!username || !password) {
     swal("Error", "Please fill in all required fields.", "error");
     return;
   }
 
-  // Hash the input password
   const hashedInputPassword = CryptoJS.MD5(password).toString();
 
   try {
@@ -173,3 +161,54 @@ async function loginUser() {
     swal("Error", "Error logging in. Please try again.", "error");
   }
 }
+
+// function getContactFormValue(id) {
+//   const form = document.getElementById("contactForm");
+//   const value = form.querySelector(`#${id}`)?.value.trim();
+//   return value;
+// }
+
+// async function submitContactForm(event) {
+//   event.preventDefault();
+
+//   const name = getContactFormValue("name");
+//   const email = getContactFormValue("email");
+//   const contactNumber = getContactFormValue("contactNumber");
+//   const message = getContactFormValue("message");
+
+//   if (!name || !email || !contactNumber || !message) {
+//     swal("Error", "Please fill in all required fields.", "error");
+//     return;
+//   }
+
+//   const phonePattern = /^09\d{9}$/;
+//   if (!phonePattern.test(contactNumber)) {
+//     swal(
+//       "Error",
+//       "Please enter a valid Philippine 11-digit contact number, starting with '09'.",
+//       "error"
+//     );
+//     return;
+//   }
+
+//   try {
+//     await db.ref("6-contactMessages").push({
+//       name,
+//       email,
+//       contactNumber,
+//       message,
+//       timestamp: firebase.database.ServerValue.TIMESTAMP,
+//     });
+
+//     swal("Success", "Your message has been sent successfully!", "success");
+
+//     document.getElementById("contactForm").reset();
+//   } catch (error) {
+//     console.error("Error submitting contact form:", error);
+//     swal("Error", "Error sending your message. Please try again.", "error");
+//   }
+// }
+
+// document
+//   .getElementById("contactForm")
+//   .addEventListener("submit", submitContactForm);
