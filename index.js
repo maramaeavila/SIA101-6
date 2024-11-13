@@ -14,7 +14,6 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 
 const userTypes = {
-  resident: "Resident",
   admin: "Admin",
   bhw: "BHW",
   doctor: "Doctor",
@@ -22,73 +21,54 @@ const userTypes = {
   dns: "DNS",
 };
 
-function getElementVal(id) {
-  const form = document.getElementById("registrationForm");
-  const value = form.querySelector(`#${id}`)?.value.trim();
-  console.log(`Value for ${id}:`, value);
-  return value;
+function openResidentLogin() {
+  $("#residentLoginModal").modal("show");
 }
 
-function toggleDepartment() {
-  const userType = getElementVal("userType");
-  document.getElementById("departmentDiv").style.display =
-    userType === "admin" ? "block" : "none";
+function openDefaultLogin() {
+  $("#loginModal").modal("show");
 }
 
-function generatePatientID() {
-  return Math.floor(10000 + Math.random() * 90000);
+function openResidentCheckModal() {
+  $("#residentCheckModal").modal("show");
 }
 
-function validateForm(username, password, email, userType) {
-  return username && password && email && userType && userTypes[userType];
-}
+async function loginResident() {
+  const patientID = document.getElementById("residentID").value.trim();
+  const birthday = document.getElementById("residentBirthday").value.trim();
 
-async function submitForm() {
-  const username = getElementVal("username");
-  const password = getElementVal("password");
-  const email = getElementVal("email");
-  const userType = getElementVal("userType");
-  const department = userType === "admin" ? getElementVal("department") : null;
-
-  if (!validateForm(username, password, email, userType)) {
-    swal(
-      "Validation Error",
-      "Please fill in all required fields correctly.",
-      "error"
-    );
+  if (!patientID || !birthday) {
+    swal("Error", "Please fill in all required fields.", "error");
     return;
   }
-
-  const patientID = generatePatientID();
-
-  const usernameExists = await checkUsernameExists(username);
-  if (usernameExists) {
-    swal(
-      "Username Taken",
-      "The username is already in use. Please choose another.",
-      "error"
-    );
-    return;
-  }
-
-  const hashedPassword = CryptoJS.MD5(password).toString();
 
   try {
-    await db.ref(`6-Users/${patientID}`).set({
-      username,
-      email,
-      password: hashedPassword,
-      userType: userTypes[userType],
-      department,
-    });
+    const snapshot = await db
+      .ref("6-Health-PatientID")
+      .child(patientID)
+      .once("value");
 
-    swal("Success", "You have registered successfully!", "success");
+    if (snapshot.exists()) {
+      const userData = snapshot.val();
+      const storedBirthday = userData.birthdate;
 
-    document.getElementById("registrationForm").reset();
-    toggleDepartment();
+      if (birthday === storedBirthday) {
+        swal("Success", "Resident login successful!", "success").then(() => {
+          window.location.href = "resident.html";
+        });
+      } else {
+        swal("Error", "Incorrect birthday. Please try again.", "error");
+      }
+    } else {
+      swal(
+        "Error",
+        "Resident not found. Please check your PatientID.",
+        "error"
+      );
+    }
   } catch (error) {
-    console.error("Error registering user:", error);
-    swal("Error", "Error registering user. Please try again.", "error");
+    console.error("Error logging in resident:", error);
+    swal("Error", "Error logging in. Please try again.", "error");
   }
 }
 
@@ -128,9 +108,6 @@ async function loginUser() {
       if (hashedInputPassword === storedHashedPassword) {
         swal("Success", "Login successful!", "success").then(() => {
           switch (userType) {
-            case "resident":
-              window.location.href = "resident.html";
-              break;
             case "admin":
               window.location.href = "admin.html";
               break;
@@ -161,54 +138,3 @@ async function loginUser() {
     swal("Error", "Error logging in. Please try again.", "error");
   }
 }
-
-// function getContactFormValue(id) {
-//   const form = document.getElementById("contactForm");
-//   const value = form.querySelector(`#${id}`)?.value.trim();
-//   return value;
-// }
-
-// async function submitContactForm(event) {
-//   event.preventDefault();
-
-//   const name = getContactFormValue("name");
-//   const email = getContactFormValue("email");
-//   const contactNumber = getContactFormValue("contactNumber");
-//   const message = getContactFormValue("message");
-
-//   if (!name || !email || !contactNumber || !message) {
-//     swal("Error", "Please fill in all required fields.", "error");
-//     return;
-//   }
-
-//   const phonePattern = /^09\d{9}$/;
-//   if (!phonePattern.test(contactNumber)) {
-//     swal(
-//       "Error",
-//       "Please enter a valid Philippine 11-digit contact number, starting with '09'.",
-//       "error"
-//     );
-//     return;
-//   }
-
-//   try {
-//     await db.ref("6-contactMessages").push({
-//       name,
-//       email,
-//       contactNumber,
-//       message,
-//       timestamp: firebase.database.ServerValue.TIMESTAMP,
-//     });
-
-//     swal("Success", "Your message has been sent successfully!", "success");
-
-//     document.getElementById("contactForm").reset();
-//   } catch (error) {
-//     console.error("Error submitting contact form:", error);
-//     swal("Error", "Error sending your message. Please try again.", "error");
-//   }
-// }
-
-// document
-//   .getElementById("contactForm")
-//   .addEventListener("submit", submitContactForm);

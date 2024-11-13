@@ -69,6 +69,12 @@
         </li>
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
+                <i class="fa-solid fa-user-plus me-2"></i> 
+                Create Account
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center" href="#">
               <i class="fa-solid fa-user-edit mr-2"></i> 
               Change Account
             </a>
@@ -577,6 +583,48 @@
         </div>
     </div>
 
+    <div id="createSection" class="content-section" style="display: none;">
+        <h1 class="mt-5">Register Account</h1>
+        <form action="" id="registrationForm">
+            <div class="row">
+                <!-- Left Column -->
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <input type="text" class="form-control" id="username" placeholder="Enter username" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <input type="email" class="form-control" id="email" placeholder="Enter email" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <input type="password" class="form-control" id="password" placeholder="Enter password" required>
+                    </div>
+                </div>
+    
+                <!-- Right Column -->
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="userType">User Type</label>
+                        <select id="userType" class="form-control" required onchange="toggleDepartment()">
+                            <option value="" disabled selected>Select user type</option>
+                            <option value="admin">Admin</option>
+                            <option value="bhw">BHW</option>
+                            <option value="doctor">Doctor</option>
+                            <option value="midwife">Midwife</option>
+                            <option value="dns">DNS</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3" id="departmentDiv" style="display: none;">
+                        <label for="department">Department</label>
+                        <select id="department" class="form-control">
+                            <option value="health">Health</option>
+                            <option value="administration">Administration</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="success" onclick="submitForm()">Register</button>
+        </form>
+    </div>
 
     <div id="reportSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Reports</h1>

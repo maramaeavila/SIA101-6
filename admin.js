@@ -62,6 +62,8 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
       fetchRequests();
     } else if (sectionName === "Reports") {
       document.getElementById("reportSection").style.display = "block";
+    } else if (sectionName === "Create Account") {
+      document.getElementById("createSection").style.display = "block";
     } else if (sectionName === "Change Account") {
       document.getElementById("changeAccountSection").style.display = "block";
     }
@@ -72,7 +74,7 @@ function fetchPatients() {
   const patientListBody = document.getElementById("patientList");
   patientListBody.innerHTML = "";
 
-  db.ref("5-Health-PatientID")
+  db.ref("6-Health-PatientID")
     .once("value")
     .then((snapshot) => {
       if (snapshot.exists()) {
@@ -178,7 +180,7 @@ function displayAppointments(date) {
   const appointmentList = document.getElementById("appointmentList");
   appointmentList.innerHTML = "";
 
-  db.ref("5-Health-Appointments")
+  db.ref("6-Health-Appointments")
     .orderByChild("appointmentDate")
     .equalTo(date)
     .once("value", (snapshot) => {
@@ -756,3 +758,104 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+const userTypes = {
+  resident: "Resident",
+  admin: "Admin",
+  bhw: "BHW",
+  doctor: "Doctor",
+  midwife: "Midwife",
+  dns: "DNS",
+};
+
+function getElementVal(id) {
+  const form = document.getElementById("registrationForm");
+  const value = form.querySelector(`#${id}`)?.value.trim();
+  console.log(`Value for ${id}:`, value);
+  return value;
+}
+
+function toggleDepartment() {
+  const userType = getElementVal("userType");
+  document.getElementById("departmentDiv").style.display =
+    userType === "admin" ? "block" : "none";
+}
+
+function generatePatientID() {
+  return Math.floor(10000 + Math.random() * 90000);
+}
+
+function validateForm(username, password, email, userType) {
+  return (
+    username &&
+    password &&
+    email &&
+    userType &&
+    userTypes.hasOwnProperty(userType)
+  );
+}
+
+async function checkUsernameExists(username) {
+  try {
+    const snapshot = await db
+      .ref("6-Users")
+      .orderByChild("username")
+      .equalTo(username)
+      .once("value");
+
+    return snapshot.exists();
+  } catch (error) {
+    console.error("Error checking username:", error);
+    swal("Error", "An error occurred while checking the username.", "error");
+    return false;
+  }
+}
+
+async function submitForm() {
+  const username = getElementVal("username");
+  const password = getElementVal("password");
+  const email = getElementVal("email");
+  const userType = getElementVal("userType");
+  const department = userType === "admin" ? getElementVal("department") : null;
+
+  if (!validateForm(username, password, email, userType)) {
+    swal(
+      "Validation Error",
+      "Please fill in all required fields correctly.",
+      "error"
+    );
+    return;
+  }
+
+  const patientID = generatePatientID();
+
+  const usernameExists = await checkUsernameExists(username);
+  if (usernameExists) {
+    swal(
+      "Username Taken",
+      "The username is already in use. Please choose another.",
+      "error"
+    );
+    return;
+  }
+
+  const hashedPassword = CryptoJS.MD5(password).toString();
+
+  try {
+    await db.ref(`6-Users/${patientID}`).set({
+      username,
+      email,
+      password: hashedPassword,
+      userType: userTypes[userType],
+      department,
+    });
+
+    swal("Success", "You have registered successfully!", "success");
+
+    document.getElementById("registrationForm").reset();
+    toggleDepartment();
+  } catch (error) {
+    console.error("Error registering user:", error);
+    swal("Error", "Error registering user. Please try again.", "error");
+  }
+}

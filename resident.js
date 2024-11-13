@@ -106,40 +106,34 @@ document.getElementById("logoutBtn").addEventListener("click", logoutUser);
 
 document.querySelectorAll(".nav-item a").forEach((link) => {
   link.addEventListener("click", function (event) {
-    event.preventDefault(); // Prevent default link behavior
+    event.preventDefault();
 
-    // Hide all content sections initially
     document.querySelectorAll(".content-section").forEach((section) => {
       section.style.display = "none";
     });
 
-    // Create section ID based on the link text
     const sectionId =
       link.textContent.trim().toLowerCase().replace(/\s+/g, "") + "Section";
     const sectionElement = document.getElementById(sectionId);
 
-    // If the section exists, show it
     if (sectionElement) {
       sectionElement.style.display = "block";
     } else {
       console.log("Section not found:", sectionId);
     }
 
-    // Fetch specific data based on the selected section
     if (link.textContent.trim() === "Personal Information") {
-      fetchPatientData(); // Function to fetch patient data for Personal Information
+      fetchPatientData();
     } else if (link.textContent.trim() === "Records") {
-      fetchPatientRecords(); // Function to fetch patient records
+      fetchPatientRecords();
     } else if (link.textContent.trim() === "Medicine") {
-      fetchMedicineData(); // Function to fetch medicine data
+      fetchMedicineData();
     }
   });
 });
 
-// Simulated fetch functions for different sections
 function fetchPatientData() {
   console.log("Fetching personal information...");
-  // Simulate fetching data and updating the content (use actual fetching logic here)
   document.getElementById("name").innerText = "John Doe";
   document.getElementById("age").innerText = "35";
   document.getElementById("birthdate").innerText = "1989-04-25";
@@ -152,14 +146,12 @@ function fetchPatientData() {
 
 function fetchPatientRecords() {
   console.log("Fetching patient records...");
-  // Simulate fetching patient records (use actual fetching logic here)
   document.getElementById("recordsContent").innerText =
     "Sample records for John Doe.";
 }
 
 function fetchMedicineData() {
   console.log("Fetching medicine data...");
-  // Simulate fetching medicine data (use actual fetching logic here)
   document.getElementById("medicineContent").innerText =
     "Sample medicine data for John Doe.";
 }

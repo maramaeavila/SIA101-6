@@ -68,7 +68,7 @@ function fetchPatients() {
   const patientListBody = document.getElementById("patientList");
   patientListBody.innerHTML = "";
 
-  db.ref("5-Health-PatientID")
+  db.ref("6-Health-PatientID")
     .once("value")
     .then((snapshot) => {
       if (snapshot.exists()) {
@@ -174,7 +174,7 @@ function displayAppointments(date) {
   const appointmentList = document.getElementById("appointmentList");
   appointmentList.innerHTML = "";
 
-  db.ref("5-Health-Appointments")
+  db.ref("6-Health-Appointments")
     .orderByChild("appointmentDate")
     .equalTo(date)
     .once("value", (snapshot) => {
@@ -233,7 +233,7 @@ function fetchAppointmentsByDate() {
     return;
   }
 
-  db.ref("5-Health-Appointments")
+  db.ref("6-Health-Appointments")
     .orderByChild("appointmentDate")
     .equalTo(selectedDate)
     .once("value")
