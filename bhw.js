@@ -49,12 +49,13 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
     } else if (sectionName === "Patient") {
       document.getElementById("patientSection").style.display = "block";
       fetchPatients();
+    } else if (sectionName === "Resident List") {
+      document.getElementById("residentSection").style.display = "block";
+      fetchResidentData();
     } else if (sectionName === "Appointment") {
       document.getElementById("appointmentSection").style.display = "block";
     } else if (sectionName === "Form") {
       document.getElementById("formSection").style.display = "block";
-    } else if (sectionName === "Health Services") {
-      document.getElementById("healthSection").style.display = "block";
     } else if (sectionName === "Medicine") {
       document.getElementById("medicineSection").style.display = "block";
       fetchInventory();
@@ -69,8 +70,10 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
 });
 
 function fetchPatients() {
-  const patientListBody = document.getElementById("patientList");
-  patientListBody.innerHTML = "";
+  const verifiedListBody = document.getElementById("verifiedListBody");
+  const pendingListBody = document.getElementById("pendingListBody");
+  verifiedListBody.innerHTML = "";
+  pendingListBody.innerHTML = "";
 
   db.ref("6-Health-PatientID")
     .once("value")
@@ -78,36 +81,208 @@ function fetchPatients() {
       if (snapshot.exists()) {
         snapshot.forEach((childSnapshot) => {
           const patient = childSnapshot.val();
-
           const row = document.createElement("tr");
 
-          row.innerHTML = `
-            <td>${childSnapshot.key}</td>
-            <td>${patient.name}</td>
-            <td>${patient.age}</td>
-            <td>${patient.sex}</td>
-            <td>${patient.address}</td>
-            <td>${patient.mobileNumber}</td>
-            <td>${patient.civilStatus}</td>
-            <td>${patient.birthdate}</td>
-            <td>${patient.status}</td>
-          `;
-
-          patientListBody.appendChild(row);
+          if (patient.status.toLowerCase() === "verified") {
+            row.innerHTML = `
+              <td>${childSnapshot.key}</td>
+              <td>${patient.name}</td>
+              <td>${patient.age}</td>
+              <td>${patient.sex}</td>
+              <td>${patient.address}</td>
+              <td>${patient.mobileNumber}</td>
+              <td>${patient.civilStatus}</td>
+              <td>${patient.birthdate}</td>
+              <td>${patient.status}</td>
+            `;
+            verifiedListBody.appendChild(row);
+          } else if (patient.status.toLowerCase() === "pending") {
+            row.innerHTML = `
+              <td><input type="checkbox" class="selectPatient" data-id="${childSnapshot.key}"></td>
+              <td>${childSnapshot.key}</td>
+              <td>${patient.name}</td>
+              <td>${patient.age}</td>
+              <td>${patient.sex}</td>
+              <td>${patient.address}</td>
+              <td>${patient.mobileNumber}</td>
+              <td>${patient.civilStatus}</td>
+              <td>${patient.birthdate}</td>
+              <td>${patient.status}</td>
+            `;
+            pendingListBody.appendChild(row);
+          }
         });
       } else {
-        const row = document.createElement("tr");
-        row.innerHTML = "<td colspan='9'>No patients found.</td>";
-        patientListBody.appendChild(row);
+        verifiedListBody.innerHTML =
+          "<tr><td colspan='9'>No patients found.</td></tr>";
+        pendingListBody.innerHTML =
+          "<tr><td colspan='10'>No pending patients found.</td></tr>";
       }
     })
     .catch((error) => {
       console.error("Error fetching patient data:", error);
-      const row = document.createElement("tr");
-      row.innerHTML = "<td colspan='9'>Error loading patient data.</td>";
-      patientListBody.appendChild(row);
+      verifiedListBody.innerHTML =
+        "<tr><td colspan='9'>Error loading patient data.</td></tr>";
+      pendingListBody.innerHTML =
+        "<tr><td colspan='10'>Error loading pending patient data.</td></tr>";
     });
 }
+
+function updatePatientStatus(status) {
+  const selectedCheckboxes = document.querySelectorAll(
+    ".selectPatient:checked"
+  );
+
+  selectedCheckboxes.forEach((checkbox) => {
+    const patientId = checkbox.getAttribute("data-id");
+
+    db.ref("6-Health-PatientID/" + patientId)
+      .update({
+        status: status.toUpperCase(),
+      })
+      .then(() => {
+        console.log(`Patient ${patientId} status updated to ${status}`);
+        fetchPatients();
+      })
+      .catch((error) => {
+        console.error("Error updating patient status:", error);
+      });
+  });
+}
+function fetchResidentData() {
+  const residentListBody = document.getElementById("residentListData");
+  residentListBody.innerHTML = "";
+
+  db.ref("Residents")
+    .once("value")
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        snapshot.forEach((childSnapshot) => {
+          const resident = childSnapshot.val();
+
+          const firstName = resident.firstName || "";
+          const lastName = resident.lastName || "";
+          const middleName = resident.middleName || "";
+          const mobileNumber = resident.mobileNumber || "";
+          const address = resident.address || "";
+          const age = resident.age || "";
+          const sex = resident.sex || "";
+          const birthdate = resident.birthdate || "";
+          const birthplace = resident.birthplace || "";
+          const bloodType = resident.bloodType || "";
+          const citizenship = resident.citizenship || "";
+          const civilStatus = resident.civilStatus || "";
+          const educationalAttainment = resident.educationalAttainment || "";
+          const email = resident.email || "";
+          const emergencyFirstName = resident.emergencyFirstName || "";
+          const emergencyMobileNumber = resident.emergencyMobileNumber || "";
+          const emergencyRelationship = resident.emergencyRelationship || "";
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${childSnapshot.key}</td>
+            <td>${firstName} ${middleName} ${lastName}</td>
+            <td>${mobileNumber}</td>
+            <td>${address}</td>
+            <td>${age}</td>
+            <td>${sex}</td>
+            <td>${birthdate}</td>
+            <td>${birthplace}</td>
+            <td>${bloodType}</td>
+            <td>${citizenship}</td>
+            <td>${civilStatus}</td>
+            <td>${educationalAttainment}</td>
+            <td>${email}</td>
+            <td>${emergencyFirstName}</td>
+            <td>${emergencyMobileNumber}</td>
+            <td>${emergencyRelationship}</td>
+          `;
+          residentListBody.appendChild(row);
+        });
+      } else {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td colspan="16">No residents found.</td>`;
+        residentListBody.appendChild(row);
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching resident data:", error);
+      const row = document.createElement("tr");
+      row.innerHTML = `<td colspan="16">Error loading resident data.</td>`;
+      residentListBody.appendChild(row);
+    });
+}
+
+// function searchResidents() {
+//   const searchTerm = document
+//     .getElementById("searchResident")
+//     .value.toLowerCase();
+//   const residentListBody = document.getElementById("residentListData");
+
+//   residentListBody.innerHTML = "";
+
+//   db.ref("6-Health-ResidentID")
+//     .once("value")
+//     .then((snapshot) => {
+//       if (snapshot.exists()) {
+//         snapshot.forEach((childSnapshot) => {
+//           const resident = childSnapshot.val();
+
+//           const fieldsToSearch = [
+//             resident.name,
+//             resident.mobileNumber,
+//             resident.address,
+//             resident.age?.toString(),
+//             resident.sex,
+//             resident.birthdate,
+//             resident.birthplace,
+//             resident.bloodType,
+//             resident.citizenship,
+//             resident.civilStatus,
+//             resident.educationalAttainment,
+//             resident.email,
+//             resident.emergencyContactName,
+//             resident.emergencyContactMobile,
+//             resident.emergencyRelationship
+//           ];
+
+//           const matchesSearch = fieldsToSearch.some((field) =>
+//             field && field.toLowerCase().includes(searchTerm)
+//           );
+
+//           if (matchesSearch) {
+//             const row = document.createElement("tr");
+
+//             row.innerHTML = `
+//               <td>${childSnapshot.key}</td>
+//               <td>${resident.name || "N/A"}</td>
+//               <td>${resident.mobileNumber || "N/A"}</td>
+//               <td>${resident.address || "N/A"}</td>
+//               <td>${resident.age || "N/A"}</td>
+//               <td>${resident.sex || "N/A"}</td>
+//               <td>${resident.birthdate || "N/A"}</td>
+//               <td>${resident.birthplace || "N/A"}</td>
+//               <td>${resident.bloodType || "N/A"}</td>
+//               <td>${resident.citizenship || "N/A"}</td>
+//               <td>${resident.civilStatus || "N/A"}</td>
+//               <td>${resident.educationalAttainment || "N/A"}</td>
+//               <td>${resident.email || "N/A"}</td>
+//               <td>${resident.emergencyContactName || "N/A"}</td>
+//               <td>${resident.emergencyContactMobile || "N/A"}</td>
+//               <td>${resident.emergencyRelationship || "N/A"}</td>
+//             `;
+//             residentListBody.appendChild(row);
+//           }
+//         });
+//       } else {
+//         residentListBody.innerHTML = "<tr><td colspan='16'>No residents found.</td></tr>";
+//       }
+//     })
+//     .catch((error) => {
+//       console.error("Error fetching resident data:", error);
+//       residentListBody.innerHTML = "<tr><td colspan='16'>Error loading resident data.</td></tr>";
+//     });
+// }
 
 const monthNames = [
   "January",
@@ -466,3 +641,157 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+function fetchPatientData() {
+  const patientId = document.getElementById("patientIdInput").value;
+
+  if (patientId.trim() === "") {
+    alert("Please enter a valid Patient ID.");
+    return;
+  }
+
+  db.ref(`6-Health-PatientID/${patientId}`)
+    .once("value")
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        const patientData = snapshot.val();
+        document.getElementById("patientId").textContent = patientId;
+        document.getElementById("patientName").textContent = patientData.name;
+        document.getElementById("patientAge").textContent = patientData.age;
+        document.getElementById("patientSex").textContent = patientData.sex;
+        document.getElementById("patientAddress").textContent =
+          patientData.address;
+
+        document.getElementById("patientDataSection").style.display = "block";
+        document.getElementById("bhcmsForm").style.display = "block";
+      } else {
+        alert("Patient ID not found.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching patient data:", error);
+      alert("Error loading patient data.");
+    });
+}
+
+function computeBMI() {
+  const height = document.getElementById("height").value;
+  const weight = document.getElementById("weight").value;
+
+  if (height && weight) {
+    const bmi = (weight / (height * height)) * 10000; // BMI formula in kg/m²
+    document.getElementById("bmi").textContent = bmi.toFixed(2);
+
+    let status = "";
+    if (bmi < 18.5) {
+      status = "Malnourished (Underweight)";
+    } else if (bmi >= 18.5 && bmi < 24.9) {
+      status = "Normal (Healthy Weight)";
+    } else if (bmi >= 30) {
+      status = "Obese";
+    } else {
+      status = "Overweight";
+    }
+
+    document.getElementById("bmiStatus").textContent = status;
+  } else {
+    document.getElementById("bmi").textContent = "N/A";
+    document.getElementById("bmiStatus").textContent = "N/A";
+  }
+}
+
+document.getElementById("height").addEventListener("input", computeBMI);
+document.getElementById("weight").addEventListener("input", computeBMI);
+
+function submitForm() {
+  const patientId = document.getElementById("patientId").textContent;
+  const height = document.getElementById("height").value;
+  const weight = document.getElementById("weight").value;
+  const bloodPressure = document.getElementById("bloodPressure").value;
+  const temperature = document.getElementById("temperature").value;
+  const pulseRate = document.getElementById("pulseRate").value;
+  const respiratoryRate = document.getElementById("respiratoryRate").value;
+  const chiefComplaint = document.getElementById("chiefComplaint").value;
+
+  const allergies = document.getElementById("hasAllergies").checked
+    ? document.getElementById("allergiesDetails").value || "None"
+    : "None";
+
+  const medications = document.getElementById("hasMedications").checked
+    ? document.getElementById("medicationsDetails").value || "None"
+    : "None";
+
+  const pastMedicalHistory = getCheckedConditions("pastMedicalHistory");
+  const familyHistory = getCheckedConditions("familyHistory");
+
+  const vaccinated = document.getElementById("vaccinatedYes").checked
+    ? "Yes"
+    : "No";
+  const vaccineType = getVaccineType();
+  const boosterDose = document.getElementById("boosterYes").checked
+    ? "Yes"
+    : "No";
+  const boosterDate = document.getElementById("boosterDate").value;
+
+  if (!height || !weight || !bloodPressure) {
+    alert("Please fill out all required fields.");
+    return;
+  }
+
+  const formId = `${patientId}-${new Date().getTime()}`;
+
+  const formData = {
+    patientId,
+    height,
+    weight,
+    bloodPressure,
+    temperature,
+    pulseRate,
+    respiratoryRate,
+    chiefComplaint,
+    allergies,
+    medications,
+    pastMedicalHistory,
+    familyHistory,
+    vaccinated,
+    vaccineType,
+    boosterDose,
+    boosterDate,
+    bmi: document.getElementById("bmi").textContent,
+    formId,
+    timestamp: new Date().toISOString(),
+  };
+
+  db.ref("6-Health-FormData")
+    .child(formId)
+    .set(formData)
+    .then(() => {
+      alert("Form submitted successfully!");
+      console.log("Form Data saved:", formData);
+    })
+    .catch((error) => {
+      console.error("Error saving form data:", error);
+      alert("Error submitting form.");
+    });
+}
+
+function getCheckedConditions(prefix) {
+  const conditions = [];
+  const checkboxes = document.querySelectorAll(
+    `#${prefix} input[type="checkbox"]:checked`
+  );
+  checkboxes.forEach((checkbox) => {
+    conditions.push(checkbox.id);
+  });
+  return conditions.join(", ");
+}
+
+function getVaccineType() {
+  let vaccineType = "";
+  if (document.getElementById("pfizer").checked) vaccineType += "Pfizer, ";
+  if (document.getElementById("moderna").checked) vaccineType += "Moderna, ";
+  if (document.getElementById("astrazeneca").checked)
+    vaccineType += "AstraZeneca, ";
+  if (document.getElementById("sinovac").checked) vaccineType += "Sinovac, ";
+  return vaccineType ? vaccineType.slice(0, -2) : "N/A";
+}
