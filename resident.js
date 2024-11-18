@@ -104,6 +104,83 @@ document.getElementById("logoutBtn").addEventListener("click", logoutUser);
 //       });
 //   });
 
+// Function to handle showing and hiding the sections dynamically
+function showSection(sectionId) {
+  // Hide all sections
+  document.querySelectorAll('.content-section').forEach((section) => {
+    section.style.display = 'none';
+  });
+
+  // Display the clicked section
+  const selectedSection = document.getElementById(sectionId);
+  if (selectedSection) {
+    selectedSection.style.display = 'block';
+  } else {
+    console.error("Section not found:", sectionId);
+  }
+}
+
+// Ensure personal information data is fetched when 'Personal Information' tab is clicked
+document.getElementById('fetchDataBtn').addEventListener('click', function () {
+  var patientID = document.getElementById("patientID").value;
+  if (patientID) {
+    fetchResidentData(patientID); // Call function to fetch the data
+  } else {
+    alert("Please enter a Patient ID.");
+  }
+});
+
+
+
+function fetchResidentData(residentID) {
+  const residentRef = db.ref("Residents/" + residentID);
+
+  residentRef
+    .get()
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+
+        // Handle nameExtension: Exclude "None"
+        const nameExtension =
+          data.nameExtension && data.nameExtension.toLowerCase() !== "none"
+            ? ` ${data.nameExtension}` // Include valid name extension
+            : ""; // Exclude if "None" or not provided
+
+        // Construct full name
+        const fullName = `${data.firstName || ""} ${data.middleName || ""} ${data.lastName || ""}${nameExtension}`;
+
+        // Update the profile picture
+        const profilePicture = data.profileUrl || "default-profile.png";
+        document.getElementById("profilePicture").src = profilePicture;
+
+        // Update personal information
+        document.getElementById("residentName").textContent = fullName.trim();
+        document.getElementById("age").textContent = data.age || "N/A";
+        document.getElementById("birthdate").textContent = data.birthdate || "N/A";
+        document.getElementById("address").textContent = data.address || "N/A";
+        document.getElementById("mobileNumber").textContent = data.mobileNumber || "N/A";
+        document.getElementById("email").textContent = data.email || "N/A";
+        document.getElementById("sex").textContent = data.sex || "N/A";
+        document.getElementById("bloodType").textContent = data.bloodType || "N/A";
+        document.getElementById("religion").textContent = data.religion || "N/A";
+        document.getElementById("civilStatus").textContent = data.civilStatus || "N/A";
+
+        // Show the resident data section
+        document.getElementById("residentData").style.display = "block";
+        showSection('personalInfoSection'); // Show Personal Info tab
+      } else {
+        swal("Error", "No data found for this Resident ID.", "error");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching resident data:", error);
+      swal("Error", "Failed to fetch resident data. Please try again.", "error");
+    });
+}
+
+
+
 document.querySelectorAll(".nav-item a").forEach((link) => {
   link.addEventListener("click", function (event) {
     event.preventDefault();
@@ -155,3 +232,50 @@ function fetchMedicineData() {
   document.getElementById("medicineContent").innerText =
     "Sample medicine data for John Doe.";
 }
+firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    // Check if residentID is already stored
+    const residentID = localStorage.getItem("residentID");
+    if (residentID) {
+      console.log("Resident ID from localStorage:", residentID);
+
+      // Fetch and display resident data
+      fetchResidentData(residentID);
+    } else {
+      console.error("Resident ID not found in localStorage.");
+      swal("Error", "No resident ID found. Please contact support.", "error").then(() => {
+        window.location.href = "index.html"; // Redirect to login
+      });
+    }
+  } else {
+  
+  }
+});
+
+// Retrieve residentID from localStorage
+const residentID = localStorage.getItem("residentID");
+
+if (residentID) {
+  db.ref("Residents/" + residentID) // Ensure the path includes "/" before residentID
+    .get()
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        const residentData = snapshot.val();
+
+        // Call your function to handle the fetched resident data
+        fetchResidentData(residentID, residentData);
+      } else {
+        swal("Error", "Resident data not found.", "error");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching resident data:", error);
+      swal("Error", "Failed to fetch resident data.", "error");
+    });
+} else {
+  
+}
+
+
+
+
