@@ -621,6 +621,7 @@ function submitForm() {
   const respiratoryRate = document.getElementById("respiratoryRate").value;
   const chiefComplaint = document.getElementById("chiefComplaint").value;
   const specialty = document.getElementById("specialty").value;
+  const appointmentType = document.getElementById("appointmentType").value;
 
   const allergies = document.getElementById("hasAllergies").checked
     ? document.getElementById("allergiesDetails").value || "None"
@@ -682,6 +683,7 @@ function submitForm() {
     pulseRate,
     respiratoryRate,
     chiefComplaint,
+    appointmentType,
     allergies,
     medications,
     pastMedicalHistory,
@@ -705,13 +707,45 @@ function submitForm() {
     .child(formId)
     .set(formData)
     .then(() => {
-      alert("Form submitted successfully!");
+      Swal.fire({
+        title: "Success!",
+        text: "Form submitted successfully!",
+        icon: "success",
+        confirmButtonText: "OK",
+      }).then(() => {
+        clearForm();
+      });
       console.log("Form Data saved:", formData);
     })
     .catch((error) => {
       console.error("Error saving form data:", error);
       alert("Error submitting form.");
     });
+}
+
+function clearForm() {
+  document.getElementById("height").value = "";
+  document.getElementById("weight").value = "";
+  document.getElementById("bloodPressure").value = "";
+  document.getElementById("temperature").value = "";
+  document.getElementById("pulseRate").value = "";
+  document.getElementById("respiratoryRate").value = "";
+  document.getElementById("chiefComplaint").value = "";
+  document.getElementById("specialty").value = "";
+  document.getElementById("appointmentType").value = "";
+  document.getElementById("hasAllergies").checked = false;
+  document.getElementById("allergiesDetails").value = "";
+  document.getElementById("hasMedications").checked = false;
+  document.getElementById("medicationsDetails").value = "";
+  document.getElementById("vaccinatedYes").checked = false;
+  document.getElementById("vaccinatedNo").checked = false;
+  document.getElementById("boosterYes").checked = false;
+  document.getElementById("boosterNo").checked = false;
+  document.getElementById("boosterDate").value = "";
+  document.getElementById("pastMedicalHistory").reset();
+  document.getElementById("familyHistory").reset();
+  document.getElementById("bmi").textContent = "";
+  document.getElementById("bmiStatus").textContent = "";
 }
 
 function getBloodPressureStatus(bloodPressure) {
