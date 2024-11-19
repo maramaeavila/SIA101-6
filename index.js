@@ -13,14 +13,6 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 
-const userTypes = {
-  admin: "Admin",
-  bhw: "BHW",
-  doctor: "Doctor",
-  midwife: "Midwife",
-  dns: "DNS",
-};
-
 function openResidentLogin() {
   $("#residentLoginModal").modal("show");
 }
@@ -47,14 +39,11 @@ async function loginResident() {
     if (snapshot.exists()) {
       const residentData = snapshot.val();
 
-      // Validate birthdate
       if (residentData.birthdate === birthdate) {
-        // Save residentID in localStorage
-        localStorage.setItem("residentID", residentID); // Save the resident ID after successful login
-
+        localStorage.setItem("residentID", residentID);
 
         swal("Success", "Login successful!", "success").then(() => {
-          window.location.href = "resident.html"; // Redirect to resident page
+          window.location.href = "resident.html";
         });
       } else {
         swal("Error", "Incorrect birthdate.", "error");
@@ -68,70 +57,65 @@ async function loginResident() {
   }
 }
 
-
-async function checkUsernameExists(username) {
-  const snapshot = await db
-    .ref("6-Users")
-    .orderByChild("username")
-    .equalTo(username)
-    .once("value");
-  return snapshot.exists();
-}
-
 async function loginUser() {
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
+  const role = document.getElementById("role").value.trim().toUpperCase(); // Convert input to uppercase for comparison
 
-  if (!username || !password) {
+  if (!username || !password || !role) {
     swal("Error", "Please fill in all required fields.", "error");
     return;
   }
 
-  const hashedInputPassword = CryptoJS.MD5(password).toString();
-
   try {
     const snapshot = await db
-      .ref("6-Users")
-      .orderByChild("username")
+      .ref("3-Employees")
+      .orderByChild("email")
       .equalTo(username)
       .once("value");
 
     if (snapshot.exists()) {
       const userData = snapshot.val();
       const userKey = Object.keys(userData)[0];
-      const storedHashedPassword = userData[userKey].password;
-      const userType = userData[userKey].userType.toLowerCase();
+      const user = userData[userKey];
 
-      if (hashedInputPassword === storedHashedPassword) {
+      if (user.password === password && user.role === role) {
         swal("Success", "Login successful!", "success").then(() => {
-          switch (userType) {
-            case "admin":
+          switch (role) {
+            case "HEALTH_COMMITTEE_HEAD":
               window.location.href = "admin.html";
               break;
-            case "bhw":
+            case "BHW":
               window.location.href = "bhw.html";
               break;
-            case "doctor":
+            case "DENTAL":
+              window.location.href = "dental.html";
+              break;
+            case "GENERAL_DOCTOR":
               window.location.href = "doctor.html";
               break;
-            case "midwife":
+            case "MIDWIFE":
               window.location.href = "midwife.html";
               break;
-            case "dns":
+            case "DNS":
               window.location.href = "dns.html";
               break;
             default:
-              swal("Error", "Unknown user type.", "error");
+              swal("Error", "Unknown role. Please contact admin.", "error");
           }
         });
       } else {
-        swal("Error", "Incorrect password. Please try again.", "error");
+        swal("Error", "Incorrect password or role.", "error");
       }
     } else {
       swal("Error", "User not found. Please check your username.", "error");
     }
   } catch (error) {
     console.error("Error logging in user:", error);
-    swal("Error", "Error logging in. Please try again.", "error");
+    swal(
+      "Error",
+      "An error occurred during login. Please try again later.",
+      "error"
+    );
   }
 }

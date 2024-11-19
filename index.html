@@ -189,8 +189,19 @@
                     <div class="form-group mb-3">
                         <input type="password" class="form-control" id="password" placeholder="Password" required>
                     </div>
+                    <div class="form-group mb-3">
+                        <label for="role" class="form-label">Select Role</label>
+                        <select class="form-select" id="role" required>
+                            <option value="" selected disabled>Choose a role</option>
+                            <option value="HEALTH_COMMITTEE_HEAD">Health Committee - Head</option>
+                            <option value="BHW">BHW</option>
+                            <option value="GENERAL_DOCTOR">Doctor - General</option>
+                            <option value="DENTAL">Doctor - Dental</option>
+                            <option value="MIDWIFE">Midwife</option>
+                            <option value="DNS">DNS</option>
+                        </select>
+                    </div>
                     <button type="button" class="btn btn-primary w-100" onclick="loginUser()">Login</button> 
-                    <!-- <p class="text-center mt-3">Don't have an account? <a href="#" data-bs-toggle="modal" data-bs-target="#registrationModal" data-bs-dismiss="modal">Register here</a></p> -->
                 </form>
             </div>
         </div>

@@ -34,12 +34,6 @@
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-house-medical mr-2"></i> 
-                Patient
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#">
-                <i class="fa-solid fa-house-medical mr-2"></i> 
                 Resident List
             </a>
         </li>
@@ -152,83 +146,35 @@
             </div>
         </div>
     </div>
-    
-    <div id="patientSection" class="content-section" style="display: none;">
-        <h1 class="mt-5">Patient List - Pending</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Select</th>
-                    <th>Patient ID</th>
-                    <th>Name</th>
-                    <th>Age</th>
-                    <th>Sex</th>
-                    <th>Address</th>
-                    <th>Mobile Number</th>
-                    <th>Civil Status</th>
-                    <th>Birthdate</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="pendingListBody">
-                
-            </tbody>
-        </table>
-    
-        <button class="btn-primary" onclick="updatePatientStatus('verified')">Verify Selected</button>
-        <button class="btn-primary" onclick="updatePatientStatus('canceled')">Cancel Selected</button>
-    
-        <h1 class="mt-5">Patient List - Verified</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Patient ID</th>
-                    <th>Name</th>
-                    <th>Age</th>
-                    <th>Sex</th>
-                    <th>Address</th>
-                    <th>Mobile Number</th>
-                    <th>Civil Status</th>
-                    <th>Birthdate</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="verifiedListBody">
-                
-            </tbody>
-        </table>
-    </div>
 
     <div id="residentSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Resident List</h1>
-        
+    
         <input type="text" id="searchResident" placeholder="Search residents..." oninput="searchResidents()" />
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Resident ID</th>
-                    <th>Name</th>
-                    <th>Mobile Number</th>
-                    <th>Address</th>
-                    <th>Age</th>
-                    <th>Sex</th>
-                    <th>Birthdate</th>
-                    <th>Birthplace</th>
-                    <th>Blood Type</th>
-                    <th>Citizenship</th>
-                    <th>Civil Status</th>
-                    <th>Educational Attainment</th>
-                    <th>Email</th>
-                    <th>Emergency Contact Name</th>
-                    <th>Emergency Contact Mobile</th>
-                    <th>Emergency Relationship</th>
-                </tr>
-            </thead>
-            <tbody id="residentListData">
-                
-            </tbody>
-        </table>
+    
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Resident ID</th>
+                        <th>Name</th>
+                        <th>Mobile Number</th>
+                        <th>Address</th>
+                        <th>Age</th>
+                        <th>Sex</th>
+                        <th>Birthdate</th>
+                        <th>Blood Type</th>
+                        <th>Email</th>
+                        <th>Emergency Contact Name</th>
+                        <th>Emergency Contact Mobile</th>
+                        <th>Emergency Relationship</th>
+                    </tr>
+                </thead>
+                <tbody id="residentListData">
+                    
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div id="appointmentSection" class="content-section" style="display: none;">
@@ -263,14 +209,14 @@
         <h1 class="mt-5">Forms</h1>
 
         <div>
-            <label for="patientIdInput">Enter Patient ID:</label>
-            <input type="text" style="width: 20%;" id="patientIdInput" placeholder="Patient ID" />
+            <label for="patientIdInput">Enter Resident ID:</label>
+            <input type="text" style="width: 20%;" id="patientIdInput" placeholder="Resident ID" />
             <button class="btn-primary" onclick="fetchPatientData()">Fetch Patient Data</button>
         </div>
     
         <div id="patientDataSection" style="display: none;">
             <h2>Patient Information</h2>
-            <p><strong>Patient ID:</strong> <span id="patientId"></span></p>
+            <p><strong>Resident ID:</strong> <span id="patientId"></span></p>
             <p><strong>Name:</strong> <span id="patientName"></span></p>
             <p><strong>Age:</strong> <span id="patientAge"></span></p>
             <p><strong>Sex:</strong> <span id="patientSex"></span></p>
@@ -281,6 +227,7 @@
             <h3>BHCMS Health Information</h3>
         
             <div class="row">
+                <!-- Column 1 -->
                 <div class="col">
                     <label for="height">Height (cm):</label>
                     <input type="number" id="height" placeholder="Enter height" required />
@@ -292,22 +239,36 @@
         
                     <label for="bloodPressure">Blood Pressure:</label>
                     <input type="text" id="bloodPressure" placeholder="Enter blood pressure" required />
+                    <span id="bloodPressureStatus"></span> 
                     <br />
-
+        
                     <label for="temperature">Temperature (°C):</label>
-                    <input type="text" id="temperature" placeholder="Enter temperature" />
+                    <input type="text" id="temperature" placeholder="Enter temperature" required />
+                    <span id="temperatureStatus"></span> 
                     <br />
                     
                     <label for="pulseRate">Pulse Rate (bpm):</label>
-                    <input type="text" id="pulseRate" placeholder="Enter pulse rate" />
+                    <input type="text" id="pulseRate" placeholder="Enter pulse rate" required />
+                    <span id="pulseRateStatus"></span> 
                     <br />
                     
                     <label for="respiratoryRate">Respiratory Rate (bpm):</label>
-                    <input type="text" id="respiratoryRate" placeholder="Enter respiratory rate" />
+                    <input type="text" id="respiratoryRate" placeholder="Enter respiratory rate" required />
+                    <span id="respiratoryRateStatus"></span> 
                     <br />
         
                     <label for="chiefComplaint">Chief Complaint (Reason for Visit):</label>
-                    <input type="text" id="chiefComplaint" placeholder="Enter reason for visit" />
+                    <input type="text" id="chiefComplaint" placeholder="Enter reason for visit" required />
+                    <br />
+
+                    <label for="specialty">Specialty (Choose one):</label>
+                    <select id="specialty" required>
+                    <option value="">Select Specialty</option>
+                    <option value="GeneralDoctor">General Doctor</option>
+                    <option value="Dental">Dental</option>
+                    <option value="Midwife">Midwife</option>
+                    </select>
+                    <br />
                     <br />
         
                     <label for="allergies">Allergies (If any):</label>
@@ -333,6 +294,7 @@
                     <br />
                 </div>
         
+                <!-- Column 2 -->
                 <div class="col">
                     <label for="pastMedicalHistory">Past Medical History (Check all that apply):</label>
                     <div>
@@ -359,7 +321,7 @@
                         <input type="text" id="otherConditionsDetails" placeholder="Specify other conditions" />
                     </div>
                     <br />
-
+        
                     <label for="familyHistory">Family History of Illnesses:</label>
                     <div>
                         <input type="checkbox" id="n/a" />
@@ -388,7 +350,7 @@
                         <label for="vaccinatedNo">No</label>
                     </div>
                     <br />
-                
+        
                     <label for="vaccineType">Type of Vaccine:</label>
                     <div>
                         <input type="checkbox" id="pfizer" />
@@ -401,7 +363,7 @@
                         <label for="sinovac">Sinovac</label>
                     </div>
                     <br />
-                
+        
                     <label for="boosterDose">Booster Dose Received?</label>
                     <div>
                         <input type="checkbox" id="boosterYes" />
@@ -410,19 +372,18 @@
                         <label for="boosterNo">No</label>
                     </div>
                     <br />
-                
+        
                     <label for="boosterDate">Date of Last Booster Received:</label>
                     <input type="date" id="boosterDate" />
                     <br />
-                
+        
                     <p><strong>BMI:</strong> <span id="bmi"></span></p>
                     <p><strong>BMI Status:</strong> <span id="bmiStatus"></span></p>
-                
+        
                     <button onclick="submitForm()">Submit</button>
                 </div>
             </div>
         </div>
-    </div>
 
     <div id="medicineSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Medicine Management</h1>

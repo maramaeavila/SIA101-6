@@ -28,6 +28,11 @@ function logoutUser() {
     });
 }
 
+function toggleSidebar() {
+  const sidebar = document.querySelector(".sidebar");
+  sidebar.classList.toggle("active");
+}
+
 document.getElementById("logoutBtn").addEventListener("click", logoutUser);
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -46,9 +51,9 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
 
     if (sectionName === "Dashboard") {
       document.getElementById("dashboardSection").style.display = "block";
-    } else if (sectionName === "Patient") {
-      document.getElementById("patientSection").style.display = "block";
-      fetchPatients();
+    } else if (sectionName === "Resident List") {
+      document.getElementById("residentSection").style.display = "block";
+      fetchResidentData();
     } else if (sectionName === "Appointment") {
       document.getElementById("appointmentSection").style.display = "block";
     } else if (sectionName === "Healthcare Workers") {
@@ -70,45 +75,77 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
   });
 });
 
-function fetchPatients() {
-  const patientListBody = document.getElementById("patientList");
-  patientListBody.innerHTML = "";
+function fetchResidentData() {
+  const residentListBody = document.getElementById("residentListData");
+  residentListBody.innerHTML = "";
 
-  db.ref("6-Health-PatientID")
+  db.ref("Residents")
     .once("value")
     .then((snapshot) => {
       if (snapshot.exists()) {
         snapshot.forEach((childSnapshot) => {
-          const patient = childSnapshot.val();
+          const resident = childSnapshot.val();
+
+          const firstName = resident.firstName || "";
+          const lastName = resident.lastName || "";
+          const middleName = resident.middleName || "";
+          const mobileNumber = resident.mobileNumber || "";
+          const address = resident.address || "";
+          const age = resident.age || "";
+          const sex = resident.sex || "";
+          const birthdate = resident.birthdate || "";
+          const bloodType = resident.bloodType || "";
+          const email = resident.email || "";
+          const emergencyFirstName = resident.emergencyFirstName || "";
+          const emergencyMobileNumber = resident.emergencyMobileNumber || "";
+          const emergencyRelationship = resident.emergencyRelationship || "";
 
           const row = document.createElement("tr");
-
           row.innerHTML = `
             <td>${childSnapshot.key}</td>
-            <td>${patient.name}</td>
-            <td>${patient.age}</td>
-            <td>${patient.sex}</td>
-            <td>${patient.address}</td>
-            <td>${patient.mobileNumber}</td>
-            <td>${patient.civilStatus}</td>
-            <td>${patient.birthdate}</td>
-            <td>${patient.status}</td>
+            <td>${firstName} ${middleName} ${lastName}</td>
+            <td>${mobileNumber}</td>
+            <td>${address}</td>
+            <td>${age}</td>
+            <td>${sex}</td>
+            <td>${birthdate}</td>
+            <td>${bloodType}</td>
+            <td>${email}</td>
+            <td>${emergencyFirstName}</td>
+            <td>${emergencyMobileNumber}</td>
+            <td>${emergencyRelationship}</td>
           `;
-
-          patientListBody.appendChild(row);
+          residentListBody.appendChild(row);
         });
       } else {
         const row = document.createElement("tr");
-        row.innerHTML = "<td colspan='9'>No patients found.</td>";
-        patientListBody.appendChild(row);
+        row.innerHTML = `<td colspan="16">No residents found.</td>`;
+        residentListBody.appendChild(row);
       }
     })
     .catch((error) => {
-      console.error("Error fetching patient data:", error);
+      console.error("Error fetching resident data:", error);
       const row = document.createElement("tr");
-      row.innerHTML = "<td colspan='9'>Error loading patient data.</td>";
-      patientListBody.appendChild(row);
+      row.innerHTML = `<td colspan="16">Error loading resident data.</td>`;
+      residentListBody.appendChild(row);
     });
+}
+
+function searchResidents() {
+  const searchInput = document
+    .getElementById("searchResident")
+    .value.trim()
+    .toLowerCase();
+  const residentRows = document.querySelectorAll("#residentListData tr");
+
+  residentRows.forEach((row) => {
+    const rowText = row.textContent.toLowerCase();
+    if (rowText.includes(searchInput)) {
+      row.style.display = "";
+    } else {
+      row.style.display = "none";
+    }
+  });
 }
 
 const monthNames = [
@@ -291,86 +328,54 @@ function updateAppointmentDashboard(appointments) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  fetchWorkers();
+  fetchHealthDepartmentEmployees();
 });
 
-function fetchWorkers() {
-  const workerList = document.getElementById("healthcareWorkerList");
-  workerList.innerHTML = "";
+function fetchHealthDepartmentEmployees() {
+  const departmentListBody = document.getElementById("departmentListData");
+  departmentListBody.innerHTML = "";
 
-  db.ref("6-HealthcareWorkers")
+  db.ref("3-Employees")
+    .orderByChild("department")
+    .equalTo("HEALTH_DEPARTMENT")
     .once("value")
     .then((snapshot) => {
-      swal.close();
       if (snapshot.exists()) {
         snapshot.forEach((childSnapshot) => {
-          const worker = childSnapshot.val();
-          const workerId = childSnapshot.key;
+          const employee = childSnapshot.val();
+          const employeeID = childSnapshot.key;
 
           const row = document.createElement("tr");
           row.innerHTML = `
-            <td>${worker.name}</td>
-            <td>${worker.role}</td>
-            <td>${worker.email}</td>
-            <td>${worker.phone}</td>
-            <td>${worker.department}</td>
-            <td>${worker.status}</td>
+            <td>${employeeID}</td>
+            <td>${employee.firstName} ${employee.middleName} ${employee.lastName}</td>
+            <td>${employee.contactNumber}</td>
+            <td>${employee.address}</td>
+            <td>${employee.email}</td>
+            <td>${employee.role}</td>
+            <td>${employee.status}</td>
             <td>
-              <button class="btn btn-warning btn-sm" onclick="editWorker('${workerId}')">Edit</button>
-              <button class="btn btn-danger btn-sm" onclick="archiveWorker('${workerId}')">Archive</button>
+              <a href="${employee.profileUrl}" target="_blank">View Profile</a>
+            </td>
+            <td>
+              <a href="${employee.resumeUrl}" target="_blank">View Resume</a>
             </td>
           `;
-          workerList.appendChild(row);
+          departmentListBody.appendChild(row);
         });
       } else {
         const row = document.createElement("tr");
-        row.innerHTML = "<td colspan='7'>No workers found.</td>";
-        workerList.appendChild(row);
+        row.innerHTML = `<td colspan="9">No employees found in Health Department.</td>`;
+        departmentListBody.appendChild(row);
       }
     })
     .catch((error) => {
-      swal.close();
-      console.error("Error fetching workers:", error);
-      swal("Error", "Failed to load workers data.", "error");
+      console.error("Error fetching health department employees:", error);
+      const row = document.createElement("tr");
+      row.innerHTML = `<td colspan="9">Error loading data.</td>`;
+      departmentListBody.appendChild(row);
     });
 }
-
-function editWorker(workerId) {
-  db.ref("6-HealthcareWorkers/" + workerId)
-    .once("value")
-    .then((snapshot) => {
-      if (snapshot.exists()) {
-        const worker = snapshot.val();
-        document.getElementById("workerName").value = worker.name;
-        document.getElementById("workerRole").value = worker.role;
-        document.getElementById("workerStatus").value = worker.status;
-        document.getElementById("workerEmail").value = worker.email;
-        document.getElementById("workerPhone").value = worker.phone;
-        document.getElementById("workerDept").value = worker.department;
-        document.getElementById("workerId").value = workerId;
-        swal("Success", "Worker details loaded successfully.", "success");
-      } else {
-        swal("Error", "Worker not found.", "error");
-      }
-    })
-    .catch((error) => {
-      console.error("Error loading worker data:", error);
-      swal("Error", "Failed to load worker data.", "error");
-    });
-}
-
-// function archiveWorker(workerId) {
-//   db.ref("6-HealthcareWorkers/" + workerId)
-//     .update({ status: "Not Employed" })
-//     .then(() => {
-//       swal("Success", "Worker archived successfully!", "success");
-//       fetchWorkers();
-//     })
-//     .catch((error) => {
-//       console.error("Error archiving worker:", error);
-//       swal("Error", "Failed to archive worker.", "error");
-//     });
-// }
 
 function showRequestTab(tabId) {
   document.querySelectorAll(".tab-content").forEach((tabContent) => {
@@ -713,167 +718,3 @@ document
         swal("Error", "Failed to add stock. Please try again.", "error");
       });
   });
-
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("changeAccountForm");
-  const errorMessage = document.getElementById("errorMessage");
-
-  form.addEventListener("submit", async function (event) {
-    event.preventDefault();
-
-    const currentUsername = document
-      .getElementById("currentUsername")
-      .value.trim();
-    const currentPassword = document
-      .getElementById("currentPassword")
-      .value.trim();
-    const newUsername = document.getElementById("newUsername").value.trim();
-    const newPassword = document.getElementById("newPassword").value.trim();
-
-    if (!currentUsername || !currentPassword || !newUsername || !newPassword) {
-      swal("Error", "Please fill in all fields.", "error");
-      return;
-    }
-
-    const hashedCurrentPassword = CryptoJS.MD5(currentPassword).toString();
-
-    try {
-      const snapshot = await firebase
-        .database()
-        .ref("6-Users")
-        .orderByChild("username")
-        .equalTo(currentUsername)
-        .once("value");
-
-      if (snapshot.exists()) {
-        const userData = snapshot.val();
-        const userKey = Object.keys(userData)[0];
-        const storedHashedPassword = userData[userKey].password;
-
-        if (hashedCurrentPassword === storedHashedPassword) {
-          const hashedNewPassword = CryptoJS.MD5(newPassword).toString();
-
-          await firebase.database().ref(`6-Users/${userKey}`).update({
-            username: newUsername,
-            password: hashedNewPassword,
-          });
-
-          swal(
-            "Success",
-            "Your account information has been updated!",
-            "success"
-          );
-          document.getElementById("changeAccountForm").reset();
-        } else {
-          swal("Error", "Incorrect current password.", "error");
-        }
-      } else {
-        swal("Error", "User not found. Please check your username.", "error");
-      }
-    } catch (error) {
-      console.error("Error updating user data:", error);
-      swal("Error", "Error updating account. Please try again.", "error");
-    }
-  });
-});
-
-const userTypes = {
-  resident: "Resident",
-  admin: "Admin",
-  bhw: "BHW",
-  doctor: "Doctor",
-  midwife: "Midwife",
-  dns: "DNS",
-};
-
-function getElementVal(id) {
-  const form = document.getElementById("registrationForm");
-  const value = form.querySelector(`#${id}`)?.value.trim();
-  console.log(`Value for ${id}:`, value);
-  return value;
-}
-
-function toggleDepartment() {
-  const userType = getElementVal("userType");
-  document.getElementById("departmentDiv").style.display =
-    userType === "admin" ? "block" : "none";
-}
-
-function generatePatientID() {
-  return Math.floor(10000 + Math.random() * 90000);
-}
-
-function validateForm(username, password, email, userType) {
-  return (
-    username &&
-    password &&
-    email &&
-    userType &&
-    userTypes.hasOwnProperty(userType)
-  );
-}
-
-async function checkUsernameExists(username) {
-  try {
-    const snapshot = await db
-      .ref("6-Users")
-      .orderByChild("username")
-      .equalTo(username)
-      .once("value");
-
-    return snapshot.exists();
-  } catch (error) {
-    console.error("Error checking username:", error);
-    swal("Error", "An error occurred while checking the username.", "error");
-    return false;
-  }
-}
-
-async function submitForm() {
-  const username = getElementVal("username");
-  const password = getElementVal("password");
-  const email = getElementVal("email");
-  const userType = getElementVal("userType");
-  const department = userType === "admin" ? getElementVal("department") : null;
-
-  if (!validateForm(username, password, email, userType)) {
-    swal(
-      "Validation Error",
-      "Please fill in all required fields correctly.",
-      "error"
-    );
-    return;
-  }
-
-  const patientID = generatePatientID();
-
-  const usernameExists = await checkUsernameExists(username);
-  if (usernameExists) {
-    swal(
-      "Username Taken",
-      "The username is already in use. Please choose another.",
-      "error"
-    );
-    return;
-  }
-
-  const hashedPassword = CryptoJS.MD5(password).toString();
-
-  try {
-    await db.ref(`6-Users/${patientID}`).set({
-      username,
-      email,
-      password: hashedPassword,
-      userType: userTypes[userType],
-      department,
-    });
-
-    swal("Success", "You have registered successfully!", "success");
-
-    document.getElementById("registrationForm").reset();
-    toggleDepartment();
-  } catch (error) {
-    console.error("Error registering user:", error);
-    swal("Error", "Error registering user. Please try again.", "error");
-  }
-}

@@ -19,6 +19,7 @@
 
 <!-- Sidebar -->
 <div class="sidebar">
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
     <div class="text-center mb-3">
         <a class="navbar-brand" href="#"> 
             <i class="fa-solid fa-user" style="font-size: 80px; color: white; margin: 15%;"></i>
@@ -34,7 +35,7 @@
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-house-medical mr-2"></i> 
-                Patient
+                Resident List
             </a>
         </li>
         <li class="nav-item">
@@ -65,18 +66,6 @@
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-file-alt mr-2"></i> 
                 Reports
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#">
-                <i class="fa-solid fa-user-plus me-2"></i> 
-                Create Account
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#">
-              <i class="fa-solid fa-user-edit mr-2"></i> 
-               Change Account
             </a>
         </li>
         <li class="nav-item">
@@ -154,26 +143,34 @@
     </div>
     
 
-    <div id="patientSection" class="content-section" style="display: none;">
-        <h1 class="mt-5">Patient List</h1>
-        <table>
-            <thead>
-              <tr>
-                <th>Patient ID</th>
-                <th>Name</th>
-                <th>Age</th>
-                <th>Sex</th>
-                <th>Address</th>
-                <th>Mobile Number</th>
-                <th>Civil Status</th>
-                <th>Birthdate</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="patientList">
-              <!-- Patient rows will be inserted here -->
-            </tbody>
-          </table>
+    <div id="residentSection" class="content-section" style="display: none;">
+        <h1 class="mt-5">Resident List</h1>
+    
+        <input type="text" id="searchResident" placeholder="Search residents..." oninput="searchResidents()" />
+    
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Resident ID</th>
+                        <th>Name</th>
+                        <th>Mobile Number</th>
+                        <th>Address</th>
+                        <th>Age</th>
+                        <th>Sex</th>
+                        <th>Birthdate</th>
+                        <th>Blood Type</th>
+                        <th>Email</th>
+                        <th>Emergency Contact Name</th>
+                        <th>Emergency Contact Mobile</th>
+                        <th>Emergency Relationship</th>
+                    </tr>
+                </thead>
+                <tbody id="residentListData">
+                    
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div id="appointmentSection" class="content-section" style="display: none;">
@@ -207,80 +204,28 @@
     </div>
 
     <div id="healthcareSection" class="content-section">
-        <h1 class="mt-5">Healthcare Workers</h1>
-        <div id="addWorkerContent" class="tab-pane mt-4">
-            <form id="healthcareWorkerForm" class="mb-4">
-                <input type="hidden" id="workerId">       
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="workerName">Name</label>
-                                <input type="text" class="form-control" id="workerName" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="workerRole">Role</label>
-                                <input type="text" class="form-control" id="workerRole" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="workerEmail">Email</label>
-                                <input type="email" class="form-control" id="workerEmail" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="workerPhone">Phone</label>
-                                <input type="text" class="form-control" id="workerPhone" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="workerDept">Department</label>
-                                <input type="text" class="form-control" id="workerDept" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="workerStatus">Status</label>
-                                <select class="form-control" id="workerStatus">
-                                    <option value="Employed">Employed</option>
-                                    <option value="Not Employed">Not Employed</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row mt-3">
-                        <div class="col-md-12">
-                            <button type="button" class="btn-primary right" onclick="addOrUpdateWorker()">Save Worker</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-    
-        <div class="tab-content mt-3">
-            <div id="workerListContent" class="tab-pane active">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Role</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Department</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="healthcareWorkerList">
-                    </tbody>
-                </table>
-            </div>    
+        <h1 class="mt-5">Health Department Employees</h1>
+        <div class="table-container">
+            <table>
+            <thead>
+                <tr>
+                <th>Employee ID</th>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Address</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Profile</th>
+                <th>Resume</th>
+                </tr>
+            </thead>
+            <tbody id="departmentListData">
+                <!-- Data will be dynamically added here -->
+            </tbody>
+            </table>
         </div>
-    </div>
+        </div>
 
     <div id="medicineSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Medicine Management</h1>
@@ -583,85 +528,11 @@
         </div>
     </div>
 
-    <div id="createSection" class="content-section" style="display: none;">
-        <h1 class="mt-5">Register Account</h1>
-        <form action="" id="registrationForm">
-            <div class="row">
-                <!-- Left Column -->
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        <input type="text" class="form-control" id="username" placeholder="Enter username" required>
-                    </div>
-                    <div class="form-group mb-3">
-                        <input type="email" class="form-control" id="email" placeholder="Enter email" required>
-                    </div>
-                    <div class="form-group mb-3">
-                        <input type="password" class="form-control" id="password" placeholder="Enter password" required>
-                    </div>
-                </div>
-    
-                <!-- Right Column -->
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        <label for="userType">User Type</label>
-                        <select id="userType" class="form-control" required onchange="toggleDepartment()">
-                            <option value="" disabled selected>Select user type</option>
-                            <option value="admin">Admin</option>
-                            <option value="bhw">BHW</option>
-                            <option value="doctor">Doctor</option>
-                            <option value="midwife">Midwife</option>
-                            <option value="dns">DNS</option>
-                        </select>
-                    </div>
-                    <div class="form-group mb-3" id="departmentDiv" style="display: none;">
-                        <label for="department">Department</label>
-                        <select id="department" class="form-control">
-                            <option value="health">Health</option>
-                            <option value="administration">Administration</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <button type="button" class="btn-primary" id="success" onclick="submitForm()">Register</button>
-        </form>
-    </div>
-
     <div id="reportSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Reports</h1>
         <p>Reports and statistics go here.</p>
     </div>
 
-    <div id="changeAccountSection" class="content-section" style="display: none;">
-        <h1 class="mt-5">Change Username and Password</h1>
-        
-        <form id="changeAccountForm" class="row mt-4">
-            <div class="col-md-6 mb-3">
-            <label for="currentUsername" class="form-label">Current Username (Email)</label>
-            <input type="email" class="form-control" id="currentUsername" required />
-            </div>
-            
-            <div class="col-md-6 mb-3">
-            <label for="currentPassword" class="form-label">Current Password</label>
-            <input type="password" class="form-control" id="currentPassword" required />
-            </div>
-
-            <div class="col-md-6 mb-3">
-            <label for="newUsername" class="form-label">New Username (Email)</label>
-            <input type="email" class="form-control" id="newUsername" required />
-            </div>
-
-            <div class="col-md-6 mb-3">
-            <label for="newPassword" class="form-label">New Password</label>
-            <input type="password" class="form-control" id="newPassword" required />
-            </div>
-
-            <div class="col-12 mb-3">
-            <button type="submit" class="btn-primary">Update Credentials</button>
-            </div>
-        </form>
-
-        <p id="errorMessage" style="color: red; display: none;">Invalid credentials, please try again.</p>
-    </div>
 </div>
 </div>
 

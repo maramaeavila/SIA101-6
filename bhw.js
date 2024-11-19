@@ -46,9 +46,6 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
 
     if (sectionName === "Dashboard") {
       document.getElementById("dashboardSection").style.display = "block";
-    } else if (sectionName === "Patient") {
-      document.getElementById("patientSection").style.display = "block";
-      fetchPatients();
     } else if (sectionName === "Resident List") {
       document.getElementById("residentSection").style.display = "block";
       fetchResidentData();
@@ -69,86 +66,6 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
   });
 });
 
-function fetchPatients() {
-  const verifiedListBody = document.getElementById("verifiedListBody");
-  const pendingListBody = document.getElementById("pendingListBody");
-  verifiedListBody.innerHTML = "";
-  pendingListBody.innerHTML = "";
-
-  db.ref("6-Health-PatientID")
-    .once("value")
-    .then((snapshot) => {
-      if (snapshot.exists()) {
-        snapshot.forEach((childSnapshot) => {
-          const patient = childSnapshot.val();
-          const row = document.createElement("tr");
-
-          if (patient.status.toLowerCase() === "verified") {
-            row.innerHTML = `
-              <td>${childSnapshot.key}</td>
-              <td>${patient.name}</td>
-              <td>${patient.age}</td>
-              <td>${patient.sex}</td>
-              <td>${patient.address}</td>
-              <td>${patient.mobileNumber}</td>
-              <td>${patient.civilStatus}</td>
-              <td>${patient.birthdate}</td>
-              <td>${patient.status}</td>
-            `;
-            verifiedListBody.appendChild(row);
-          } else if (patient.status.toLowerCase() === "pending") {
-            row.innerHTML = `
-              <td><input type="checkbox" class="selectPatient" data-id="${childSnapshot.key}"></td>
-              <td>${childSnapshot.key}</td>
-              <td>${patient.name}</td>
-              <td>${patient.age}</td>
-              <td>${patient.sex}</td>
-              <td>${patient.address}</td>
-              <td>${patient.mobileNumber}</td>
-              <td>${patient.civilStatus}</td>
-              <td>${patient.birthdate}</td>
-              <td>${patient.status}</td>
-            `;
-            pendingListBody.appendChild(row);
-          }
-        });
-      } else {
-        verifiedListBody.innerHTML =
-          "<tr><td colspan='9'>No patients found.</td></tr>";
-        pendingListBody.innerHTML =
-          "<tr><td colspan='10'>No pending patients found.</td></tr>";
-      }
-    })
-    .catch((error) => {
-      console.error("Error fetching patient data:", error);
-      verifiedListBody.innerHTML =
-        "<tr><td colspan='9'>Error loading patient data.</td></tr>";
-      pendingListBody.innerHTML =
-        "<tr><td colspan='10'>Error loading pending patient data.</td></tr>";
-    });
-}
-
-function updatePatientStatus(status) {
-  const selectedCheckboxes = document.querySelectorAll(
-    ".selectPatient:checked"
-  );
-
-  selectedCheckboxes.forEach((checkbox) => {
-    const patientId = checkbox.getAttribute("data-id");
-
-    db.ref("6-Health-PatientID/" + patientId)
-      .update({
-        status: status.toUpperCase(),
-      })
-      .then(() => {
-        console.log(`Patient ${patientId} status updated to ${status}`);
-        fetchPatients();
-      })
-      .catch((error) => {
-        console.error("Error updating patient status:", error);
-      });
-  });
-}
 function fetchResidentData() {
   const residentListBody = document.getElementById("residentListData");
   residentListBody.innerHTML = "";
@@ -168,11 +85,7 @@ function fetchResidentData() {
           const age = resident.age || "";
           const sex = resident.sex || "";
           const birthdate = resident.birthdate || "";
-          const birthplace = resident.birthplace || "";
           const bloodType = resident.bloodType || "";
-          const citizenship = resident.citizenship || "";
-          const civilStatus = resident.civilStatus || "";
-          const educationalAttainment = resident.educationalAttainment || "";
           const email = resident.email || "";
           const emergencyFirstName = resident.emergencyFirstName || "";
           const emergencyMobileNumber = resident.emergencyMobileNumber || "";
@@ -187,11 +100,7 @@ function fetchResidentData() {
             <td>${age}</td>
             <td>${sex}</td>
             <td>${birthdate}</td>
-            <td>${birthplace}</td>
             <td>${bloodType}</td>
-            <td>${citizenship}</td>
-            <td>${civilStatus}</td>
-            <td>${educationalAttainment}</td>
             <td>${email}</td>
             <td>${emergencyFirstName}</td>
             <td>${emergencyMobileNumber}</td>
@@ -213,76 +122,22 @@ function fetchResidentData() {
     });
 }
 
-// function searchResidents() {
-//   const searchTerm = document
-//     .getElementById("searchResident")
-//     .value.toLowerCase();
-//   const residentListBody = document.getElementById("residentListData");
+function searchResidents() {
+  const searchInput = document
+    .getElementById("searchResident")
+    .value.trim()
+    .toLowerCase();
+  const residentRows = document.querySelectorAll("#residentListData tr");
 
-//   residentListBody.innerHTML = "";
-
-//   db.ref("6-Health-ResidentID")
-//     .once("value")
-//     .then((snapshot) => {
-//       if (snapshot.exists()) {
-//         snapshot.forEach((childSnapshot) => {
-//           const resident = childSnapshot.val();
-
-//           const fieldsToSearch = [
-//             resident.name,
-//             resident.mobileNumber,
-//             resident.address,
-//             resident.age?.toString(),
-//             resident.sex,
-//             resident.birthdate,
-//             resident.birthplace,
-//             resident.bloodType,
-//             resident.citizenship,
-//             resident.civilStatus,
-//             resident.educationalAttainment,
-//             resident.email,
-//             resident.emergencyContactName,
-//             resident.emergencyContactMobile,
-//             resident.emergencyRelationship
-//           ];
-
-//           const matchesSearch = fieldsToSearch.some((field) =>
-//             field && field.toLowerCase().includes(searchTerm)
-//           );
-
-//           if (matchesSearch) {
-//             const row = document.createElement("tr");
-
-//             row.innerHTML = `
-//               <td>${childSnapshot.key}</td>
-//               <td>${resident.name || "N/A"}</td>
-//               <td>${resident.mobileNumber || "N/A"}</td>
-//               <td>${resident.address || "N/A"}</td>
-//               <td>${resident.age || "N/A"}</td>
-//               <td>${resident.sex || "N/A"}</td>
-//               <td>${resident.birthdate || "N/A"}</td>
-//               <td>${resident.birthplace || "N/A"}</td>
-//               <td>${resident.bloodType || "N/A"}</td>
-//               <td>${resident.citizenship || "N/A"}</td>
-//               <td>${resident.civilStatus || "N/A"}</td>
-//               <td>${resident.educationalAttainment || "N/A"}</td>
-//               <td>${resident.email || "N/A"}</td>
-//               <td>${resident.emergencyContactName || "N/A"}</td>
-//               <td>${resident.emergencyContactMobile || "N/A"}</td>
-//               <td>${resident.emergencyRelationship || "N/A"}</td>
-//             `;
-//             residentListBody.appendChild(row);
-//           }
-//         });
-//       } else {
-//         residentListBody.innerHTML = "<tr><td colspan='16'>No residents found.</td></tr>";
-//       }
-//     })
-//     .catch((error) => {
-//       console.error("Error fetching resident data:", error);
-//       residentListBody.innerHTML = "<tr><td colspan='16'>Error loading resident data.</td></tr>";
-//     });
-// }
+  residentRows.forEach((row) => {
+    const rowText = row.textContent.toLowerCase();
+    if (rowText.includes(searchInput)) {
+      row.style.display = "";
+    } else {
+      row.style.display = "none";
+    }
+  });
+}
 
 const monthNames = [
   "January",
@@ -668,17 +523,26 @@ function fetchPatientData() {
     return;
   }
 
-  db.ref(`6-Health-PatientID/${patientId}`)
+  db.ref(`Residents/${patientId}`)
     .once("value")
     .then((snapshot) => {
       if (snapshot.exists()) {
-        const patientData = snapshot.val();
+        const resident = snapshot.val();
+
+        const firstName = resident.firstName || "";
+        const middleName = resident.middleName || "";
+        const lastName = resident.lastName || "";
+
+        const fullName = `${firstName} ${
+          middleName ? middleName + " " : ""
+        }${lastName}`;
+
         document.getElementById("patientId").textContent = patientId;
-        document.getElementById("patientName").textContent = patientData.name;
-        document.getElementById("patientAge").textContent = patientData.age;
-        document.getElementById("patientSex").textContent = patientData.sex;
+        document.getElementById("patientName").textContent = fullName;
+        document.getElementById("patientAge").textContent = resident.age;
+        document.getElementById("patientSex").textContent = resident.sex;
         document.getElementById("patientAddress").textContent =
-          patientData.address;
+          resident.address;
 
         document.getElementById("patientDataSection").style.display = "block";
         document.getElementById("bhcmsForm").style.display = "block";
@@ -691,6 +555,73 @@ function fetchPatientData() {
       alert("Error loading patient data.");
     });
 }
+
+function updateStatus() {
+  const bloodPressure = document.getElementById("bloodPressure").value;
+  const bloodPressureStatus = document.getElementById("bloodPressureStatus");
+  if (bloodPressure) {
+    const [systolic, diastolic] = bloodPressure.split("/").map(Number);
+    if (systolic < 90 || diastolic < 60) {
+      bloodPressureStatus.textContent = "Below normal (low blood pressure)";
+    } else if (systolic >= 130 || diastolic >= 80) {
+      bloodPressureStatus.textContent = "Above normal (high blood pressure)";
+    } else {
+      bloodPressureStatus.textContent = "Normal blood pressure";
+    }
+  }
+
+  const temperature = document.getElementById("temperature").value;
+  const temperatureStatus = document.getElementById("temperatureStatus");
+  if (temperature) {
+    const tempValue = parseFloat(temperature);
+    if (tempValue < 36.5) {
+      temperatureStatus.textContent = "Below normal (hypothermia)";
+    } else if (tempValue > 38.2) {
+      temperatureStatus.textContent = "Above normal (fever)";
+    } else {
+      temperatureStatus.textContent = "Normal temperature";
+    }
+  }
+
+  const pulseRate = document.getElementById("pulseRate").value;
+  const pulseRateStatus = document.getElementById("pulseRateStatus");
+  if (pulseRate) {
+    const pulse = parseInt(pulseRate, 10);
+    if (pulse < 60) {
+      pulseRateStatus.textContent = "Below normal (slow heart rate)";
+    } else if (pulse > 100) {
+      pulseRateStatus.textContent = "Above normal (fast heart rate)";
+    } else {
+      pulseRateStatus.textContent = "Normal pulse rate";
+    }
+  }
+
+  const respiratoryRate = document.getElementById("respiratoryRate").value;
+  const respiratoryRateStatus = document.getElementById(
+    "respiratoryRateStatus"
+  );
+  if (respiratoryRate) {
+    const rate = parseInt(respiratoryRate, 10);
+    if (rate < 12) {
+      respiratoryRateStatus.textContent = "Below normal (slow breathing)";
+    } else if (rate > 20) {
+      respiratoryRateStatus.textContent = "Above normal (fast breathing)";
+    } else {
+      respiratoryRateStatus.textContent = "Normal respiratory rate";
+    }
+  }
+}
+
+document.getElementById("height").addEventListener("input", updateStatus);
+document.getElementById("weight").addEventListener("input", updateStatus);
+document
+  .getElementById("bloodPressure")
+  .addEventListener("input", updateStatus);
+document.getElementById("temperature").addEventListener("input", updateStatus);
+document.getElementById("pulseRate").addEventListener("input", updateStatus);
+document
+  .getElementById("respiratoryRate")
+  .addEventListener("input", updateStatus);
 
 function computeBMI() {
   const height = document.getElementById("height").value;
@@ -720,6 +651,28 @@ function computeBMI() {
 
 document.getElementById("height").addEventListener("input", computeBMI);
 document.getElementById("weight").addEventListener("input", computeBMI);
+
+function getCheckedConditions(category) {
+  const conditions = [];
+  document
+    .querySelectorAll(`#${category} input[type="checkbox"]:checked`)
+    .forEach((checkbox) => {
+      if (checkbox.id !== "n/a") {
+        conditions.push(checkbox.labels[0].textContent.trim());
+      }
+    });
+  return conditions.join(", ") || "None";
+}
+
+function getVaccineType() {
+  const vaccineTypes = [];
+  if (document.getElementById("pfizer").checked) vaccineTypes.push("Pfizer");
+  if (document.getElementById("moderna").checked) vaccineTypes.push("Moderna");
+  if (document.getElementById("astrazeneca").checked)
+    vaccineTypes.push("AstraZeneca");
+  if (document.getElementById("sinovac").checked) vaccineTypes.push("Sinovac");
+  return vaccineTypes.join(", ") || "None";
+}
 
 function submitForm() {
   const patientId = document.getElementById("patientId").textContent;
@@ -756,6 +709,33 @@ function submitForm() {
     return;
   }
 
+  computeBMI();
+
+  const bmi = document.getElementById("bmi").textContent;
+  const bmiStatus = document.getElementById("bmiStatus").textContent;
+
+  const bloodPressureStatus = getBloodPressureStatus(bloodPressure);
+  const temperatureStatus = getTemperatureStatus(temperature);
+  const pulseRateStatus = getPulseRateStatus(pulseRate);
+  const respiratoryRateStatus = getRespiratoryRateStatus(respiratoryRate);
+
+  document.getElementById(
+    "bloodPressureStatus"
+  ).textContent = `Blood Pressure Status: ${bloodPressureStatus}`;
+  document.getElementById(
+    "temperatureStatus"
+  ).textContent = `Temperature Status: ${temperatureStatus}`;
+  document.getElementById(
+    "pulseRateStatus"
+  ).textContent = `Pulse Rate Status: ${pulseRateStatus}`;
+  document.getElementById(
+    "respiratoryRateStatus"
+  ).textContent = `Respiratory Rate Status: ${respiratoryRateStatus}`;
+  document.getElementById("bmiStatus").textContent = `BMI Status: ${bmiStatus}`;
+
+  // Get the selected specialty
+  const specialty = document.getElementById("specialty").value;
+
   const formId = `${patientId}-${new Date().getTime()}`;
 
   const formData = {
@@ -775,7 +755,13 @@ function submitForm() {
     vaccineType,
     boosterDose,
     boosterDate,
-    bmi: document.getElementById("bmi").textContent,
+    bmi,
+    bmiStatus,
+    bloodPressureStatus,
+    temperatureStatus,
+    pulseRateStatus,
+    respiratoryRateStatus,
+    specialty,
     formId,
     timestamp: new Date().toISOString(),
   };
@@ -793,23 +779,36 @@ function submitForm() {
     });
 }
 
-function getCheckedConditions(prefix) {
-  const conditions = [];
-  const checkboxes = document.querySelectorAll(
-    `#${prefix} input[type="checkbox"]:checked`
-  );
-  checkboxes.forEach((checkbox) => {
-    conditions.push(checkbox.id);
-  });
-  return conditions.join(", ");
+function getBloodPressureStatus(bloodPressure) {
+  if (!bloodPressure) return "Unknown";
+  const [systolic, diastolic] = bloodPressure.split("/").map(Number);
+  if (systolic && diastolic) {
+    if (systolic < 90 || diastolic < 60) return "Low";
+    if (systolic < 120 && diastolic < 80) return "Normal";
+    if (systolic < 130 && diastolic < 80) return "Elevated";
+    if (systolic >= 130 || diastolic >= 80) return "High";
+  }
+  return "Unknown";
 }
 
-function getVaccineType() {
-  let vaccineType = "";
-  if (document.getElementById("pfizer").checked) vaccineType += "Pfizer, ";
-  if (document.getElementById("moderna").checked) vaccineType += "Moderna, ";
-  if (document.getElementById("astrazeneca").checked)
-    vaccineType += "AstraZeneca, ";
-  if (document.getElementById("sinovac").checked) vaccineType += "Sinovac, ";
-  return vaccineType ? vaccineType.slice(0, -2) : "N/A";
+function getTemperatureStatus(temperature) {
+  if (!temperature) return "Unknown";
+  if (parseFloat(temperature) < 36.5) return "Low";
+  if (parseFloat(temperature) >= 36.5 && parseFloat(temperature) <= 37.5)
+    return "Normal";
+  return "High";
+}
+
+function getPulseRateStatus(pulseRate) {
+  if (!pulseRate) return "Unknown";
+  if (pulseRate < 60) return "Low";
+  if (pulseRate >= 60 && pulseRate <= 100) return "Normal";
+  return "High";
+}
+
+function getRespiratoryRateStatus(respiratoryRate) {
+  if (!respiratoryRate) return "Unknown";
+  if (respiratoryRate < 12) return "Low";
+  if (respiratoryRate >= 12 && respiratoryRate <= 20) return "Normal";
+  return "High";
 }
