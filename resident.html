@@ -67,31 +67,39 @@
 <!-- Main Content Area -->
 <div class="content">
     <!-- Personal Information Section -->
-    <div id="personalInfoSection" class="content-section">
+    <div id="personalInfoSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Resident Information</h1>
         <form id="patientForm">
-            <div class="mb-3">
-                <label for="patientID" class="form-label">Enter Patient ID</label>
-                <input type="text" class="form-control" id="patientID" placeholder="Enter Patient ID">
+            <div id="fetchFormContainer" style="display: none;">
+                <div class="mb-3">
+                    <label for="patientID" class="form-label">Enter Resident ID</label>
+                    <input type="text" class="form-control" id="patientID" placeholder="Enter Patient ID">
+                </div>
+                <button type="button" class="btn btn-primary" id="fetchDataBtn" onclick="fetchPatientData()">Fetch Patient Data</button>
             </div>
-            <button type="button" class="btn btn-primary" id="fetchDataBtn" onclick="fetchPatientData()">Fetch Patient Data</button>
-        </form>
+            
 
         <hr>
 
-        <!-- Resident Data -->
-        <div id="residentData" style="display:none;">
-            <h3>Personal Information</h3>
-            <p><strong>Name:</strong> <span id="name"></span></p>
-            <p><strong>Age:</strong> <span id="age"></span></p>
-            <p><strong>Birthdate:</strong> <span id="birthdate"></span></p>
-            <p><strong>Address:</strong> <span id="address"></span></p>
-            <p><strong>Mobile Number:</strong> <span id="mobileNumber"></span></p>
-            <p><strong>Civil Status:</strong> <span id="civilStatus"></span></p>
-            <p><strong>Sex:</strong> <span id="sex"></span></p>
-            <p><strong>Status:</strong> <span id="status"></span></p>
-        </div>
+       <!-- Resident Data -->
+<div id="residentData" style="display:none;">
+    <h3>Personal Information</h3>
+    <div class="d-flex align-items-center mb-4">
+        <img id="profilePicture" src="" alt="Resident Profile Picture" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover; margin-right: 20px;">
+        <h3 id="residentName"></h3>
     </div>
+    <h4>Personal Information</h4>
+    <p><strong>Age:</strong> <span id="age"></span></p>
+    <p><strong>Birthdate:</strong> <span id="birthdate"></span></p>
+    <p><strong>Address:</strong> <span id="address"></span></p>
+    <p><strong>Mobile Number:</strong> <span id="mobileNumber"></span></p>
+    <p><strong>Email:</strong> <span id="email"></span></p>
+    <p><strong>Sex:</strong> <span id="sex"></span></p>
+    <p><strong>Blood Type:</strong> <span id="bloodType"></span></p>
+    <p><strong>Religion:</strong> <span id="religion"></span></p>
+    <p><strong>Civil Status:</strong> <span id="civilStatus"></span></p>
+</div>
+
 
     <!-- Medical History Section -->
     <div id="medicalHistorySection" class="content-section" style="display:none;">
@@ -156,5 +164,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 <script src="resident.js"></script>
 
+  
 </body>
 </html>

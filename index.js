@@ -34,43 +34,40 @@ function openResidentCheckModal() {
 }
 
 async function loginResident() {
-  const patientID = document.getElementById("residentID").value.trim();
-  const birthday = document.getElementById("residentBirthday").value.trim();
+  const residentID = document.getElementById("residentID").value.trim();
+  const birthdate = document.getElementById("residentBirthday").value.trim();
 
-  if (!patientID || !birthday) {
+  if (!residentID || !birthdate) {
     swal("Error", "Please fill in all required fields.", "error");
     return;
   }
 
   try {
-    const snapshot = await db
-      .ref("6-Health-PatientID")
-      .child(patientID)
-      .once("value");
-
+    const snapshot = await db.ref("Residents/" + residentID).once("value");
     if (snapshot.exists()) {
-      const userData = snapshot.val();
-      const storedBirthday = userData.birthdate;
+      const residentData = snapshot.val();
 
-      if (birthday === storedBirthday) {
-        swal("Success", "Resident login successful!", "success").then(() => {
-          window.location.href = "resident.html";
+      // Validate birthdate
+      if (residentData.birthdate === birthdate) {
+        // Save residentID in localStorage
+        localStorage.setItem("residentID", residentID); // Save the resident ID after successful login
+
+
+        swal("Success", "Login successful!", "success").then(() => {
+          window.location.href = "resident.html"; // Redirect to resident page
         });
       } else {
-        swal("Error", "Incorrect birthday. Please try again.", "error");
+        swal("Error", "Incorrect birthdate.", "error");
       }
     } else {
-      swal(
-        "Error",
-        "Resident not found. Please check your PatientID.",
-        "error"
-      );
+      swal("Error", "Resident ID not found.", "error");
     }
   } catch (error) {
-    console.error("Error logging in resident:", error);
-    swal("Error", "Error logging in. Please try again.", "error");
+    console.error("Error during login:", error);
+    swal("Error", "Login failed. Please try again later.", "error");
   }
 }
+
 
 async function checkUsernameExists(username) {
   const snapshot = await db
