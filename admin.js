@@ -158,11 +158,11 @@ function generateCalendarDays() {
   for (let day = 1; day <= daysInMonth; day++) {
     const dayElement = document.createElement("div");
     dayElement.classList.add("calendar-day");
+    const formattedDate = `${String(month + 1).padStart(2, "0")}/${String(
+      day
+    ).padStart(2, "0")}/${year}`;
     dayElement.innerText = day;
-    dayElement.dataset.date = `${year}-${String(month + 1).padStart(
-      2,
-      "0"
-    )}-${String(day).padStart(2, "0")}`;
+    dayElement.dataset.date = formattedDate;
 
     dayElement.addEventListener("click", () => {
       document
@@ -230,7 +230,65 @@ document.addEventListener("DOMContentLoaded", () => {
   populateYearDropdown();
   updateMonthYearDisplay();
   generateCalendarDays();
+
+  const today = new Date();
+  const formattedDate = today.toISOString().split("T")[0];
+  document.getElementById("appointmentDatePicker").value = formattedDate;
+
+  fetchAppointmentsByDate();
 });
+
+document
+  .getElementById("appointmentDatePicker")
+  .addEventListener("change", fetchAppointmentsByDate);
+
+function fetchAppointmentsByDate() {
+  let selectedDate = document.getElementById("appointmentDatePicker").value;
+
+  if (!selectedDate) {
+    alert("Please select a date.");
+    return;
+  }
+
+  const [year, month, day] = selectedDate.split("-");
+  selectedDate = `${month}/${day}/${year}`;
+
+  const appointmentsRef = db.ref("6-Health-Appointments");
+
+  appointmentsRef
+    .once("value")
+    .then((snapshot) => {
+      const appointments = [];
+
+      snapshot.forEach((childSnapshot) => {
+        const appointment = childSnapshot.val();
+        if (appointment.appointmentDate === selectedDate) {
+          appointments.push(appointment);
+        }
+      });
+
+      updateAppointmentDashboard(appointments);
+    })
+    .catch((error) => {
+      console.error("Error fetching appointments:", error);
+    });
+}
+
+function updateAppointmentDashboard(appointments) {
+  const total = appointments.length;
+  const pending = appointments.filter((app) => app.status === "PENDING").length;
+  const completed = appointments.filter(
+    (app) => app.status === "COMPLETED"
+  ).length;
+  const canceled = appointments.filter(
+    (app) => app.status === "CANCELED"
+  ).length;
+
+  document.getElementById("totalAppointments").textContent = total;
+  document.getElementById("pendingAppointments").textContent = pending;
+  document.getElementById("completedAppointments").textContent = completed;
+  document.getElementById("canceledAppointments").textContent = canceled;
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   fetchWorkers();
@@ -464,46 +522,6 @@ function fetchRequests() {
       row.innerHTML = "<td colspan='6'>Error loading requests.</td>";
       requestListBody.appendChild(row);
     });
-}
-
-function fetchAppointmentsByDate() {
-  const selectedDate = document.getElementById("appointmentDatePicker").value;
-  if (!selectedDate) {
-    alert("Please select a date.");
-    return;
-  }
-
-  db.ref("5-Health-Appointments")
-    .orderByChild("appointmentDate")
-    .equalTo(selectedDate)
-    .once("value")
-    .then((snapshot) => {
-      const appointments = [];
-      snapshot.forEach((childSnapshot) => {
-        appointments.push(childSnapshot.val());
-      });
-
-      updateAppointmentDashboard(appointments);
-    })
-    .catch((error) => {
-      console.error("Error fetching appointments:", error);
-    });
-}
-
-function updateAppointmentDashboard(appointments) {
-  const total = appointments.length;
-  const pending = appointments.filter((app) => app.status === "PENDING").length;
-  const completed = appointments.filter(
-    (app) => app.status === "COMPLETED"
-  ).length;
-  const canceled = appointments.filter(
-    (app) => app.status === "CANCELED"
-  ).length;
-
-  document.getElementById("totalAppointments").textContent = total;
-  document.getElementById("pendingAppointments").textContent = pending;
-  document.getElementById("completedAppointments").textContent = completed;
-  document.getElementById("canceledAppointments").textContent = canceled;
 }
 
 function showRequestTab(tabId) {

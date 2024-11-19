@@ -49,7 +49,7 @@ body {
 
 /* Custom Button Styles */
 button {
-    background-color: #0c77aB;
+    background-color: #0c77a8;
     border: none;
     color: white;
     padding: 10px 15px;
@@ -58,7 +58,7 @@ button {
 }
 
 button:hover {
-    background-color: #003d80;
+    background-color: #3abae3;
     cursor: pointer;
 }
 
@@ -673,7 +673,7 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 button {
-    background-color: #007bff;
+    background-color: #0c77a8;
     color: white;
     border: none;
     padding: 10px 15px;
@@ -686,7 +686,7 @@ button {
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #3abae3;
 }
 
 button:disabled {

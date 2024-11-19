@@ -93,12 +93,12 @@
     <div id="dashboardSection" class="content-section">
         <h1 class="mt-5">Appointment Dashboard</h1>
         
-        <div class="row mb-4 align-items-end">
+        <div class="row mb-4 right">
             <div class="col-md-3 offset-md-4">
                 <input type="date" id="appointmentDatePicker" class="form-control">
             </div>
             <div class="col-md-1">
-                <button class="btn btn-primary" onclick="fetchAppointmentsByDate()">Update</button>
+                <button class="btn-primary" onclick="fetchAppointmentsByDate()">Update</button>
             </div>
         </div>
 
@@ -175,8 +175,8 @@
             </tbody>
         </table>
     
-        <button onclick="updatePatientStatus('verified')">Verify Selected</button>
-        <button onclick="updatePatientStatus('canceled')">Cancel Selected</button>
+        <button class="btn-primary" onclick="updatePatientStatus('verified')">Verify Selected</button>
+        <button class="btn-primary" onclick="updatePatientStatus('canceled')">Cancel Selected</button>
     
         <h1 class="mt-5">Patient List - Verified</h1>
         <table>
@@ -265,7 +265,7 @@
         <div>
             <label for="patientIdInput">Enter Patient ID:</label>
             <input type="text" style="width: 20%;" id="patientIdInput" placeholder="Patient ID" />
-            <button onclick="fetchPatientData()">Fetch Patient Data</button>
+            <button class="btn-primary" onclick="fetchPatientData()">Fetch Patient Data</button>
         </div>
     
         <div id="patientDataSection" style="display: none;">
@@ -501,7 +501,7 @@
                         </div>
                     </div>
         
-                    <button type="submit" class="btn btn-primary mt-3">Add Stock</button>
+                    <button type="submit" class="btn-primary mt-3">Add Stock</button>
                 </form>
 
                     <h3 class="mt-5">Current Inventory</h3>
@@ -682,7 +682,7 @@
             </div>
 
             <div class="col-12 mb-3">
-            <button type="submit" class="btn btn-primary">Update Credentials</button>
+            <button type="submit" class="btn-primary">Update Credentials</button>
             </div>
         </form>
 
