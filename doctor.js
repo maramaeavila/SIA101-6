@@ -57,8 +57,6 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
       document.getElementById("VaccineSection").style.display = "block";
     } else if (sectionName === "Reports") {
       document.getElementById("reportSection").style.display = "block";
-    } else if (sectionName === "Change Account") {
-      document.getElementById("changeAccountSection").style.display = "block";
     }
   });
 });
@@ -284,66 +282,3 @@ function updateAppointmentDashboard(appointments) {
   document.getElementById("completedAppointments").textContent = completed;
   document.getElementById("canceledAppointments").textContent = canceled;
 }
-
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("changeAccountForm");
-  const errorMessage = document.getElementById("errorMessage");
-
-  form.addEventListener("submit", async function (event) {
-    event.preventDefault();
-
-    const currentUsername = document
-      .getElementById("currentUsername")
-      .value.trim();
-    const currentPassword = document
-      .getElementById("currentPassword")
-      .value.trim();
-    const newUsername = document.getElementById("newUsername").value.trim();
-    const newPassword = document.getElementById("newPassword").value.trim();
-
-    if (!currentUsername || !currentPassword || !newUsername || !newPassword) {
-      swal("Error", "Please fill in all fields.", "error");
-      return;
-    }
-
-    const hashedCurrentPassword = CryptoJS.MD5(currentPassword).toString();
-
-    try {
-      const snapshot = await firebase
-        .database()
-        .ref("6-Users")
-        .orderByChild("username")
-        .equalTo(currentUsername)
-        .once("value");
-
-      if (snapshot.exists()) {
-        const userData = snapshot.val();
-        const userKey = Object.keys(userData)[0];
-        const storedHashedPassword = userData[userKey].password;
-
-        if (hashedCurrentPassword === storedHashedPassword) {
-          const hashedNewPassword = CryptoJS.MD5(newPassword).toString();
-
-          await firebase.database().ref(`6-Users/${userKey}`).update({
-            username: newUsername,
-            password: hashedNewPassword,
-          });
-
-          swal(
-            "Success",
-            "Your account information has been updated!",
-            "success"
-          );
-          document.getElementById("changeAccountForm").reset();
-        } else {
-          swal("Error", "Incorrect current password.", "error");
-        }
-      } else {
-        swal("Error", "User not found. Please check your username.", "error");
-      }
-    } catch (error) {
-      console.error("Error updating user data:", error);
-      swal("Error", "Error updating account. Please try again.", "error");
-    }
-  });
-});

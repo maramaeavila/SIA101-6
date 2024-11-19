@@ -683,6 +683,7 @@ function submitForm() {
   const pulseRate = document.getElementById("pulseRate").value;
   const respiratoryRate = document.getElementById("respiratoryRate").value;
   const chiefComplaint = document.getElementById("chiefComplaint").value;
+  const specialty = document.getElementById("specialty").value;
 
   const allergies = document.getElementById("hasAllergies").checked
     ? document.getElementById("allergiesDetails").value || "None"
@@ -732,9 +733,6 @@ function submitForm() {
     "respiratoryRateStatus"
   ).textContent = `Respiratory Rate Status: ${respiratoryRateStatus}`;
   document.getElementById("bmiStatus").textContent = `BMI Status: ${bmiStatus}`;
-
-  // Get the selected specialty
-  const specialty = document.getElementById("specialty").value;
 
   const formId = `${patientId}-${new Date().getTime()}`;
 
