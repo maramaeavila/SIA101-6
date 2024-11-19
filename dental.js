@@ -51,14 +51,10 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
       fetchPatients();
     } else if (sectionName === "Appointment") {
       document.getElementById("appointmentSection").style.display = "block";
-    } else if (sectionName === "Prenatal Care") {
-      document.getElementById("PreNatalSection").style.display = "block";
-    } else if (sectionName === "Family Planning") {
-      document.getElementById("FamilyPlanSection").style.display = "block";
+    } else if (sectionName === "Consultation") {
+      document.getElementById("ConsultationSection").style.display = "block";
     } else if (sectionName === "Reports") {
       document.getElementById("reportSection").style.display = "block";
-    } else if (sectionName === "Change Account") {
-      document.getElementById("changeAccountSection").style.display = "block";
     }
   });
 });
@@ -78,16 +74,16 @@ function fetchPatients() {
             const row = document.createElement("tr");
 
             row.innerHTML = `
-              <td>${childSnapshot.key}</td>
-              <td>${patient.name}</td>
-              <td>${patient.age}</td>
-              <td>${patient.sex}</td>
-              <td>${patient.address}</td>
-              <td>${patient.mobileNumber}</td>
-              <td>${patient.civilStatus}</td>
-              <td>${patient.birthdate}</td>
-              <td>${patient.status}</td>
-            `;
+                <td>${childSnapshot.key}</td>
+                <td>${patient.name}</td>
+                <td>${patient.age}</td>
+                <td>${patient.sex}</td>
+                <td>${patient.address}</td>
+                <td>${patient.mobileNumber}</td>
+                <td>${patient.civilStatus}</td>
+                <td>${patient.birthdate}</td>
+                <td>${patient.status}</td>
+              `;
 
             patientListBody.appendChild(row);
           }
