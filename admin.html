@@ -20,11 +20,8 @@
 <!-- Sidebar -->
 <div class="sidebar">
     <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
-    <div class="text-center mb-3">
-        <a class="navbar-brand" href="#"> 
-            <i class="fa-solid fa-user" style="font-size: 80px; color: white; margin: 15%;"></i>
-        </a>
-    </div>
+    <div class="text-center mb-3" id="profileImageContainer">
+      </div>
     <ul class="navbar-nav flex-column">
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
@@ -86,9 +83,9 @@
             <div class="col-md-3 offset-md-4">
                 <input type="date" id="appointmentDatePicker" class="form-control">
             </div>
-            <div class="col-md-1">
+            <!-- <div class="col-md-1">
                 <button class="btn-primary" onclick="fetchAppointmentsByDate()">Update</button>
-            </div>
+            </div> -->
         </div>
 
         <div class="row">

@@ -28,6 +28,19 @@ function logoutUser() {
     });
 }
 
+function displayLoggedInUserProfile() {
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  if (loggedInUser && loggedInUser.profileUrl) {
+    const profileImage = `<img src="${loggedInUser.profileUrl}" alt="Profile Image" style="width: 120px; height: 120px; border-radius: 50%;margin:20px;">`;
+    document.getElementById("profileImageContainer").innerHTML = profileImage;
+  } else {
+    const defaultIcon = `<i class="fa-solid fa-user" style="font-size: 80px; color: white; margin: 15%;"></i>`;
+    document.getElementById("profileImageContainer").innerHTML = defaultIcon;
+  }
+}
+
+window.onload = displayLoggedInUserProfile;
+
 document.getElementById("logoutBtn").addEventListener("click", logoutUser);
 
 document.addEventListener("DOMContentLoaded", function () {

@@ -28,6 +28,19 @@ function logoutUser() {
     });
 }
 
+function displayLoggedInUserProfile() {
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  if (loggedInUser && loggedInUser.profileUrl) {
+    const profileImage = `<img src="${loggedInUser.profileUrl}" alt="Profile Image" style="width: 120px; height: 120px; border-radius: 50%;margin:20px;">`;
+    document.getElementById("profileImageContainer").innerHTML = profileImage;
+  } else {
+    const defaultIcon = `<i class="fa-solid fa-user" style="font-size: 80px; color: white; margin: 15%;"></i>`;
+    document.getElementById("profileImageContainer").innerHTML = defaultIcon;
+  }
+}
+
+window.onload = displayLoggedInUserProfile;
+
 function toggleSidebar() {
   const sidebar = document.querySelector(".sidebar");
   sidebar.classList.toggle("active");
@@ -58,7 +71,7 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
       document.getElementById("appointmentSection").style.display = "block";
     } else if (sectionName === "Healthcare Workers") {
       document.getElementById("healthcareSection").style.display = "block";
-      fetchWorkers();
+      fetchHealthDepartmentEmployees();
     } else if (sectionName === "Medicine") {
       document.getElementById("medicineSection").style.display = "block";
       fetchInventory();

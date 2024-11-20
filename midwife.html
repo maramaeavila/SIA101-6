@@ -19,10 +19,7 @@
 
 <!-- Sidebar -->
 <div class="sidebar">
-    <div class="text-center mb-3">
-        <a class="navbar-brand" href="#">
-            <i class="fa-solid fa-user" style="font-size: 80px; color: white; margin: 15%;"></i>
-        </a>
+    <div class="text-center mb-3" id="profileImageContainer">
     </div>
     <ul class="navbar-nav flex-column">
         <li class="nav-item">
@@ -45,7 +42,7 @@
         </li>
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
-                <i class="fa-solid fa-heart-circle mr-2"></i>
+                <i class="fa-solid fa-heart"></i>
                 Prenatal Care
             </a>
         </li>
@@ -79,9 +76,9 @@
             <div class="col-md-3 offset-md-4">
                 <input type="date" id="appointmentDatePicker" class="form-control">
             </div>
-            <div class="col-md-1">
+            <!-- <div class="col-md-1">
                 <button class="btn-primary" onclick="fetchAppointmentsByDate()">Update</button>
-            </div>
+            </div> -->
         </div>
 
         <div class="row">
@@ -140,22 +137,39 @@
         <h1 class="mt-5">Patient List</h1>
         <table>
             <thead>
-              <tr>
-                <th>Patient ID</th>
-                <th>Name</th>
-                <th>Age</th>
-                <th>Sex</th>
-                <th>Address</th>
-                <th>Mobile Number</th>
-                <th>Civil Status</th>
-                <th>Birthdate</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="patientList">
-              <!-- Patient rows will be inserted here -->
-            </tbody>
-          </table>
+                <tr>
+                  <th>Patient ID</th>
+                  <th>Form ID</th>
+                  <th>Allergies</th>
+                  <th>Appointment Type</th>
+                  <th>Blood Pressure</th>
+                  <th>Blood Pressure Status</th>
+                  <th>BMI</th>
+                  <th>BMI Status</th>
+                  <th>Booster Dose</th>
+                  <th>Booster Date</th>
+                  <th>Chief Complaint</th>
+                  <th>Family History</th>
+                  <th>Height (cm)</th>
+                  <th>Weight (kg)</th>
+                  <th>Medications</th>
+                  <th>Past Medical History</th>
+                  <th>Pulse Rate</th>
+                  <th>Pulse Rate Status</th>
+                  <th>Respiratory Rate</th>
+                  <th>Respiratory Rate Status</th>
+                  <th>Specialty</th>
+                  <th>Temperature (°C)</th>
+                  <th>Temperature Status</th>
+                  <th>Vaccinated</th>
+                  <th>Vaccine Type</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+              </tbody>
+            </table>
     </div>
 
     <div id="appointmentSection" class="content-section" style="display: none;">
