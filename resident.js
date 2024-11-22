@@ -29,82 +29,38 @@ function logoutUser() {
 
 document.getElementById("logoutBtn").addEventListener("click", logoutUser);
 
-// document.getElementById("fetchDataBtn").addEventListener("click", function () {
-//   var patientID = document.getElementById("patientID").value;
-
-//   if (patientID) {
-//     fetchPatientData(patientID);
-//   } else {
-//     alert("Please enter a Patient ID.");
-//   }
+// document.addEventListener("DOMContentLoaded", function () {
+//   document.getElementById("personalInfoSection").style.display = "block";
 // });
 
-// function fetchPatientData(patientID) {
-//   var patientRef = db.ref("5-Health-PatientID/" + patientID);
+document.querySelectorAll(".nav-item a").forEach((link) => {
+  link.addEventListener("click", function (event) {
+    event.preventDefault();
 
-//   patientRef
-//     .get()
-//     .then((snapshot) => {
-//       if (snapshot.exists()) {
-//         const patientData = snapshot.val();
+    document.querySelectorAll(".content-section").forEach((section) => {
+      section.style.display = "none";
+    });
 
-//         document.getElementById("name").textContent = patientData.name;
-//         document.getElementById("age").textContent = patientData.age;
-//         document.getElementById("birthdate").textContent =
-//           patientData.birthdate;
-//         document.getElementById("address").textContent = patientData.address;
-//         document.getElementById("mobileNumber").textContent =
-//           patientData.mobileNumber;
-//         document.getElementById("civilStatus").textContent =
-//           patientData.civilStatus;
-//         document.getElementById("sex").textContent = patientData.sex;
-//         document.getElementById("status").textContent = patientData.status;
+    const sectionName = link.textContent.trim();
 
-//         document.getElementById("residentData").style.display = "block";
-//         document.getElementById("patientIDHidden").value = patientID;
-//       } else {
-//         alert("No data found for this Patient ID.");
-//       }
-//     })
-//     .catch((error) => {
-//       console.error("Error fetching patient data:", error);
-//       alert("Failed to fetch patient data.");
-//     });
-// }
+    if (sectionName === "Personal Information") {
+      document.getElementById("personalInfoSection").style.display = "block";
+      fetchResidentData(residentID);
+      // } else if (sectionName === "Medical History") {
+      //   document.getElementById("medicalHistorySection").style.display = "block";
+    } else if (sectionName === "Precheckup History") {
+      document.getElementById("precheckupSection").style.display = "block";
+      fetchPrecheckupDetails(residentID);
+      // } else if (sectionName === "Medicine") {
+      //   document.getElementById("medicineSection").style.display = "block";
+    } else if (sectionName === "Logout") {
+      logoutUser();
+    } else {
+      console.error("No matching section found for:", sectionName);
+    }
+  });
+});
 
-// document
-//   .getElementById("healthForm")
-//   .addEventListener("submit", function (event) {
-//     event.preventDefault();
-
-//     var patientID = document.getElementById("patientIDHidden").value;
-//     var healthCondition = document.getElementById("healthCondition").value;
-//     var precheckupNotes = document.getElementById("precheckupNotes").value;
-
-//     if (!healthCondition || !precheckupNotes) {
-//       alert("Please fill in all fields.");
-//       return;
-//     }
-
-//     var healthData = {
-//       healthCondition: healthCondition,
-//       precheckupNotes: precheckupNotes,
-//       timestamp: new Date().toISOString(),
-//     };
-
-//     db.ref("5-Health-Precheckup/" + patientID)
-//       .push(healthData)
-//       .then(() => {
-//         alert("Information saved successfully.");
-//         document.getElementById("healthForm").reset();
-//       })
-//       .catch((error) => {
-//         console.error("Error saving data:", error);
-//         alert("Failed to save data.");
-//       });
-//   });
-
-// Function to handle showing and hiding the sections dynamically
 function showSection(sectionId) {
   document.querySelectorAll(".content-section").forEach((section) => {
     section.style.display = "none";
@@ -180,33 +136,60 @@ function fetchResidentData(residentID) {
     });
 }
 
-document.querySelectorAll(".nav-item a").forEach((link) => {
-  link.addEventListener("click", function (event) {
-    event.preventDefault();
+function fetchPrecheckupDetails(residentID) {
+  const precheckupRef = db.ref("6-Health-FormData/");
 
-    document.querySelectorAll(".content-section").forEach((section) => {
-      section.style.display = "none";
+  precheckupRef
+    .get()
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+
+        const residentData = Object.keys(data).filter((key) =>
+          key.startsWith(residentID)
+        );
+
+        if (residentData.length === 0) {
+          swal(
+            "Error",
+            "No precheckup data found for this Resident ID.",
+            "error"
+          );
+          return;
+        }
+
+        const tableBody = document.getElementById("precheckupListData");
+        tableBody.innerHTML = "";
+
+        residentData.forEach((formID) => {
+          const formData = data[formID];
+          const row = document.createElement("tr");
+
+          const formIDCell = document.createElement("td");
+          formIDCell.textContent = formID;
+          row.appendChild(formIDCell);
+
+          const complaintCell = document.createElement("td");
+          complaintCell.textContent = formData.chiefComplaint || "N/A";
+          row.appendChild(complaintCell);
+
+          tableBody.appendChild(row);
+        });
+
+        document.getElementById("precheckupSection").style.display = "block";
+      } else {
+        swal("Error", "No precheckup data found in the database.", "error");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching precheckup details:", error);
+      swal(
+        "Error",
+        "Failed to fetch precheckup data. Please try again.",
+        "error"
+      );
     });
-
-    const sectionId =
-      link.textContent.trim().toLowerCase().replace(/\s+/g, "") + "Section";
-    const sectionElement = document.getElementById(sectionId);
-
-    if (sectionElement) {
-      sectionElement.style.display = "block";
-    } else {
-      console.log("Section not found:", sectionId);
-    }
-
-    if (link.textContent.trim() === "Personal Information") {
-      fetchPatientData();
-    } else if (link.textContent.trim() === "Records") {
-      fetchPatientRecords();
-    } else if (link.textContent.trim() === "Medicine") {
-      fetchMedicineData();
-    }
-  });
-});
+}
 
 function fetchPatientData() {
   console.log("Fetching personal information...");
@@ -271,4 +254,78 @@ if (residentID) {
       swal("Error", "Failed to fetch resident data.", "error");
     });
 } else {
+}
+
+document
+  .getElementById("precheckupListData")
+  .addEventListener("click", (event) => {
+    const clickedRow = event.target.closest("tr");
+    if (!clickedRow) return;
+
+    const formID = clickedRow.cells[0].textContent;
+    fetchPrecheckupFormDetails(formID);
+  });
+
+function fetchPrecheckupFormDetails(formID) {
+  const formRef = db.ref("6-Health-FormData/" + formID);
+
+  formRef
+    .get()
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        const formData = snapshot.val();
+
+        document.getElementById("height").value = formData.height || "N/A";
+        document.getElementById("weight").value = formData.weight || "N/A";
+        document.getElementById("bloodPressure").value =
+          formData.bloodPressure || "N/A";
+        document.getElementById("bloodPressureStatus").value =
+          formData.bloodPressureStatus || "N/A";
+        document.getElementById("temperature").value =
+          formData.temperature || "N/A";
+        document.getElementById("temperatureStatus").value =
+          formData.temperatureStatus || "N/A";
+        document.getElementById("pulseRate").value =
+          formData.pulseRate || "N/A";
+        document.getElementById("pulseRateStatus").value =
+          formData.pulseRateStatus || "N/A";
+        document.getElementById("respiratoryRate").value =
+          formData.respiratoryRate || "N/A";
+        document.getElementById("allergies").value =
+          formData.allergies || "N/A";
+        document.getElementById("currentMedications").value =
+          formData.currentMedications || "N/A";
+        document.getElementById("currentMedications").value =
+          formData.currentMedications || "N/A";
+        document.getElementById("pastMedicalHistory").value =
+          formData.pastMedicalHistory || "N/A";
+        document.getElementById("familyHistory").value =
+          formData.familyHistory || "N/A";
+        document.getElementById("covidVaccinated").value =
+          formData.covidVaccinated ? "Yes" : "No";
+        document.getElementById("vaccineType").value =
+          formData.vaccineType || "N/A";
+        document.getElementById("boosterDose").value = formData.boosterDose
+          ? "Yes"
+          : "No";
+        document.getElementById("boosterDate").value =
+          formData.boosterDate || "N/A";
+        document.getElementById("BMI").value = formData.BMI || "N/A";
+        document.getElementById("BMIStatus").value =
+          formData.BMIStatus || "N/A";
+
+        document.getElementById("precheckupDetailsSection").style.display =
+          "block";
+
+        document.getElementById("precheckupDetailsSection").scrollIntoView({
+          behavior: "smooth",
+        });
+      } else {
+        swal("Error", "No details found for this Form ID.", "error");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching precheckup form details:", error);
+      swal("Error", "Failed to fetch form details. Please try again.", "error");
+    });
 }

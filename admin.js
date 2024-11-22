@@ -359,6 +359,11 @@ function fetchHealthDepartmentEmployees() {
           const employeeID = childSnapshot.key;
 
           const row = document.createElement("tr");
+
+          const profileImage = employee.profileUrl
+            ? `<img src="${employee.profileUrl}" alt="Profile Image" style="width: 90px; height: 90px; margin: 10px;">`
+            : `<i class="fa-solid fa-user" style="font-size: 80px; color: white; margin: 15%;"></i>`;
+
           row.innerHTML = `
             <td>${employeeID}</td>
             <td>${employee.firstName} ${employee.middleName} ${employee.lastName}</td>
@@ -367,8 +372,8 @@ function fetchHealthDepartmentEmployees() {
             <td>${employee.email}</td>
             <td>${employee.role}</td>
             <td>${employee.status}</td>
-            <td>
-              <a href="${employee.profileUrl}" target="_blank">View Profile</a>
+            <td class="text-center">
+              ${profileImage} <!-- Profile image or icon here -->
             </td>
             <td>
               <a href="${employee.resumeUrl}" target="_blank">View Resume</a>
@@ -515,17 +520,17 @@ function fetchRequests() {
           console.log("File URL:", request.fileURL);
 
           const fileColumnContent = request.fileURL
-            ? `<a href="${request.fileURL}" target="_blank">View File</a>`
+            ? `<a href="${request.fileURL}" target="_blank">File</a>`
             : "No file uploaded";
 
           row.innerHTML = `
-            <td>${request.name}</td>
-            <td>${request.email}</td>
-            <td>${request.type}</td>
-            <td>${request.description}</td>
-            <td>${fileColumnContent}</td>
-            <td>${request.status}</td>
-          `;
+                <td>${request.name}</td>
+                <td>${request.email}</td>
+                <td>${request.type}</td>
+                <td>${request.description}</td>
+                <td>${fileColumnContent}</td>
+                <td>${request.status}</td>
+              `;
           requestListBody.appendChild(row);
         });
       } else {
@@ -558,44 +563,6 @@ function showRequestTab(tabId) {
   if (tabId === "submittedRequestsTab") {
     fetchRequests();
   }
-}
-
-function fetchRequests() {
-  const requestListBody = document.getElementById("requestListBody");
-  requestListBody.innerHTML = "";
-
-  db.ref("6-SupplyRequests")
-    .once("value")
-    .then((snapshot) => {
-      swal.close();
-      if (snapshot.exists()) {
-        snapshot.forEach((childSnapshot) => {
-          const request = childSnapshot.val();
-
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${request.name}</td>
-            <td>${request.email}</td>
-            <td>${request.type}</td>
-            <td>${request.description}</td>
-            <td>${request.status}</td>
-          `;
-          requestListBody.appendChild(row);
-        });
-      } else {
-        const row = document.createElement("tr");
-        row.innerHTML = "<td colspan='5'>No requests found.</td>";
-        requestListBody.appendChild(row);
-      }
-    })
-    .catch((error) => {
-      swal.close();
-      console.error("Error fetching requests:", error);
-      const row = document.createElement("tr");
-      row.innerHTML = "<td colspan='5'>Error loading requests.</td>";
-      requestListBody.appendChild(row);
-      swal("Error", "Failed to load requests data.", "error");
-    });
 }
 
 function showMedicineTab(tabId) {

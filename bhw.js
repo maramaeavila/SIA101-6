@@ -794,3 +794,198 @@ function getRespiratoryRateStatus(respiratoryRate) {
   if (respiratoryRate >= 12 && respiratoryRate <= 20) return "Normal";
   return "High";
 }
+
+function toggleCheckboxAllergies(checkedId) {
+  const noAllergies = document.getElementById("noAllergies");
+  const hasAllergies = document.getElementById("hasAllergies");
+  const allergiesDetails = document.getElementById("allergiesDetails");
+
+  if (checkedId === "noAllergies" && noAllergies.checked) {
+    hasAllergies.disabled = true;
+    allergiesDetails.disabled = true;
+    allergiesDetails.value = "";
+  } else if (checkedId === "hasAllergies" && hasAllergies.checked) {
+    noAllergies.disabled = true;
+    allergiesDetails.disabled = false;
+  } else {
+    noAllergies.disabled = false;
+    hasAllergies.disabled = false;
+    allergiesDetails.disabled = true;
+    allergiesDetails.value = "";
+  }
+}
+
+function toggleCheckbox(checkedId) {
+  const noMedicationsCheckbox = document.getElementById("noMedications");
+  const hasMedicationsCheckbox = document.getElementById("hasMedications");
+  const medicationsDetailsInput = document.getElementById("medicationsDetails");
+
+  if (checkedId === "noMedications" && noMedicationsCheckbox.checked) {
+    hasMedicationsCheckbox.disabled = true;
+    medicationsDetailsInput.disabled = true;
+    medicationsDetailsInput.value = "";
+  } else if (checkedId === "hasMedications" && hasMedicationsCheckbox.checked) {
+    noMedicationsCheckbox.disabled = true;
+    medicationsDetailsInput.disabled = false;
+  } else {
+    noMedicationsCheckbox.disabled = false;
+    hasMedicationsCheckbox.disabled = false;
+    medicationsDetailsInput.disabled = true;
+    medicationsDetailsInput.value = "";
+  }
+}
+
+function toggleVaccinationCheckbox(checkedId) {
+  const vaccinatedYes = document.getElementById("vaccinatedYes");
+  const vaccinatedNo = document.getElementById("vaccinatedNo");
+
+  if (checkedId === "vaccinatedYes" && vaccinatedYes.checked) {
+    vaccinatedNo.disabled = true;
+  } else if (checkedId === "vaccinatedNo" && vaccinatedNo.checked) {
+    vaccinatedYes.disabled = true;
+  } else {
+    vaccinatedYes.disabled = false;
+    vaccinatedNo.disabled = false;
+  }
+}
+
+function toggleBoosterCheckbox(checkedId) {
+  const boosterYes = document.getElementById("boosterYes");
+  const boosterNo = document.getElementById("boosterNo");
+
+  if (checkedId === "boosterYes" && boosterYes.checked) {
+    boosterNo.disabled = true;
+  } else if (checkedId === "boosterNo" && boosterNo.checked) {
+    boosterYes.disabled = true;
+  } else {
+    boosterYes.disabled = false;
+    boosterNo.disabled = false;
+  }
+}
+
+function toggleVaccineCheckbox(checkedId) {
+  const pfizer = document.getElementById("pfizer");
+  const moderna = document.getElementById("moderna");
+  const astrazeneca = document.getElementById("astrazeneca");
+  const sinovac = document.getElementById("sinovac");
+
+  if (checkedId === "pfizer" && pfizer.checked) {
+    moderna.disabled = true;
+    astrazeneca.disabled = true;
+    sinovac.disabled = true;
+  } else if (checkedId === "moderna" && moderna.checked) {
+    pfizer.disabled = true;
+    astrazeneca.disabled = true;
+    sinovac.disabled = true;
+  } else if (checkedId === "astrazeneca" && astrazeneca.checked) {
+    pfizer.disabled = true;
+    moderna.disabled = true;
+    sinovac.disabled = true;
+  } else if (checkedId === "sinovac" && sinovac.checked) {
+    pfizer.disabled = true;
+    moderna.disabled = true;
+    astrazeneca.disabled = true;
+  } else {
+    pfizer.disabled = false;
+    moderna.disabled = false;
+    astrazeneca.disabled = false;
+    sinovac.disabled = false;
+  }
+}
+
+function showFormFields() {
+  const selectedComplaint = document.getElementById("chiefComplaintType").value;
+
+  document.querySelectorAll(".appointmentFields").forEach(function (form) {
+    form.style.display = "none";
+  });
+
+  if (selectedComplaint === "GC") {
+    document.getElementById("GCFields").style.display = "block";
+  } else if (selectedComplaint === "BVaccine") {
+    document.getElementById("BVaccineFields").style.display = "block";
+  } else if (selectedComplaint === "PamilyPlan") {
+    document.getElementById("PamilyPlanFields").style.display = "block";
+  } else if (selectedComplaint === "Prenatal") {
+    document.getElementById("PrenatalFields").style.display = "block";
+  } else if (selectedComplaint === "Dental") {
+    document.getElementById("DentalFields").style.display = "block";
+  }
+}
+
+function generateFormId() {
+  return Math.floor(1000 + Math.random() * 9000);
+}
+
+function BabiesSubmitForm() {
+  const formId = generateFormId();
+  const appointmentType = document.getElementById("appointmentType").value;
+  const chiefComplaint = document.getElementById("chiefComplaintType").value;
+  const specialty = document.getElementById("specialty").value;
+
+  let babyName = "";
+  let babyBirthday = "";
+  let height = "";
+  let weight = "";
+  let temperature = "";
+  let vaccines = [];
+
+  if (chiefComplaint === "BVaccine") {
+    babyName = document.getElementById("babiesName").value;
+    babyBirthday = document.getElementById("birthday").value;
+
+    height = document.getElementById("height").value || "";
+    weight = document.getElementById("weight").value || "";
+    temperature = document.getElementById("temperature").value || "";
+
+    console.log("Height:", height);
+    console.log("Weight:", weight);
+    console.log("Temperature:", temperature);
+
+    if (document.getElementById("BCG").checked) vaccines.push("BCG");
+    if (document.getElementById("HepatitisB").checked)
+      vaccines.push("Hepatitis B");
+    if (document.getElementById("Pentavalent").checked)
+      vaccines.push("Pentavalent");
+  }
+
+  console.log("Form Data:", {
+    formId: formId,
+    appointmentType: appointmentType,
+    chiefComplaint: chiefComplaint,
+    specialty: specialty,
+    babyName: babyName,
+    babyBirthday: babyBirthday,
+    height: height,
+    weight: weight,
+    temperature: temperature,
+    vaccines: vaccines,
+  });
+
+  const formData = {
+    formId: formId,
+    appointmentType: appointmentType,
+    chiefComplaint: chiefComplaint,
+    specialty: specialty,
+    babyName: babyName,
+    babyBirthday: babyBirthday,
+    height: height,
+    weight: weight,
+    temperature: temperature,
+    vaccines: vaccines,
+  };
+
+  insertIntoDatabase(formData);
+}
+
+function insertIntoDatabase(formData) {
+  const db = firebase.firestore();
+  db.collection("6-BabiesVaccine")
+    .add(formData)
+    .then((docRef) => {
+      console.log("Document written with ID: ", docRef.id);
+    })
+    .catch((error) => {
+      console.error("Error adding document: ", error);
+    });
+}

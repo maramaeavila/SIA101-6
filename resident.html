@@ -26,35 +26,29 @@
     </div>
     <ul class="navbar-nav flex-column">
         <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#" onclick="showSection('personalInfoSection')">
+            <a class="nav-link d-flex align-items-center" href="#" >
                 <i class="fa-solid fa-user mr-2"></i> 
                 Personal Information
             </a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#" onclick="showSection('medicalHistorySection')">
+        <!-- <li class="nav-item">
+            <a class="nav-link d-flex align-items-center" href="#" >
                 <i class="fa-solid fa-file-medical mr-2"></i> 
                 Medical History
             </a>
+        </li> -->
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center" href="#" >
+                <i class="fa-solid fa-notes-medical mr-2"></i>
+                Precheckup History
+            </a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#" onclick="showSection('dailyReportSection')">
-                <i class="fa-solid fa-calendar-day mr-2"></i> 
-                Daily Reports
-            </a>
-        </li> 
-        <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#" onclick="showSection('recordsSection')">
-                <i class="fa-solid fa-file-alt mr-2"></i>
-                Records
-            </a>
-        </li>     
-        <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#" onclick="showSection('medicineSection')">
+        <!-- <li class="nav-item">
+            <a class="nav-link d-flex align-items-center" href="#" >
                 <i class="fa-solid fa-pills mr-2"></i>
                 Medicine
             </a>
-        </li>    
+        </li>     -->
         <li class="nav-item">
             <a id="logoutBtn" class="nav-link d-flex align-items-center" onclick="logoutUser()">
                 <i class="fa-solid fa-user"></i>
@@ -66,94 +60,189 @@
 
 <!-- Main Content Area -->
 <div class="content">
-    <!-- Personal Information Section -->
     <div id="personalInfoSection" class="content-section" style="display: none;">
-        <h1 class="mt-5">Resident Information</h1>
-        <form id="patientForm">
-            <div id="fetchFormContainer" style="display: none;">
-                <div class="mb-3">
-                    <label for="patientID" class="form-label">Enter Resident ID</label>
-                    <input type="text" class="form-control" id="patientID" placeholder="Enter Patient ID">
+        <h1 class="mt-5 mb-4">Personal Information</h1>
+        <div id="fetchFormContainer" class="text-center my-3" style="display: none;">
+            <button type="button" class="btn btn-primary btn-lg" id="fetchDataBtn" onclick="fetchPatientData()">Fetch Resident Data</button>
+        </div>
+    
+        <div id="residentData" style="display: none;">
+            <!-- Resident Profile -->
+            <div class="card shadow-lg p-4 mb-5 bg-white rounded">
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center">
+                        <img id="profilePicture" src="" alt="Resident Profile Picture" class="rounded-circle img-fluid border" style="width: 150px; height: 150px; object-fit: cover;">
+                    </div>
+                    <div class="col-md-9">
+                        <h2 id="residentName" class="text-primary mb-3">Resident Name</h2>
+                        <p class="text-muted mb-0"><strong>Age:</strong> <span id="age"></span></p>
+                        <p class="text-muted mb-0"><strong>Birthdate:</strong> <span id="birthdate"></span></p>
+                        <p class="text-muted mb-0"><strong>Address:</strong> <span id="address"></span></p>
+                    </div>
                 </div>
-                <button type="button" class="btn btn-primary" id="fetchDataBtn" onclick="fetchPatientData()">Fetch Patient Data</button>
             </div>
-            
-
-        <hr>
-
-       <!-- Resident Data -->
-<div id="residentData" style="display:none;">
-    <h3>Personal Information</h3>
-    <div class="d-flex align-items-center mb-4">
-        <img id="profilePicture" src="" alt="Resident Profile Picture" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover; margin-right: 20px;">
-        <h3 id="residentName"></h3>
-    </div>
-    <h4>Personal Information</h4>
-    <p><strong>Age:</strong> <span id="age"></span></p>
-    <p><strong>Birthdate:</strong> <span id="birthdate"></span></p>
-    <p><strong>Address:</strong> <span id="address"></span></p>
-    <p><strong>Mobile Number:</strong> <span id="mobileNumber"></span></p>
-    <p><strong>Email:</strong> <span id="email"></span></p>
-    <p><strong>Sex:</strong> <span id="sex"></span></p>
-    <p><strong>Blood Type:</strong> <span id="bloodType"></span></p>
-    <p><strong>Religion:</strong> <span id="religion"></span></p>
-    <p><strong>Civil Status:</strong> <span id="civilStatus"></span></p>
-</div>
-
-
-    <!-- Medical History Section -->
-    <div id="medicalHistorySection" class="content-section" style="display:none;">
-        <h1 class="mt-5">Medical History</h1>
-        <h4>Diagnosis & Treatment</h4>
-        <p><strong>Diagnosis:</strong> <span id="diagnosis"></span></p>
-        <p><strong>Treatment Plan:</strong> <span id="treatmentPlan"></span></p>
-        <p><strong>Medications:</strong> <span id="medications"></span></p>
-        <hr>
-        <form id="healthForm">
-            <input type="hidden" id="patientIDHidden">
-            <div class="mb-3">
-                <label for="healthCondition" class="form-label">Health Condition</label>
-                <input type="text" class="form-control" id="healthCondition" required>
+    
+            <!-- Additional Resident Details -->
+            <div class="card shadow-sm p-3 bg-light rounded">
+                <h4 class="text-secondary mb-3">Contact & Demographics</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="text-muted"><strong>Mobile Number:</strong> <span id="mobileNumber"></span></p>
+                        <p class="text-muted"><strong>Email:</strong> <span id="email"></span></p>
+                        <p class="text-muted"><strong>Sex:</strong> <span id="sex"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="text-muted"><strong>Blood Type:</strong> <span id="bloodType"></span></p>
+                        <p class="text-muted"><strong>Religion:</strong> <span id="religion"></span></p>
+                        <p class="text-muted"><strong>Civil Status:</strong> <span id="civilStatus"></span></p>
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="precheckupNotes" class="form-label">Precheckup Notes</label>
-                <textarea class="form-control" id="precheckupNotes" rows="3" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-success">Save Information</button>
-        </form>
+        </div>
     </div>
 
-    <!-- Daily Report Section -->
-    <div id="dailyReportSection" class="content-section" style="display:none;">
-        <h1 class="mt-5">Daily Report</h1>
-        <h4>Daily Observations</h4>
-        <p><strong>Morning Report:</strong> <span id="morningReport"></span></p>
-        <p><strong>Evening Report:</strong> <span id="eveningReport"></span></p>
-        <hr>
-        <form id="dailyReportForm">
-            <div class="mb-3">
-                <label for="morningReportInput" class="form-label">Morning Report</label>
-                <textarea class="form-control" id="morningReportInput" rows="3" required></textarea>
-            </div>
-            <div class="mb-3">
-                <label for="eveningReportInput" class="form-label">Evening Report</label>
-                <textarea class="form-control" id="eveningReportInput" rows="3" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-success">Save Report</button>
-        </form>
-    </div>
 
-    <!-- Patient Records Section -->
-    <div id="recordsSection" class="content-section" style="display:none;">
-        <h1 class="mt-5">Patient Records</h1>
-        <p>This section will display patient records information.</p>
-    </div>
+        <!-- Medical History Section -->
+        <!-- <div id="medicalHistorySection" class="content-section" style="display:none;">
+            <h1 class="mt-5">Medical History</h1>
+            <h4>Diagnosis & Treatment</h4>
+            <p><strong>Diagnosis:</strong> <span id="diagnosis"></span></p>
+            <p><strong>Medications:</strong> <span id="medications"></span></p>
+            <hr>
+            <form id="healthForm">
+                <input type="hidden" id="patientIDHidden">
+                <div class="mb-3">
+                    <label for="healthCondition" class="form-label">Health Condition</label>
+                    <input type="text" class="form-control" id="healthCondition" required>
+                </div>
+                <div class="mb-3">
+                    <label for="precheckupNotes" class="form-label">Precheckup Notes</label>
+                    <textarea class="form-control" id="precheckupNotes" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Save Information</button>
+            </form>
+        </div> -->
+
+    <div id="precheckupSection" class="content-section" style="display:none;">
+        <h1 class="mt-5">Precheckup History</h1>
+        <div class="table-container">
+            <table>
+            <thead>
+                <tr>
+                <th>Form ID</th>
+                <th>Chief Complaint</th>
+                </tr>
+            </thead>
+            <tbody id="precheckupListData">
+                <!-- Data will be dynamically added here -->
+            </tbody>
+            </table>
+        </div>
+
+        <div id="precheckupDetailsSection" class="content-section" style="display: none;">
+            <h1 class="mt-5">Precheckup Details</h1>
+            <form id="precheckupDetailsForm">
+                <div class="row">
+                    <!-- Column 1 -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="height">Height</label>
+                            <input type="text" class="form-control" id="height" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="weight">Weight</label>
+                            <input type="text" class="form-control" id="weight" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="bloodPressure">Blood Pressure</label>
+                            <input type="text" class="form-control" id="bloodPressure" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="bloodPressureStatus">Blood Pressure Status</label>
+                            <input type="text" class="form-control" id="bloodPressureStatus" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="temperature">Temperature</label>
+                            <input type="text" class="form-control" id="temperature" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="temperatureStatus">Temperature Status</label>
+                            <input type="text" class="form-control" id="temperatureStatus" disabled>
+                        </div>
+                    </div>
+        
+                    <!-- Column 2 -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="pulseRate">Pulse Rate</label>
+                            <input type="text" class="form-control" id="pulseRate" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="pulseRateStatus">Pulse Rate Status</label>
+                            <input type="text" class="form-control" id="pulseRateStatus" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="respiratoryRate">Respiratory Rate</label>
+                            <input type="text" class="form-control" id="respiratoryRate" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="allergies">Allergies</label>
+                            <textarea class="form-control" id="allergies" rows="3" disabled></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="currentMedications">Current Medications</label>
+                            <textarea class="form-control" id="currentMedications" rows="3" disabled></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="pastMedicalHistory">Past Medical History</label>
+                            <textarea class="form-control" id="pastMedicalHistory" rows="3" disabled></textarea>
+                        </div>
+                    </div>
+        
+                    <!-- Column 3 -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="familyHistory">Family History</label>
+                            <textarea class="form-control" id="familyHistory" rows="3" disabled></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="covidVaccinated">COVID Vaccinated</label>
+                            <input type="text" class="form-control" id="covidVaccinated" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="vaccineType">Vaccine Type</label>
+                            <input type="text" class="form-control" id="vaccineType" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="boosterDose">Booster Dose</label>
+                            <input type="text" class="form-control" id="boosterDose" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="boosterDate">Booster Date</label>
+                            <input type="text" class="form-control" id="boosterDate" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="BMI">BMI</label>
+                            <input type="text" class="form-control" id="BMI" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="BMIStatus">BMI Status</label>
+                            <input type="text" class="form-control" id="BMIStatus" disabled>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+    </div> 
+
 
     <!-- Medicine Section -->
-    <div id="medicineSection" class="content-section" style="display:none;">
+    <!-- <div id="medicineSection" class="content-section" style="display:none;">
         <h1 class="mt-5">Medicine Section</h1>
         <p>This section will display prescribed medicines and related information.</p>
-    </div>
+    </div> -->
+
 </div>
 
 <!-- Bootstrap JS -->

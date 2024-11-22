@@ -25,31 +25,31 @@
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-house mr-2"></i> 
-                Dashboard
+                <span>Dashboard</span>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-house-medical mr-2"></i> 
-                Resident List
+                <span>Resident List</span>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-phone mr-2"></i> 
-                Appointment
+                <span>Appointment</span>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-pen-to-square mr-2"></i>
-                Form
+                <span>Form</span>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-pills mr-2"></i> 
-                Medicine
+                <span>Medicine</span>
             </a>
         </li>
         <!-- <li class="nav-item">
@@ -61,13 +61,13 @@
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-file-alt mr-2"></i> 
-                Reports
+                <span>Reports</span>
             </a>
         </li>
         <li class="nav-item">
             <a id="logoutBtn" class="nav-link d-flex align-items-center" onclick="logoutUser()">
                 <i class="fa-solid fa-user"></i>
-                Logout
+                <span>Logout</span>
             </a>
         </li>
     </ul>
@@ -218,172 +218,242 @@
             <h3>BHCMS Health Information</h3>
         
             <div class="row">
-                <!-- Column 1 -->
                 <div class="col">
                     <label for="appointmentType">Appointment Type:</label>
                     <select id="appointmentType" required>
-                        <option value="">Select Appointment Type</option>
                         <option value="Appointment">Appointment</option>
                         <option value="Walk-in">Walk-in</option>
                     </select>
-                    <br />
+                </div>
 
-                    <label for="height">Height (cm):</label>
-                    <input type="number" id="height" placeholder="Enter height" required />
-                    <br />
-        
-                    <label for="weight">Weight (kg):</label>
-                    <input type="number" id="weight" placeholder="Enter weight" required />
-                    <br />
-        
-                    <label for="bloodPressure">Blood Pressure:</label>
-                    <input type="text" id="bloodPressure" placeholder="Enter blood pressure" required />
-                    <span id="bloodPressureStatus"></span> 
-                    <br />
-        
-                    <label for="temperature">Temperature (°C):</label>
-                    <input type="text" id="temperature" placeholder="Enter temperature" required />
-                    <span id="temperatureStatus"></span> 
-                    <br />
-                    
-                    <label for="pulseRate">Pulse Rate (bpm):</label>
-                    <input type="text" id="pulseRate" placeholder="Enter pulse rate" required />
-                    <span id="pulseRateStatus"></span> 
-                    <br />
-                    
-                    <label for="respiratoryRate">Respiratory Rate (bpm):</label>
-                    <input type="text" id="respiratoryRate" placeholder="Enter respiratory rate" required />
-                    <span id="respiratoryRateStatus"></span> 
-                    <br />
-        
+                <div class="col">
                     <label for="chiefComplaint">Chief Complaint (Reason for Visit):</label>
-                    <input type="text" id="chiefComplaint" placeholder="Enter reason for visit" required />
-                    <br />
+                    <select id="chiefComplaintType" onchange="showFormFields()" required>
+                        <option value="GC">General Checkup</option>
+                        <option value="BVaccine">Babies Vaccine</option>
+                        <option value="PamilyPlan">Family Planning</option>
+                        <option value="Prenatal">Prenatal Checkup</option>
+                        <option value="Dental">Dental</option>
+                    </select>
+                </div>
 
+                <div class="col">
                     <label for="specialty">Specialty (Choose one):</label>
                     <select id="specialty" required>
-                    <option value="">Select Specialty</option>
-                    <option value="GeneralDoctor">General Doctor</option>
-                    <option value="Dental">Dental</option>
-                    <option value="Midwife">Midwife</option>
+                        <option value="GeneralDoctor">General Doctor</option>
+                        <option value="Dental">Dental</option>
+                        <option value="Midwife">Midwife</option>
                     </select>
-                    <br />
-                    <br />
-        
-                    <label for="allergies">Allergies (If any):</label>
-                    <div>
-                        <input type="checkbox" id="noAllergies" />
-                        <label for="noAllergies">None</label>
-                        <br />
-                        <input type="checkbox" id="hasAllergies" />
-                        <label for="hasAllergies">Yes, please specify:</label>
-                        <input type="text" id="allergiesDetails" placeholder="Specify allergies" />
-                    </div>
-                    <br />
-        
-                    <label for="currentMedications">Current Medications:</label>
-                    <div>
-                        <input type="checkbox" id="noMedications" />
-                        <label for="noMedications">None</label>
-                        <br />
-                        <input type="checkbox" id="hasMedications" />
-                        <label for="hasMedications">Yes, please specify:</label>
-                        <input type="text" id="medicationsDetails" placeholder="Specify medications" />
-                    </div>
-                    <br />
                 </div>
+
+                <br />
+                <br />
         
-                <!-- Column 2 -->
-                <div class="col">
-                    <label for="pastMedicalHistory">Past Medical History (Check all that apply):</label>
-                    <div>
-                        <input type="checkbox" id="n/a" />
-                        <label for="hypertension">N/A</label>
+            <div id="GCFields" class="appointmentFields" style="display: block;margin-top: 15px;">
+                <div class="row">
+                    <div class="col">
+                        <label for="height">Height (cm):</label>
+                        <input type="number" id="height" placeholder="Enter height" required />
                         <br />
-                        <input type="checkbox" id="hypertension" />
-                        <label for="hypertension">Hypertension</label>
+
+                        <label for="weight">Weight (kg):</label>
+                        <input type="number" id="weight" placeholder="Enter weight" required />
                         <br />
-                        <input type="checkbox" id="diabetes" />
-                        <label for="diabetes">Diabetes</label>
+
+                        <label for="bloodPressure">Blood Pressure:</label>
+                        <input type="text" id="bloodPressure" placeholder="Enter blood pressure" required />
+                        <span id="bloodPressureStatus"></span>
                         <br />
-                        <input type="checkbox" id="heartDisease" />
-                        <label for="heartDisease">Heart Disease</label>
+
+                        <label for="temperature">Temperature (°C):</label>
+                        <input type="text" id="temperature" placeholder="Enter temperature" required />
+                        <span id="temperatureStatus"></span>
                         <br />
-                        <input type="checkbox" id="asthma" />
-                        <label for="asthma">Asthma</label>
+
+                        <label for="pulseRate">Pulse Rate (bpm):</label>
+                        <input type="text" id="pulseRate" placeholder="Enter pulse rate" required />
+                        <span id="pulseRateStatus"></span>
                         <br />
-                        <input type="checkbox" id="tuberculosis" />
-                        <label for="tuberculosis">Tuberculosis</label>
+
+                        <label for="respiratoryRate">Respiratory Rate (bpm):</label>
+                        <input type="text" id="respiratoryRate" placeholder="Enter respiratory rate" required />
+                        <span id="respiratoryRateStatus"></span>
                         <br />
-                        <input type="checkbox" id="otherConditions" />
-                        <label for="otherConditions">Others (Please specify):</label>
-                        <input type="text" id="otherConditionsDetails" placeholder="Specify other conditions" />
+
+                        <label for="allergies">Allergies (If any):</label>
+                        <div>
+                            <input type="checkbox" id="noAllergies" onclick="toggleCheckboxAllergies('noAllergies')" />
+                            <label for="noAllergies">None</label>
+                            <br />
+                            <input type="checkbox" id="hasAllergies" onclick="toggleCheckboxAllergies('hasAllergies')" />
+                            <label for="hasAllergies">Yes, please specify:</label>
+                            <input type="text" id="allergiesDetails" placeholder="Specify allergies" />
+                        </div>
+                        <br />
+
+                        <label for="currentMedications">Current Medications:</label>
+                        <div>
+                            <input type="checkbox" id="noMedications" onclick="toggleCheckbox('noMedications')" />
+                            <label for="noMedications">None</label>
+                            <br />
+                            <input type="checkbox" id="hasMedications" onclick="toggleCheckbox('hasMedications')" />
+                            <label for="hasMedications">Yes, please specify:</label>
+                            <input type="text" id="medicationsDetails" placeholder="Specify medications" />
+                        </div>
+                        <br />
                     </div>
-                    <br />
-        
-                    <label for="familyHistory">Family History of Illnesses:</label>
-                    <div>
-                        <input type="checkbox" id="n/a" />
-                        <label for="hypertension">N/A</label>
+
+                    <div class="col">
+                        <label for="pastMedicalHistory">Past Medical History (Check all that apply):</label>
+                        <div>
+                            <input type="checkbox" id="n/a" />
+                            <label for="hypertension">N/A</label>
+                            <br />
+                            <input type="checkbox" id="hypertension" />
+                            <label for="hypertension">Hypertension</label>
+                            <br />
+                            <input type="checkbox" id="diabetes" />
+                            <label for="diabetes">Diabetes</label>
+                            <br />
+                            <input type="checkbox" id="heartDisease" />
+                            <label for="heartDisease">Heart Disease</label>
+                            <br />
+                            <input type="checkbox" id="asthma" />
+                            <label for="asthma">Asthma</label>
+                            <br />
+                            <input type="checkbox" id="tuberculosis" />
+                            <label for="tuberculosis">Tuberculosis</label>
+                            <br />
+                            <input type="checkbox" id="otherConditions" />
+                            <label for="otherConditions">Others (Please specify):</label>
+                            <input type="text" id="otherConditionsDetails" placeholder="Specify other conditions" />
+                        </div>
                         <br />
-                        <input type="checkbox" id="familyHypertension" />
-                        <label for="familyHypertension">Hypertension</label>
+
+                        <label for="familyHistory">Family History of Illnesses:</label>
+                        <div>
+                            <input type="checkbox" id="n/a" />
+                            <label for="hypertension">N/A</label>
+                            <br />
+                            <input type="checkbox" id="familyHypertension" />
+                            <label for="familyHypertension">Hypertension</label>
+                            <br />
+                            <input type="checkbox" id="familyDiabetes" />
+                            <label for="familyDiabetes">Diabetes</label>
+                            <br />
+                            <input type="checkbox" id="familyHeartDisease" />
+                            <label for="familyHeartDisease">Heart Disease</label>
+                            <br />
+                            <input type="checkbox" id="familyOther" />
+                            <label for="familyOther">Others (Please specify):</label>
+                            <input type="text" id="familyOtherDetails" placeholder="Specify family conditions" />
+                        </div>
                         <br />
-                        <input type="checkbox" id="familyDiabetes" />
-                        <label for="familyDiabetes">Diabetes</label>
+
+                        <label for="covidVaccinated">Are You Covid-19 Vaccinated?</label>
+                        <div>
+                            <input type="checkbox" id="vaccinatedYes" onclick="toggleVaccinationCheckbox('vaccinatedYes')" />
+                            <label for="vaccinatedYes">Yes</label>
+                            <input type="checkbox" id="vaccinatedNo" onclick="toggleVaccinationCheckbox('vaccinatedNo')" />
+                            <label for="vaccinatedNo">No</label>
+                        </div>
                         <br />
-                        <input type="checkbox" id="familyHeartDisease" />
-                        <label for="familyHeartDisease">Heart Disease</label>
+
+                        <label for="vaccineType">Type of Vaccine:</label>
+                        <div>
+                            <input type="checkbox" id="pfizer" onclick="toggleVaccineCheckbox('pfizer')" />
+                            <label for="pfizer">Pfizer</label>
+                            <input type="checkbox" id="moderna" onclick="toggleVaccineCheckbox('moderna')" />
+                            <label for="moderna">Moderna</label>
+                            <input type="checkbox" id="astrazeneca" onclick="toggleVaccineCheckbox('astrazeneca')" />
+                            <label for="astrazeneca">AstraZeneca</label>
+                            <input type="checkbox" id="sinovac" onclick="toggleVaccineCheckbox('sinovac')" />
+                            <label for="sinovac">Sinovac</label>
+                        </div>
                         <br />
-                        <input type="checkbox" id="familyOther" />
-                        <label for="familyOther">Others (Please specify):</label>
-                        <input type="text" id="familyOtherDetails" placeholder="Specify family conditions" />
+
+                        <label for="boosterDose">Booster Dose Received?</label>
+                        <div>
+                            <input type="checkbox" id="boosterYes" onclick="toggleBoosterCheckbox('boosterYes')" />
+                            <label for="boosterYes">Yes</label>
+                            <input type="checkbox" id="boosterNo" onclick="toggleBoosterCheckbox('boosterNo')" />
+                            <label for="boosterNo">No</label>
+                        </div>
+                        <br />
+
+                        <label for="boosterDate">Date of Last Booster Received:</label>
+                        <input type="date" id="boosterDate" />
+                        <br />
+
+                        <p><strong>BMI:</strong> <span id="bmi"></span></p>
+                        <p><strong>BMI Status:</strong> <span id="bmiStatus"></span></p>
                     </div>
-                    <br />
-        
-                    <label for="covidVaccinated">Are You Covid-19 Vaccinated?</label>
-                    <div>
-                        <input type="checkbox" id="vaccinatedYes" />
-                        <label for="vaccinatedYes">Yes</label>
-                        <input type="checkbox" id="vaccinatedNo" />
-                        <label for="vaccinatedNo">No</label>
-                    </div>
-                    <br />
-        
-                    <label for="vaccineType">Type of Vaccine:</label>
-                    <div>
-                        <input type="checkbox" id="pfizer" />
-                        <label for="pfizer">Pfizer</label>
-                        <input type="checkbox" id="moderna" />
-                        <label for="moderna">Moderna</label>
-                        <input type="checkbox" id="astrazeneca" />
-                        <label for="astrazeneca">AstraZeneca</label>
-                        <input type="checkbox" id="sinovac" />
-                        <label for="sinovac">Sinovac</label>
-                    </div>
-                    <br />
-        
-                    <label for="boosterDose">Booster Dose Received?</label>
-                    <div>
-                        <input type="checkbox" id="boosterYes" />
-                        <label for="boosterYes">Yes</label>
-                        <input type="checkbox" id="boosterNo" />
-                        <label for="boosterNo">No</label>
-                    </div>
-                    <br />
-        
-                    <label for="boosterDate">Date of Last Booster Received:</label>
-                    <input type="date" id="boosterDate" />
-                    <br />
-        
-                    <p><strong>BMI:</strong> <span id="bmi"></span></p>
-                    <p><strong>BMI Status:</strong> <span id="bmiStatus"></span></p>
-        
-                    <button onclick="submitForm()">Submit</button>
+                </div>
+                <div>
+                    <button class="btn-primary" onclick="submitForm()">Submit</button>
                 </div>
             </div>
+        
+                    <!-- Additional Fields based on selected type -->
+                    <div id="BVaccineFields" class="appointmentFields" style="display: none;">
+                        <label for="babiesName">Baby's Name:</label>
+                        <input type="text" id="babiesName" placeholder="Enter Baby's Name" required />
+                        <br />
+                        <label for="birthday">Birthday:</label>
+                        <input type="date" id="birthday" placeholder="Enter Baby's Birthday" required />
+                        <br />
+                        <label for="height">Height (cm):</label>
+                        <input type="number" id="height" placeholder="Enter height" required />
+                        <br />
+                        <label for="weight">Weight (kg):</label>
+                        <input type="number" id="weight" placeholder="Enter weight" required />
+                        <br />
+                        <label for="temperature">Temperature (°C):</label>
+                        <input type="text" id="temperature" placeholder="Enter temperature" required />
+                        <span id="temperatureStatus"></span>
+                        <br />
+                        <label for="specialty">Specialty (Choose one):</label>
+                        <label for="BvaccineType">Vaccine Taken:</label>
+                        <div>
+                            <input type="checkbox" id="BCG" />
+                            <label for="BCG">BCG (Bacillus Calmette-Guerin)</label>
+                            <input type="checkbox" id="HepatitisB" />
+                            <label for="HepatitisB">Hepatitis B</label>
+                            <input type="checkbox" id="Pentavalent" />
+                            <label for="Pentavalent">Pentavalent (DPT-HepB-Hib)</label>
+                        </div>
+                        <br />
+                        <div>
+                            <button class="btn-primary" onclick="BabiesSubmitForm()">Submit</button>
+                        </div>
+                    </div>
+        
+                    <div id="PamilyPlanFields" class="appointmentFields" style="display: none;">
+                        <label for="contraception">Contraceptive Method:</label>
+                        <input type="text" id="contraception" placeholder="Specify method" required />
+                        <br />
+                        <label for="familyHistoryPlan">Family Planning History:</label>
+                        <textarea id="familyHistoryPlan" placeholder="Describe your family planning history"></textarea>
+                    </div>
+        
+                    <div id="PrenatalFields" class="appointmentFields" style="display: none;">
+                        <label for="pregnancyWeeks">Weeks of Pregnancy:</label>
+                        <input type="number" id="pregnancyWeeks" placeholder="Enter weeks of pregnancy" required />
+                        <br />
+                        <label for="dueDate">Expected Due Date:</label>
+                        <input type="date" id="dueDate" required />
+                    </div>
+        
+                    <div id="DentalFields" class="appointmentFields" style="display: none;">
+                        <label for="teethCondition">Teeth Condition:</label>
+                        <textarea id="teethCondition" placeholder="Describe the condition of your teeth"></textarea>
+                        <br />
+                        <label for="lastVisit">Last Dental Visit:</label>
+                        <input type="date" id="lastVisit" required />
+                    </div>
+                </div>
         </div>
-    </div>
+        </div>
 
     <div id="medicineSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Medicine Management</h1>

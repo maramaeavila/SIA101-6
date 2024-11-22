@@ -1,4 +1,3 @@
-// Firebase configuration object
 var firebaseConfig = {
   apiKey: "AIzaSyDiOsr6bY5BDKdiBPRzDgSpurHdkkUlc3k",
   authDomain: "sia101-d60a1.firebaseapp.com",
@@ -60,7 +59,7 @@ async function loginResident() {
 async function loginUser() {
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
-  const role = document.getElementById("role").value.trim().toUpperCase(); // Convert input to uppercase for comparison
+  const role = document.getElementById("role").value.trim().toUpperCase();
 
   if (!username || !password || !role) {
     swal("Error", "Please fill in all required fields.", "error");
@@ -80,7 +79,6 @@ async function loginUser() {
       const user = userData[userKey];
 
       if (user.password === password && user.role === role) {
-        // Store the logged-in user's ID in localStorage
         localStorage.setItem("loggedInUser", JSON.stringify(user));
 
         swal("Success", "Login successful!", "success").then(() => {
@@ -126,15 +124,12 @@ async function loginUser() {
 function displayLoggedInUserProfile() {
   const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
   if (loggedInUser && loggedInUser.profileUrl) {
-    // If the logged-in user has a profile image, display it
     const profileImage = `<img src="${loggedInUser.profileUrl}" alt="Profile Image" style="width: 80px; height: 80px; border-radius: 50%;">`;
     document.getElementById("profileImageContainer").innerHTML = profileImage;
   } else {
-    // If no profile image is found, display a default icon
     const defaultIcon = `<i class="fa-solid fa-user" style="font-size: 80px; color: white; margin: 15%;"></i>`;
     document.getElementById("profileImageContainer").innerHTML = defaultIcon;
   }
 }
 
-// Call this function when the page is loaded (for example, in the `resident.html` or `admin.html`)
 window.onload = displayLoggedInUserProfile;

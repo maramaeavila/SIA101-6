@@ -28,12 +28,12 @@
                 Dashboard
             </a>
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-house-medical mr-2"></i> 
                 Patient
             </a>
-        </li>
+        </li> -->
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-phone mr-2"></i> 
@@ -75,9 +75,6 @@
         <div class="row mb-4 right">
             <div class="col-md-3 offset-md-4">
                 <input type="date" id="appointmentDatePicker" class="form-control">
-            </div>
-            <div class="col-md-1">
-                <button class="btn-primary" onclick="fetchAppointmentsByDate()">Update</button>
             </div>
         </div>
 
@@ -133,27 +130,33 @@
     </div>
     
 
-    <div id="patientSection" class="content-section" style="display: none;">
+    <!-- <div id="patientSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Patient List</h1>
+
+        <div class="row mb-4 right">
+            <div class="col-md-3 offset-md-4">
+                <label for="appointmentDatepicker">Select Appointment Date:</label>
+                <input type="date" id="appointmentDatePicker" class="form-control" onchange="fetchAppointmentsByDate()">
+            </div>
+        </div>
+        
         <table>
             <thead>
-              <tr>
-                <th>Patient ID</th>
-                <th>Name</th>
-                <th>Age</th>
-                <th>Sex</th>
-                <th>Address</th>
-                <th>Mobile Number</th>
-                <th>Civil Status</th>
-                <th>Birthdate</th>
-                <th>Status</th>
-              </tr>
+                <tr>
+                    <th>Resident ID</th>
+                    <th>Appointment Date</th>
+                    <th>Appointment Time</th>
+                    <th>Health Service</th>
+                    <th>Healthcare Provider</th>
+                    <th>Remarks</th>
+                    <th>Status</th>
+                </tr>
             </thead>
             <tbody id="patientList">
-              <!-- Patient rows will be inserted here -->
+                
             </tbody>
-          </table>
-    </div>
+        </table>
+    </div> -->
 
     <div id="appointmentSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Appointment Calendar</h1>
@@ -187,6 +190,147 @@
 
     <div id="ConsultationSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Consultation</h1>
+        <div>
+            <input type="text" id="formIDInput" placeholder="Enter Form ID" style="width: 50%;"/>
+            <button onclick="fetchPrecheckupFormDetails(document.getElementById('formIDInput').value)" class="btn-primary">
+                Fetch Details
+            </button>
+            <!-- <table>
+                <thead>
+                    <tr>
+                    <th>Form ID</th>
+                    </tr>
+                </thead>
+                <tbody id="precheckupListData">
+                    
+                </tbody>
+            </table> -->
+        </div>
+        <div id="precheckupDetailsSection"  style="display: none;">
+            <h1 class="mt-5">Precheckup Details</h1>
+            <form id="precheckupDetailsForm">
+                <div class="row">
+                    <!-- Column 1 -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="height">Height</label>
+                            <input type="text" class="form-control" id="height" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="weight">Weight</label>
+                            <input type="text" class="form-control" id="weight" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="bloodPressure">Blood Pressure</label>
+                            <input type="text" class="form-control" id="bloodPressure" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="bloodPressureStatus">Blood Pressure Status</label>
+                            <input type="text" class="form-control" id="bloodPressureStatus" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="temperature">Temperature</label>
+                            <input type="text" class="form-control" id="temperature" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="temperatureStatus">Temperature Status</label>
+                            <input type="text" class="form-control" id="temperatureStatus" disabled>
+                        </div>
+                    </div>
+        
+                    <!-- Column 2 -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="pulseRate">Pulse Rate</label>
+                            <input type="text" class="form-control" id="pulseRate" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="pulseRateStatus">Pulse Rate Status</label>
+                            <input type="text" class="form-control" id="pulseRateStatus" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="respiratoryRate">Respiratory Rate</label>
+                            <input type="text" class="form-control" id="respiratoryRate" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="allergies">Allergies</label>
+                            <textarea class="form-control" id="allergies" rows="3" disabled></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="currentMedications">Current Medications</label>
+                            <textarea class="form-control" id="currentMedications" rows="3" disabled></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="pastMedicalHistory">Past Medical History</label>
+                            <textarea class="form-control" id="pastMedicalHistory" rows="3" disabled></textarea>
+                        </div>
+                    </div>
+        
+                    <!-- Column 3 -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="familyHistory">Family History</label>
+                            <textarea class="form-control" id="familyHistory" rows="3" disabled></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="covidVaccinated">COVID Vaccinated</label>
+                            <input type="text" class="form-control" id="covidVaccinated" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="vaccineType">Vaccine Type</label>
+                            <input type="text" class="form-control" id="vaccineType" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="boosterDose">Booster Dose</label>
+                            <input type="text" class="form-control" id="boosterDose" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="boosterDate">Booster Date</label>
+                            <input type="text" class="form-control" id="boosterDate" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="BMI">BMI</label>
+                            <input type="text" class="form-control" id="BMI" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="BMIStatus">BMI Status</label>
+                            <input type="text" class="form-control" id="BMIStatus" disabled>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="form-container">
+                <label>Common Diseases</label>
+                <div>
+                  <label><input type="checkbox" id="hypertension" /> Hypertension</label><br />
+                  <label><input type="checkbox" id="animalBites" /> Animal Bites</label><br />
+                  <label><input type="checkbox" id="dengue" /> Dengue</label><br />
+                  <label><input type="checkbox" id="skinDiseases" /> Skin Diseases</label><br />
+                  <label><input type="checkbox" id="pneumonia" /> Pneumonia</label><br />
+                  <label><input type="checkbox" id="tb" /> Tuberculosis</label><br />
+                  <label><input type="checkbox" id="fever" /> Fever of Unknown Origin</label><br />
+                  <label><input type="checkbox" id="coughAndCold" /> Cough and Cold</label><br />
+                </div>
+                <br />
+                
+                  <label for="consultation">Consultation:</label>
+                  <div>
+                  <textarea id="consultation" rows="5" placeholder="Enter consultation details" class="form-control"></textarea>
+                </div>
+              
+                
+                  <label for="remarks">Remarks:</label>
+                  <div>
+                  <textarea id="remarks" rows="5" placeholder="Enter remarks" class="form-control"></textarea>
+                </div>
+                <br />
+              
+                <button type="button" class="btn-primary" onclick="updatePrecheckupForm()">Update Precheckup Form</button>
+              </div>
+              
+
+        </div>
     
     </div>
 

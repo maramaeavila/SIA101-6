@@ -59,13 +59,13 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
 
     if (sectionName === "Dashboard") {
       document.getElementById("dashboardSection").style.display = "block";
-    } else if (sectionName === "Patient") {
-      document.getElementById("patientSection").style.display = "block";
-      fetchPatients();
+      // } else if (sectionName === "Patient") {
+      //   document.getElementById("patientSection").style.display = "block";
     } else if (sectionName === "Appointment") {
       document.getElementById("appointmentSection").style.display = "block";
     } else if (sectionName === "Consultation") {
       document.getElementById("ConsultationSection").style.display = "block";
+      fetchPrecheckupFormDetails(formID);
     } else if (sectionName === "Babies Vaccination") {
       document.getElementById("VaccineSection").style.display = "block";
     } else if (sectionName === "Reports") {
@@ -74,48 +74,53 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
   });
 });
 
-function fetchPatients() {
-  const patientListBody = document.getElementById("patientList");
-  patientListBody.innerHTML = "";
+// function fetchAppointmentsByDate() {
+//   const selectedDate = document.getElementById("appointmentDatepicker").value;
 
-  db.ref("6-Health-PatientID")
-    .once("value")
-    .then((snapshot) => {
-      if (snapshot.exists()) {
-        snapshot.forEach((childSnapshot) => {
-          const patient = childSnapshot.val();
+//   if (!selectedDate) {
+//     console.log("No date selected");
+//     return;
+//   }
 
-          if (patient.status === "verified") {
-            const row = document.createElement("tr");
+//   const formattedDate = formatDateToDateObject(selectedDate);
 
-            row.innerHTML = `
-              <td>${childSnapshot.key}</td>
-              <td>${patient.name}</td>
-              <td>${patient.age}</td>
-              <td>${patient.sex}</td>
-              <td>${patient.address}</td>
-              <td>${patient.mobileNumber}</td>
-              <td>${patient.civilStatus}</td>
-              <td>${patient.birthdate}</td>
-              <td>${patient.status}</td>
-            `;
+//   const appointmentsRef = db.ref("6-Health-Appointments");
 
-            patientListBody.appendChild(row);
-          }
-        });
-      } else {
-        const row = document.createElement("tr");
-        row.innerHTML = "<td colspan='9'>No patients found.</td>";
-        patientListBody.appendChild(row);
-      }
-    })
-    .catch((error) => {
-      console.error("Error fetching patient data:", error);
-      const row = document.createElement("tr");
-      row.innerHTML = "<td colspan='9'>Error loading patient data.</td>";
-      patientListBody.appendChild(row);
-    });
-}
+//   appointmentsRef
+//     .orderByChild("appointmentDate")
+//     .equalTo(formattedDate)
+//     .once("value")
+//     .then((snapshot) => {
+//       const patientList = document.getElementById("patientList");
+//       patientList.innerHTML = "";
+
+//       if (!snapshot.exists()) {
+//         console.log("No appointments found for the selected date");
+//         patientList.innerHTML =
+//           "<tr><td colspan='7'>No appointments found for the selected date.</td></tr>";
+//         return;
+//       }
+
+//       snapshot.forEach((childSnapshot) => {
+//         const data = childSnapshot.val();
+
+//         const row = document.createElement("tr");
+//         row.innerHTML = `
+//           <td>${data.residentId}</td>
+//           <td>${data.appointmentDate}</td>
+//           <td>${data.appointmentTime}</td>
+//           <td>${data.healthService}</td>
+//           <td>${data.healthcareProvider}</td>
+//           <td>${data.remarks}</td>
+//           <td>${data.status}</td>
+//         `;
+//         patientList.appendChild(row);
+//       });
+//     })
+//     .catch((error) => {
+//       console.error("Error fetching appointments: ", error);
+//     });
+// }
 
 const monthNames = [
   "January",
@@ -294,4 +299,153 @@ function updateAppointmentDashboard(appointments) {
   document.getElementById("pendingAppointments").textContent = pending;
   document.getElementById("completedAppointments").textContent = completed;
   document.getElementById("canceledAppointments").textContent = canceled;
+}
+
+function fetchPrecheckupForms() {
+  const residentID = document.getElementById("residentIdInput").value.trim();
+
+  if (!residentID) {
+    alert("Please enter a valid Resident ID.");
+    return;
+  }
+
+  const formsRef = db.ref("6-Health-FormData"); // Firebase reference to the database.
+
+  formsRef
+    .orderByChild("residentID")
+    .equalTo(residentID)
+    .once("value")
+    .then((snapshot) => {
+      const tableBody = document.getElementById("precheckupListData");
+      tableBody.innerHTML = ""; // Clear the table content before rendering new rows.
+
+      if (snapshot.exists()) {
+        snapshot.forEach((childSnapshot) => {
+          const formID = childSnapshot.key;
+
+          // Dynamically create a row for each formID
+          const row = document.createElement("tr");
+          row.innerHTML = `<td><a href="#" onclick="fetchPrecheckupFormDetails('${formID}')">${formID}</a></td>`;
+          tableBody.appendChild(row);
+        });
+      } else {
+        alert("No forms found for this Resident ID.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching forms:", error);
+      alert("Failed to fetch forms. Please try again.");
+    });
+}
+
+function fetchPrecheckupFormDetails(formID) {
+  if (!formID) {
+    alert("Form ID is missing. Cannot fetch details.");
+    return;
+  }
+
+  const formRef = db.ref("6-Health-FormData/" + formID); // Reference to the specific form data.
+
+  formRef
+    .get()
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        const formData = snapshot.val();
+
+        // Populate form fields with data
+        document.getElementById("height").value = formData.height || "N/A";
+        document.getElementById("weight").value = formData.weight || "N/A";
+        document.getElementById("bloodPressure").value =
+          formData.bloodPressure || "N/A";
+        document.getElementById("bloodPressureStatus").value =
+          formData.bloodPressureStatus || "N/A";
+        document.getElementById("temperature").value =
+          formData.temperature || "N/A";
+        document.getElementById("temperatureStatus").value =
+          formData.temperatureStatus || "N/A";
+        document.getElementById("pulseRate").value =
+          formData.pulseRate || "N/A";
+        document.getElementById("pulseRateStatus").value =
+          formData.pulseRateStatus || "N/A";
+        document.getElementById("respiratoryRate").value =
+          formData.respiratoryRate || "N/A";
+        document.getElementById("allergies").value =
+          formData.allergies || "N/A";
+        document.getElementById("currentMedications").value =
+          formData.currentMedications || "N/A";
+        document.getElementById("pastMedicalHistory").value =
+          formData.pastMedicalHistory || "N/A";
+        document.getElementById("familyHistory").value =
+          formData.familyHistory || "N/A";
+        document.getElementById("covidVaccinated").value =
+          formData.covidVaccinated ? "Yes" : "No";
+        document.getElementById("vaccineType").value =
+          formData.vaccineType || "N/A";
+        document.getElementById("boosterDose").value = formData.boosterDose
+          ? "Yes"
+          : "No";
+        document.getElementById("boosterDate").value =
+          formData.boosterDate || "N/A";
+        document.getElementById("BMI").value = formData.BMI || "N/A";
+        document.getElementById("BMIStatus").value =
+          formData.BMIStatus || "N/A";
+
+        // Show the details section
+        document.getElementById("precheckupDetailsSection").style.display =
+          "block";
+
+        // Smoothly scroll to the details section
+        document
+          .getElementById("precheckupDetailsSection")
+          .scrollIntoView({ behavior: "smooth" });
+      } else {
+        alert("No details found for this Form ID.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching form details:", error);
+      alert("Failed to fetch form details. Please try again.");
+    });
+}
+
+document.querySelectorAll(".fetch-details-btn").forEach((button) => {
+  button.addEventListener("click", () => {
+    const formID = button.getAttribute("data-form-id");
+    fetchPrecheckupFormDetails(formID);
+  });
+});
+
+function fetchPrecheckupForms() {
+  const residentID = document.getElementById("residentIdInput").value;
+
+  if (!residentID) {
+    alert("Please enter a Resident ID.");
+    return;
+  }
+
+  const formsRef = db.ref("6-Health-FormData");
+
+  formsRef
+    .orderByChild("residentID")
+    .equalTo(residentID)
+    .once("value")
+    .then((snapshot) => {
+      const tableBody = document.getElementById("precheckupListData");
+      tableBody.innerHTML = "";
+
+      if (snapshot.exists()) {
+        snapshot.forEach((childSnapshot) => {
+          const formID = childSnapshot.key;
+
+          const row = document.createElement("tr");
+          row.innerHTML = `<td><a href="#" onclick="showFormDetails('${formID}')">${formID}</a></td>`;
+          tableBody.appendChild(row);
+        });
+      } else {
+        alert("No forms found for this Resident ID.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching forms:", error);
+    });
 }
