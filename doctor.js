@@ -74,53 +74,53 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
   });
 });
 
-// function fetchAppointmentsByDate() {
-//   const selectedDate = document.getElementById("appointmentDatepicker").value;
+function fetchAppointmentsByDate() {
+  const selectedDate = document.getElementById("appointmentDatepicker").value;
 
-//   if (!selectedDate) {
-//     console.log("No date selected");
-//     return;
-//   }
+  if (!selectedDate) {
+    console.log("No date selected");
+    return;
+  }
 
-//   const formattedDate = formatDateToDateObject(selectedDate);
+  const formattedDate = formatDateToDateObject(selectedDate);
 
-//   const appointmentsRef = db.ref("6-Health-Appointments");
+  const appointmentsRef = db.ref("6-Health-Appointments");
 
-//   appointmentsRef
-//     .orderByChild("appointmentDate")
-//     .equalTo(formattedDate)
-//     .once("value")
-//     .then((snapshot) => {
-//       const patientList = document.getElementById("patientList");
-//       patientList.innerHTML = "";
+  appointmentsRef
+    .orderByChild("appointmentDate")
+    .equalTo(formattedDate)
+    .once("value")
+    .then((snapshot) => {
+      const patientList = document.getElementById("patientList");
+      patientList.innerHTML = "";
 
-//       if (!snapshot.exists()) {
-//         console.log("No appointments found for the selected date");
-//         patientList.innerHTML =
-//           "<tr><td colspan='7'>No appointments found for the selected date.</td></tr>";
-//         return;
-//       }
+      if (!snapshot.exists()) {
+        console.log("No appointments found for the selected date");
+        patientList.innerHTML =
+          "<tr><td colspan='7'>No appointments found for the selected date.</td></tr>";
+        return;
+      }
 
-//       snapshot.forEach((childSnapshot) => {
-//         const data = childSnapshot.val();
+      snapshot.forEach((childSnapshot) => {
+        const data = childSnapshot.val();
 
-//         const row = document.createElement("tr");
-//         row.innerHTML = `
-//           <td>${data.residentId}</td>
-//           <td>${data.appointmentDate}</td>
-//           <td>${data.appointmentTime}</td>
-//           <td>${data.healthService}</td>
-//           <td>${data.healthcareProvider}</td>
-//           <td>${data.remarks}</td>
-//           <td>${data.status}</td>
-//         `;
-//         patientList.appendChild(row);
-//       });
-//     })
-//     .catch((error) => {
-//       console.error("Error fetching appointments: ", error);
-//     });
-// }
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.residentId}</td>
+          <td>${data.appointmentDate}</td>
+          <td>${data.appointmentTime}</td>
+          <td>${data.healthService}</td>
+          <td>${data.healthcareProvider}</td>
+          <td>${data.remarks}</td>
+          <td>${data.status}</td>
+        `;
+        patientList.appendChild(row);
+      });
+    })
+    .catch((error) => {
+      console.error("Error fetching appointments: ", error);
+    });
+}
 
 const monthNames = [
   "January",
