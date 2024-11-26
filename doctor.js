@@ -59,8 +59,8 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
 
     if (sectionName === "Dashboard") {
       document.getElementById("dashboardSection").style.display = "block";
-      // } else if (sectionName === "Patient") {
-      //   document.getElementById("patientSection").style.display = "block";
+    } else if (sectionName === "Patient") {
+      document.getElementById("patientSection").style.display = "block";
     } else if (sectionName === "Appointment") {
       document.getElementById("appointmentSection").style.display = "block";
     } else if (sectionName === "Consultation") {
@@ -74,53 +74,53 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
   });
 });
 
-// function fetchAppointmentsByDate() {
-//   const selectedDate = document.getElementById("appointmentDatepicker").value;
+function fetchAppointmentsByDate() {
+  const selectedDate = document.getElementById("appointmentDatepicker").value;
 
-//   if (!selectedDate) {
-//     console.log("No date selected");
-//     return;
-//   }
+  if (!selectedDate) {
+    console.log("No date selected");
+    return;
+  }
 
-//   const formattedDate = formatDateToDateObject(selectedDate);
+  const formattedDate = formatDateToDateObject(selectedDate);
 
-//   const appointmentsRef = db.ref("6-Health-Appointments");
+  const appointmentsRef = db.ref("6-Health-Appointments");
 
-//   appointmentsRef
-//     .orderByChild("appointmentDate")
-//     .equalTo(formattedDate)
-//     .once("value")
-//     .then((snapshot) => {
-//       const patientList = document.getElementById("patientList");
-//       patientList.innerHTML = "";
+  appointmentsRef
+    .orderByChild("appointmentDate")
+    .equalTo(formattedDate)
+    .once("value")
+    .then((snapshot) => {
+      const patientList = document.getElementById("patientList");
+      patientList.innerHTML = "";
 
-//       if (!snapshot.exists()) {
-//         console.log("No appointments found for the selected date");
-//         patientList.innerHTML =
-//           "<tr><td colspan='7'>No appointments found for the selected date.</td></tr>";
-//         return;
-//       }
+      if (!snapshot.exists()) {
+        console.log("No appointments found for the selected date");
+        patientList.innerHTML =
+          "<tr><td colspan='7'>No appointments found for the selected date.</td></tr>";
+        return;
+      }
 
-//       snapshot.forEach((childSnapshot) => {
-//         const data = childSnapshot.val();
+      snapshot.forEach((childSnapshot) => {
+        const data = childSnapshot.val();
 
-//         const row = document.createElement("tr");
-//         row.innerHTML = `
-//           <td>${data.residentId}</td>
-//           <td>${data.appointmentDate}</td>
-//           <td>${data.appointmentTime}</td>
-//           <td>${data.healthService}</td>
-//           <td>${data.healthcareProvider}</td>
-//           <td>${data.remarks}</td>
-//           <td>${data.status}</td>
-//         `;
-//         patientList.appendChild(row);
-//       });
-//     })
-//     .catch((error) => {
-//       console.error("Error fetching appointments: ", error);
-//     });
-// }
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.residentId}</td>
+          <td>${data.appointmentDate}</td>
+          <td>${data.appointmentTime}</td>
+          <td>${data.healthService}</td>
+          <td>${data.healthcareProvider}</td>
+          <td>${data.remarks}</td>
+          <td>${data.status}</td>
+        `;
+        patientList.appendChild(row);
+      });
+    })
+    .catch((error) => {
+      console.error("Error fetching appointments: ", error);
+    });
+}
 
 const monthNames = [
   "January",
@@ -449,3 +449,212 @@ function fetchPrecheckupForms() {
       console.error("Error fetching forms:", error);
     });
 }
+
+// Initialize profile on page load
+window.onload = function () {
+  setDefaultDatePicker();
+  displayLoggedInUserProfile();
+  populateYearDropdown();
+  updateMonthYearDisplay();
+  generateCalendarDays();
+  fetchHealthFormData();
+};
+
+//Patient List 
+let lastFetchedData = [];
+
+function fetchHealthFormData() {
+  const formDataTableBody = document.querySelector("#patientSection tbody");
+  const selectedDate = document.getElementById("patientDatePicker").value;
+  const searchQuery = document.getElementById("patientSearchBar").value.toLowerCase();
+
+  formDataTableBody.innerHTML = "";
+
+  if (lastFetchedData.length === 0) {
+
+    db.ref("6-Health-FormData").once("value").then((snapshot) => {
+      if (snapshot.exists()) {
+        let dataArray = [];
+        snapshot.forEach((childSnapshot) => {
+          const data = childSnapshot.val();
+          dataArray.push(data);
+
+        });
+
+        lastFetchedData = dataArray;
+        applyFilters();
+      } else {
+        alert("No data available.");
+      }
+    }).catch((error) => {
+      console.error("Error fetching health form data:", error);
+    });
+  } else {
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const displayedPatientIds = new Set();
+
+    const filteredData = lastFetchedData.filter((data) => {
+      let recordDate = null;
+      if (data.timestamp) {
+        const date = new Date(data.timestamp);
+        recordDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      }
+
+      const dateMatch = !selectedDate || recordDate === selectedDate;
+      const specialtyMatch = data.specialty === "GeneralDoctor";
+      const searchMatch = !searchQuery || data.patientId.toLowerCase().includes(searchQuery);
+
+      return dateMatch && specialtyMatch && searchMatch;
+    });
+
+    filteredData.forEach((data) => {
+      if (displayedPatientIds.has(data.patientId)) return;
+
+      displayedPatientIds.add(data.patientId);
+
+      const row = `
+        <tr>
+          <td>${data.patientId || "N/A"}</td>
+          <td>${data.allergies || "N/A"}</td>
+          <td>${data.appointmentType || "N/A"}</td>
+          <td>${data.bloodPressure || "N/A"}</td>
+          <td>${data.bmi || "N/A"}</td>
+          <td>${data.chiefComplaint || "N/A"}</td>
+          <td>${data.height || "N/A"}</td>
+          <td>${data.weight || "N/A"}</td>
+          <td>${data.medications || "N/A"}</td>
+          <td>${data.pulseRate || "N/A"}</td>
+          <td>${data.respiratoryRate || "N/A"}</td>
+          <td>${data.respiratoryRateStatus || "N/A"}</td>
+          <td>${data.specialty || "N/A"}</td>
+          <td>${data.temperature || "N/A"}</td>
+        </tr>`;
+      formDataTableBody.innerHTML += row;
+    });
+
+    if (filteredData.length === 0) {
+      const row = `<tr><td colspan="15">No matching records found.</td></tr>`;
+      formDataTableBody.innerHTML += row;
+    }
+  }
+}
+
+document.getElementById("patientDatePicker").addEventListener("change", fetchHealthFormData);
+document.getElementById("patientSearchBar").addEventListener("input", fetchHealthFormData);
+
+//Date Setter
+function setDefaultDatePicker() {
+  const datePicker = document.getElementById("patientDatePicker");
+  const today = new Date();
+  const formattedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  datePicker.value = formattedDate;
+}
+
+
+// Modal Popup
+async function getResidentData(patientId) {
+  try {
+    const snapshot = await db.ref(`Residents/${patientId}`).once("value");
+    const residentData = snapshot.val();
+
+    const firstName = residentData.firstName
+    const lastName = residentData.lastName
+
+    return {
+      ...residentData,
+      firstName,
+      lastName
+    };
+  } catch (error) {
+    console.error("Error fetching resident data:", error);
+    return {};
+  }
+}
+
+async function showModal(patientData) {
+  const modal = document.getElementById("patientModal");
+  const modalContent = document.getElementById("modalContent");
+  const downloadBtn = document.getElementById("downloadBtn");
+
+  const residentData = await getResidentData(patientData.patientId);
+
+  let content = `
+    <div id="patientDetails">
+      <strong>First Name:</strong> ${residentData.firstName || "N/A"}<br>
+      <strong>Last Name:</strong> ${residentData.lastName || "N/A"}<br>
+      <strong>Age:</strong> ${residentData.age || "N/A"}<br>
+      <strong>Sex:</strong> ${residentData.sex || "N/A"}<br>
+      <strong>Patient ID:</strong> ${patientData.patientId || "N/A"}<br>
+      <strong>Allergies:</strong> ${patientData.allergies || "N/A"}<br>
+      <strong>Appointment Type:</strong> ${patientData.appointmentType || "N/A"}<br>
+      <strong>Blood Pressure:</strong> ${patientData.bloodPressure || "N/A"}<br>
+      <strong>Blood Pressure Status:</strong> ${patientData.bloodPressureStatus || "N/A"}<br>
+      <strong>BMI:</strong> ${patientData.bmi || "N/A"}<br>
+      <strong>BMI Status:</strong> ${patientData.bmiStatus || "N/A"}<br>
+      <strong>Booster Date:</strong> ${patientData.boosterDate || "N/A"}<br>
+      <strong>Booster Dose:</strong> ${patientData.boosterDose || "N/A"}<br>
+      <strong>Chief Complaint:</strong> ${patientData.chiefComplaint || "N/A"}<br>
+      <strong>Family History:</strong> ${patientData.familyHistory || "N/A"}<br>
+      <strong>Form ID:</strong> ${patientData.formId || "N/A"}<br>
+      <strong>Height:</strong> ${patientData.height || "N/A"}cm<br>
+      <strong>Weight:</strong> ${patientData.weight || "N/A"}kilos <br>
+      <strong>Medications:</strong> ${patientData.medications || "N/A"}<br>
+      <strong>Past Medical History:</strong> ${patientData.pastMedicalHistory || "N/A"}<br>
+      <strong>Pulse Rate:</strong> ${patientData.pulseRate || "N/A"}<br>
+      <strong>Pulse Rate Status:</strong> ${patientData.pulseRateStatus || "N/A"}<br>
+      <strong>Respiratory Rate:</strong> ${patientData.respiratoryRate || "N/A"}<br>
+      <strong>Respiratory Rate Status:</strong> ${patientData.respiratoryRateStatus || "N/A"}<br>
+      <strong>Specialty:</strong> ${patientData.specialty || "N/A"}<br>
+      <strong>Temperature:</strong> ${patientData.temperature || "N/A"}<br>
+      <strong>Temperature Status:</strong> ${patientData.temperatureStatus || "N/A"}<br>
+      <strong>TimeStamp:</strong> ${patientData.timestamp ? new Date(new Date(patientData.timestamp)
+      .setDate(new Date(patientData.timestamp).getDate() + 1)).toLocaleDateString('en-US', { weekday: 
+      'long', year: 'numeric', month: 'long', day: 'numeric' }) + ', ' + new Date(new Date(patientData.timestamp)
+      .setDate(new Date(patientData.timestamp).getDate() + 1)).toLocaleTimeString() : "N/A"}<br>
+      <strong>Vaccinated:</strong> ${patientData.vaccinated || "N/A"}<br>
+      <strong>Vaccine Type:</strong> ${patientData.vaccineType || "N/A"}<br>
+    </div>
+  `;
+
+  modalContent.innerHTML = content;
+  modal.style.display = "block";
+
+  downloadBtn.style.display = "inline-block";
+
+  downloadBtn.onclick = () => {
+    const plainTextContent = content.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '');
+    const blob = new Blob([plainTextContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `patient_${patientData.patientId}_details.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+}
+
+document.querySelector(".close-btn").addEventListener("click", function () {
+  const modal = document.getElementById("patientModal");
+  modal.style.display = "none";
+  document.getElementById("downloadBtn").style.display = "none";
+});
+
+document.querySelector("tbody").addEventListener("click", function (event) {
+  if (event.target && event.target.nodeName === "TD") {
+    const row = event.target.closest("tr");
+    const patientId = row.querySelector("td:first-child").textContent;
+
+    const patientData = lastFetchedData.find((data) => data.patientId === patientId);
+
+    if (patientData) {
+      showModal(patientData);
+    }
+  }
+});
+
+
+
+
