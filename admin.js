@@ -230,6 +230,8 @@ function displayAppointments(date) {
   const appointmentList = document.getElementById("appointmentList");
   appointmentList.innerHTML = "";
 
+  const providerCounts = {};
+
   db.ref("6-Health-Appointments")
     .orderByChild("appointmentDate")
     .equalTo(date)
@@ -237,11 +239,27 @@ function displayAppointments(date) {
       if (snapshot.exists()) {
         snapshot.forEach((childSnapshot) => {
           const appointment = childSnapshot.val();
+          const { healthcareProvider } = appointment;
+
+          providerCounts[healthcareProvider] =
+            (providerCounts[healthcareProvider] || 0) + 1;
+
           const listItem = document.createElement("li");
           listItem.classList.add("appointment-item");
-          listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${appointment.healthcareProvider} (${appointment.status}) - ${appointment.remarks}`;
+          listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${healthcareProvider} (${appointment.status}) - ${appointment.remarks}`;
           appointmentList.appendChild(listItem);
         });
+
+        const totalsList = document.createElement("ul");
+        totalsList.classList.add("totals-list");
+        totalsList.innerHTML =
+          "<strong>Total Appointments Per Healthcare Provider:</strong>";
+        for (const provider in providerCounts) {
+          const totalItem = document.createElement("li");
+          totalItem.innerText = `${provider}: ${providerCounts[provider]} appointments`;
+          totalsList.appendChild(totalItem);
+        }
+        appointmentList.appendChild(totalsList);
       } else {
         const listItem = document.createElement("li");
         listItem.classList.add("appointment-item");
@@ -251,6 +269,7 @@ function displayAppointments(date) {
     })
     .catch((error) => {
       console.error("Error fetching appointments:", error);
+
       const listItem = document.createElement("li");
       listItem.classList.add("appointment-item");
       listItem.innerText = "Error loading appointments.";

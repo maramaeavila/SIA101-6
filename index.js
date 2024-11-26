@@ -35,6 +35,7 @@ async function loginResident() {
 
   try {
     const snapshot = await db.ref("Residents/" + residentID).once("value");
+
     if (snapshot.exists()) {
       const residentData = snapshot.val();
 
@@ -48,7 +49,10 @@ async function loginResident() {
         swal("Error", "Incorrect birthdate.", "error");
       }
     } else {
-      swal("Error", "Resident ID not found.", "error");
+      swal("Error", "Resident ID not found.", "error").then(() => {
+        // window.location.href =
+        //   "https://old-capitol-site-69.netlify.app/index.html";
+      });
     }
   } catch (error) {
     console.error("Error during login:", error);
