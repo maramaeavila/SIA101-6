@@ -231,7 +231,7 @@
                     <select id="chiefComplaintType" onchange="showFormFields()" required>
                         <option value="GC">General Checkup</option>
                         <option value="BVaccine">Babies Vaccine</option>
-                        <option value="PamilyPlan">Family Planning</option>
+                        <option value="FamilyPlan">Family Planning</option>
                         <option value="Prenatal">Prenatal Checkup</option>
                         <option value="Dental">Dental</option>
                     </select>
@@ -395,7 +395,7 @@
             </div>
         
                     <!-- Additional Fields based on selected type -->
-                    <div id="BVaccineFields" class="appointmentFields" style="display: block;">
+                    <div id="BVaccineFields" class="appointmentFields" style="display: block;margin-top: 15px;">
                         <div class="row">
                           <div class="col">
                             <label for="babiesName">Baby's Name:</label>
@@ -434,18 +434,113 @@
                         </div>
                       </div>
         
-                    <div id="FamilyPlanFields" class="appointmentFields" style="display: none;">
-                        <label for="contraception">Contraceptive Method:</label>
-                        <input type="text" id="contraception" placeholder="Specify method" required />
-                        <br />
-                        <label for="familyHistoryPlan">Family Planning History:</label>
-                        <textarea id="familyHistoryPlan" placeholder="Describe your family planning history"></textarea>
+                    <div id="FamilyPlanFields" class="appointmentFields" style="display: none;margin-top: 15px;">
+                        <div class="row">
+                            <div class="col">
+                                <label for="numChildren">Number of Children:</label>
+                                <input type="number" id="numChildren" placeholder="Enter Number of Children" required /><br />
+                                
+                                <label for="bloodPressure">Blood Pressure:</label>
+                                <input type="text" id="bloodPressure" placeholder="Enter Blood Pressure" required /><br />
+                                
+                                <label for="weight">Weight:</label>
+                                <input type="number" id="weight" placeholder="Enter Weight" required /><br />
+                                
+                                <label for="gravida">Gravida (No. of Pregnancies):</label>
+                                <input type="number" id="gravida" placeholder="Enter Number of Pregnancies" /><br />
+                            
+                                <label for="para">Para (No. of Deliveries):</label>
+                                <input type="number" id="para" placeholder="Enter Number of Deliveries" /><br />
+                            
+                                <label for="lmp">Last Menstrual Period (LMP):</label>
+                                <input type="date" id="lmp" placeholder="Enter LMP Date" /><br />
+                            
+                                <label for="menstrualCycle">Menstrual Cycle:</label><br />
+                                <input type="radio" id="regular" name="menstrualCycle" value="Regular" />
+                                <label for="regular">Regular</label>
+                                <input type="radio" id="irregular" name="menstrualCycle" value="Irregular" />
+                                <label for="irregular">Irregular</label><br />
+
+
+                                <input type="checkbox" id="hypertension" />
+                                <label for="hypertension">Hypertension:</label><br />
+
+                                <input type="checkbox" id="diabetes" />                       
+                                <label for="diabetes">Diabetes:</label><br /> 
+
+                                <input type="checkbox" id="heartDisease" />                        
+                                <label for="heartDisease">Heart Disease:</label><br />
+
+                                <label for="allergies">Allergies:</label>
+                                <input type="text" id="allergies" placeholder="Specify any allergies" /><br />
+                            
+                                <label for="otherMedical">Others (Specify):</label>
+                                <input type="text" id="otherMedical" placeholder="Specify other medical history" /><br />
+                            </div>
+
+                            <div class="col">    
+                                <label for="contraceptiveUse">Are you currently using a contraceptive method?</label><br />
+                                <input type="radio" id="contraceptiveYes" name="contraceptiveUse" value="Yes" />
+                                <label for="contraceptiveYes">Yes</label>
+                                <input type="radio" id="contraceptiveNo" name="contraceptiveUse" value="No" />
+                                <label for="contraceptiveNo">No</label><br />
+
+                                
+                                <label for="contraceptiveMethod">If yes, specify:</label>
+                                <input type="text" id="contraceptiveMethod" placeholder="Specify contraceptive method" /><br />
+                            
+                                <label for="consultationReason">Reason for Consultation:</label><br />
+                                <input type="checkbox" id="firstTimeUser" />
+                                <label for="firstTimeUser">First-time user</label><br />
+
+                                <input type="checkbox" id="switchingMethods" />                        
+                                <label for="switchingMethods">Switching methods</label><br />
+
+                                <input type="checkbox" id="counseling" />                     
+                                <label for="counseling">Counseling</label><br />
+
+                                <label for="preferredMethods">Preferred Method(s):</label><br />
+                                <input type="checkbox" id="naturalFamilyPlanning" />
+                                <label for="naturalFamilyPlanning">Natural Family Planning (e.g., Calendar/Rhythm Method)</label><br />
+
+                                <input type="checkbox" id="barrierMethods" />                     
+                                <label for="barrierMethods">Barrier Methods (e.g., Condoms)</label><br /> 
+
+                                <input type="checkbox" id="hormonalMethods" />
+                                <label for="hormonalMethods">Hormonal Methods (e.g., Pills, Injectables)</label><br />
+
+                                <input type="checkbox" id="IUD" />                      
+                                <label for="IUD">Intrauterine Device (IUD)</label><br />
+
+                                <input type="checkbox" id="permanentMethods" />                    
+                                <label for="permanentMethods">Permanent Methods (e.g., Tubal Ligation, Vasectomy)</label><br />  
+
+                            
+                                <label for="othersMethod">Others (Specify):</label>
+                                <input type="text" id="othersMethod" /><br />
+
+                                <input type="checkbox" id="methodAdvantages" />
+                                <label>Counseling and Education Provided:</label><br />
+                                <label for="methodAdvantages">Advantages and Disadvantages of Each Method</label><br />
+
+                                <input type="checkbox" id="properUse" />                   
+                                <label for="properUse">Proper Use of Chosen Method</label><br />   
+
+                                <input type="checkbox" id="sideEffects" />                     
+                                <label for="sideEffects">Side Effects and Management</label><br /> 
+
+                                <input type="checkbox" id="importanceFollowUp" />                    
+                                <label for="importanceFollowUp">Importance of Follow-Up</label><br />  
+                            </div>    
+
+                        </div>        
+
                         <div>
-                            <button class="btn-primary" onclick="">Submit</button>
+                            <button class="btn-primary" onclick="submitFamilyPlan()">Submit</button>
                         </div>
                     </div>
         
-                    <div id="PrenatalFields" class="appointmentFields" style="display: none;">
+                    <div id="PrenatalFields" class="appointmentFields" style="display: none;margin-top: 15px;">
                         <label for="pregnancyWeeks">Weeks of Pregnancy:</label>
                         <input type="number" id="pregnancyWeeks" placeholder="Enter weeks of pregnancy" required />
                         <br />
@@ -456,7 +551,7 @@
                         </div>
                     </div>
         
-                    <div id="DentalFields" class="appointmentFields" style="display: none;">
+                    <div id="DentalFields" class="appointmentFields" style="display: none;margin-top: 15px;">
                         <label for="teethCondition">Teeth Condition:</label>
                         <textarea id="teethCondition" placeholder="Describe the condition of your teeth"></textarea>
                         <br />

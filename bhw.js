@@ -785,43 +785,7 @@ document
   .getElementById("temperature")
   .addEventListener("input", updateTemperatureStatus);
 
-function validateBabyVaccineForm() {
-  const babiesName = document.getElementById("babiesName").value.trim();
-  const birthday = document.getElementById("birthday").value.trim();
-  const height = document.getElementById("height").value.trim();
-  const weight = document.getElementById("weight").value.trim();
-  const temperature = document.getElementById("temperature").value.trim();
-
-  if (!babiesName || !birthday || !height || !weight || !temperature) {
-    swal("Error", "Please fill out all required fields.", "error");
-    return false;
-  }
-
-  if (isNaN(height) || isNaN(weight) || isNaN(temperature)) {
-    swal(
-      "Error",
-      "Please enter valid numbers for height, weight, and temperature.",
-      "error"
-    );
-    return false;
-  }
-
-  if (parseFloat(temperature) <= 0 || parseFloat(temperature) > 50) {
-    swal("Error", "Please enter a valid temperature.", "error");
-    return false;
-  }
-
-  if (parseFloat(height) <= 0 || parseFloat(weight) <= 0) {
-    swal("Error", "Height and weight must be positive values.", "error");
-    return false;
-  }
-
-  return true;
-}
-
 function BabiesSubmitForm() {
-  if (!validateBabyVaccineForm()) return;
-
   const babyName = document.getElementById("babiesName").value;
   const birthday = document.getElementById("birthday").value;
   const height = document.getElementById("babysheight").value;
@@ -871,6 +835,111 @@ function clearFormBVaccine() {
   document.getElementById("BCG").checked = false;
   document.getElementById("HepatitisB").checked = false;
   document.getElementById("Pentavalent").checked = false;
+}
+
+function submitFamilyPlan() {
+  const patientId = document.getElementById("patientId").textContent;
+  const numChildren = document.getElementById("numChildren").value;
+  const bloodPressure = document.getElementById("bloodPressure").value;
+  const weight = document.getElementById("weight").value;
+  const gravida = document.getElementById("gravida").value;
+  const para = document.getElementById("para").value;
+  const lmp = document.getElementById("lmp").value;
+  const menstrualCycle = document.querySelector(
+    'input[name="menstrualCycle"]:checked'
+  )
+    ? document.querySelector('input[name="menstrualCycle"]:checked').value
+    : "Not specified";
+
+  const hypertension = document.getElementById("hypertension").checked
+    ? "Yes"
+    : "No";
+  const diabetes = document.getElementById("diabetes").checked ? "Yes" : "No";
+  const heartDisease = document.getElementById("heartDisease").checked
+    ? "Yes"
+    : "No";
+
+  const allergies = document.getElementById("allergies").value || "None";
+  const otherMedical = document.getElementById("otherMedical").value || "None";
+
+  const contraceptiveUse = document.querySelector(
+    'input[name="contraceptiveUse"]:checked'
+  )
+    ? document.querySelector('input[name="contraceptiveUse"]:checked').value
+    : "Not specified";
+  const contraceptiveMethod =
+    document.getElementById("contraceptiveMethod").value || "None";
+
+  const consultationReason = getCheckedConditions("consultationReason");
+  const preferredMethods = getCheckedConditions("preferredMethods");
+  const counselingProvided = getCheckedConditions("methodAdvantages");
+
+  const formId = `${patientId}-${Math.floor(100000 + Math.random() * 900000)}`;
+
+  const formData = {
+    patientId,
+    numChildren,
+    bloodPressure,
+    weight,
+    gravida,
+    para,
+    lmp,
+    menstrualCycle,
+    hypertension,
+    diabetes,
+    heartDisease,
+    allergies,
+    otherMedical,
+    contraceptiveUse,
+    contraceptiveMethod,
+    consultationReason,
+    preferredMethods,
+    counselingProvided,
+    formId,
+    timestamp: new Date().toISOString(),
+  };
+
+  firebase
+    .database()
+    .ref(`6-FamilyPlan/${formId}`)
+    .set(formData)
+    .then(() => {
+      swal(
+        "Success",
+        `Form submitted successfully! Appointment ID: ${formId}`,
+        "success"
+      );
+      clearFamilyPlanForm();
+    })
+    .catch((error) => {
+      console.error("Error submitting form: ", error);
+      swal("Error", "Failed to submit the form. Please try again.", "error");
+    });
+}
+
+function getCheckedConditions(prefix) {
+  const checkedConditions = [];
+  const checkboxes = document.querySelectorAll(
+    `input[name^="${prefix}"]:checked`
+  );
+  checkboxes.forEach((checkbox) => {
+    checkedConditions.push(checkbox.value);
+  });
+  return checkedConditions.join(", ");
+}
+
+function clearFamilyPlanForm() {
+  const formFields = document.querySelectorAll(
+    "#FamilyPlanFields input, #FamilyPlanFields textarea"
+  );
+
+  formFields.forEach((field) => {
+    if (field.type === "checkbox" || field.type === "radio") {
+      field.checked = false;
+    } else {
+      field.value = "";
+    }
+  });
 }
 
 function getBloodPressureStatus(bloodPressure) {

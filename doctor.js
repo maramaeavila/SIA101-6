@@ -309,7 +309,7 @@ function fetchPrecheckupForms() {
     return;
   }
 
-  const formsRef = db.ref("6-Health-FormData");
+  const formsRef = db.ref("6-GeneralCheckup");
 
   formsRef
     .orderByChild("residentID")
@@ -343,7 +343,7 @@ function fetchPrecheckupFormDetails(formID) {
     return;
   }
 
-  const formRef = db.ref("6-Health-FormData/" + formID);
+  const formRef = db.ref("6-GeneralCheckup/" + formID);
 
   formRef
     .get()
@@ -419,7 +419,7 @@ function fetchPrecheckupForms() {
     return;
   }
 
-  const formsRef = db.ref("6-Health-FormData");
+  const formsRef = db.ref("6-GeneralCheckup");
 
   formsRef
     .orderByChild("residentID")
@@ -469,7 +469,7 @@ function fetchHealthFormData() {
   formDataTableBody.innerHTML = "";
 
   if (lastFetchedData.length === 0) {
-    db.ref("6-Health-FormData")
+    db.ref("6-GeneralCheckup")
       .once("value")
       .then((snapshot) => {
         if (snapshot.exists()) {
@@ -573,7 +573,7 @@ async function getResidentData(patientId) {
     return {
       ...residentData,
       firstName,
-      lastName
+      lastName,
     };
   } catch (error) {
     console.error("Error fetching resident data:", error);
@@ -697,7 +697,3 @@ document.querySelector("tbody").addEventListener("click", function (event) {
     }
   }
 });
-
-
-
-

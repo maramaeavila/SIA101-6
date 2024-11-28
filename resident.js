@@ -178,7 +178,7 @@ function fetchPrecheckupDetails(residentID) {
 
         document.getElementById("precheckupSection").style.display = "block";
       } else {
-        swal("Error", "No precheckup data found in the database.", "error");
+        swal("Error", "No checkup history found.", "error");
       }
     })
     .catch((error) => {
