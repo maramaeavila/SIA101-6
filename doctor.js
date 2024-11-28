@@ -564,9 +564,7 @@ async function getResidentData(patientId) {
     const lastName = residentData.lastName
 
     return {
-      ...residentData,
-      firstName,
-      lastName
+    ...residentData,firstName,lastName
     };
   } catch (error) {
     console.error("Error fetching resident data:", error);
@@ -654,6 +652,132 @@ document.querySelector("tbody").addEventListener("click", function (event) {
     }
   }
 });
+
+function fetchPatientData() {
+  const patientId = document.getElementById("patientIdInput").value;
+
+  if (patientId.trim() === "") {
+    alert("Please enter a valid Patient ID.");
+    return;
+  }
+
+  db.ref(`Residents/${patientId}`)
+    .once("value")
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        const resident = snapshot.val();
+
+        const firstName = resident.firstName || "";
+        const middleName = resident.middleName || "";
+        const lastName = resident.lastName || "";
+
+        const fullName = `${firstName} ${
+          middleName ? middleName + " " : ""
+        }${lastName}`;
+
+        document.getElementById("patientId").textContent = patientId;
+        document.getElementById("patientName").textContent = fullName;
+        document.getElementById("patientAge").textContent = resident.age;
+        document.getElementById("patientSex").textContent = resident.sex;
+        document.getElementById("patientAddress").textContent =
+          resident.address;
+
+        document.getElementById("patientDataSection").style.display = "block";
+        document.getElementById("bhcmsForm").style.display = "block";
+      } else {
+        alert("Patient ID not found.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching patient data:", error);
+      alert("Error loading patient data.");
+    });
+}
+
+function fetchBabiesData() {
+  const patientId = document.getElementById("patientIdInput").value;
+
+  if (patientId) {
+      const db = firebase.firestore();
+      db.collection("6-BabiesVaccine")
+          .where("patientId", "==", patientId) // Assuming patientId is stored in the data
+          .get()
+          .then((querySnapshot) => {
+              if (!querySnapshot.empty) {
+                  const data = querySnapshot.docs[0].data(); // Fetch the first document (if any)
+                  
+                  // Autofill the form fields
+                  document.getElementById("babiesName").value = data.babyName || "";
+                  document.getElementById("birthday").value = data.babyBirthday || "";
+                  document.getElementById("height").value = data.height || "";
+                  document.getElementById("weight").value = data.weight || "";
+                  document.getElementById("temperature").value = data.temperature || "";
+
+                  // Autofill the checkboxes
+                  document.getElementById("BCG").checked = data.vaccines.includes("BCG");
+                  document.getElementById("HepatitisB").checked = data.vaccines.includes("Hepatitis B");
+                  document.getElementById("Pentavalent").checked = data.vaccines.includes("Pentavalent");
+
+                  // Show the patient data section
+                  document.getElementById("patientDataSection").style.display = "block";
+                  document.getElementById("bhcmsForm").style.display = "block";
+              } else {
+                  alert("No data found for this Resident ID.");
+              }
+          })
+          .catch((error) => {
+              console.error("Error fetching document: ", error);
+              alert("Error fetching data. Please try again.");
+          });
+  } else {
+      alert("Please enter a Resident ID.");
+  }
+}
+
+
+function BabiesSubmitForm() {
+    // Retrieve form values
+    const babiesName = document.getElementById("babiesName").value;
+    const birthday = document.getElementById("birthday").value;
+    const height = document.getElementById("height").value;
+    const weight = document.getElementById("weight").value;
+    const temperature = document.getElementById("temperature").value;
+
+    // Vaccine checkboxes
+    const BCG = document.getElementById("BCG").checked;
+    const HepatitisB = document.getElementById("HepatitisB").checked;
+    const Pentavalent = document.getElementById("Pentavalent").checked;
+
+    // Validation checks
+    if (!babiesName || !birthday || !height || !weight || !temperature) {
+        alert("Please fill in all the required fields.");
+        return;
+    }
+
+    // Compile vaccine data
+    const vaccines = [];
+    if (BCG) vaccines.push("BCG");
+    if (HepatitisB) vaccines.push("Hepatitis B");
+    if (Pentavalent) vaccines.push("Pentavalent");
+
+    // Create an object for the baby's data
+    const babyData = {
+        name: babiesName,
+        birthday: birthday,
+        height: height,
+        weight: weight,
+        temperature: temperature,
+        vaccines: vaccines.length ? vaccines : "None",
+    };
+
+    // Log the baby's data (replace this with actual submission logic if needed)
+    console.log("Baby's Data:", babyData);
+
+    // Alert user and reset form (optional)
+    alert("Baby's vaccine details submitted successfully!");
+    document.getElementById("BVaccineFields").reset(); // Clears all inputs
+}
+
 
 
 

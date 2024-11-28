@@ -390,43 +390,49 @@
                     </div>
                 </div>
                 <div>
-                    <button class="btn-primary" onclick="submitForm()">Submit</button>
+                    <button class="btn-primary" onclick="submitGeneralCheckup()">Submit</button>
                 </div>
             </div>
         
                     <!-- Additional Fields based on selected type -->
-                    <div id="BVaccineFields" class="appointmentFields" style="display: none;">
-                        <label for="babiesName">Baby's Name:</label>
-                        <input type="text" id="babiesName" placeholder="Enter Baby's Name" required />
-                        <br />
-                        <label for="birthday">Birthday:</label>
-                        <input type="date" id="birthday" placeholder="Enter Baby's Birthday" required />
-                        <br />
-                        <label for="height">Height (cm):</label>
-                        <input type="number" id="height" placeholder="Enter height" required />
-                        <br />
-                        <label for="weight">Weight (kg):</label>
-                        <input type="number" id="weight" placeholder="Enter weight" required />
-                        <br />
-                        <label for="temperature">Temperature (°C):</label>
-                        <input type="text" id="temperature" placeholder="Enter temperature" required />
-                        <span id="temperatureStatus"></span>
-                        <br />
-                        <label for="specialty">Specialty (Choose one):</label>
-                        <label for="BvaccineType">Vaccine Taken:</label>
-                        <div>
-                            <input type="checkbox" id="BCG" />
-                            <label for="BCG">BCG (Bacillus Calmette-Guerin)</label>
-                            <input type="checkbox" id="HepatitisB" />
-                            <label for="HepatitisB">Hepatitis B</label>
-                            <input type="checkbox" id="Pentavalent" />
-                            <label for="Pentavalent">Pentavalent (DPT-HepB-Hib)</label>
+                    <div id="BVaccineFields" class="appointmentFields" style="display: block;">
+                        <div class="row">
+                          <div class="col">
+                            <label for="babiesName">Baby's Name:</label>
+                            <input type="text" id="babiesName" placeholder="Enter Baby's Name" required />
+                            <br />
+                            <label for="birthday">Birthday:</label>
+                            <input type="date" id="birthday" required />
+                            <br />
+                            <label for="height">Height (cm):</label>
+                            <input type="number" id="Babysheight" placeholder="Enter height" required />
+                            <br />
+                            <label for="weight">Weight (kg):</label>
+                            <input type="number" id="Babysweight" placeholder="Enter weight" required />
+                            <br />
+                          </div>
+                      
+                          <div class="col">
+                            <label for="temperature">Temperature (°C):</label>
+                            <input type="text" id="babystemperature" placeholder="Enter temperature" required />
+                            <span id="babystemperatureStatus"></span>
+                            <br />
+                            <label for="BvaccineType">Vaccine Taken:</label>
+                            <div>
+                              <input type="checkbox" id="BCG" />
+                              <label for="BCG">BCG (Bacillus Calmette-Guerin)</label><br />
+                              <input type="checkbox" id="HepatitisB" />
+                              <label for="HepatitisB">Hepatitis B</label><br />
+                              <input type="checkbox" id="Pentavalent" />
+                              <label for="Pentavalent">Pentavalent (DPT-HepB-Hib)</label>
+                            </div>        
+                          </div>
+                          <br />
                         </div>
-                        <br />
                         <div>
-                            <button class="btn-primary" onclick="BabiesSubmitForm()">Submit</button>
+                          <button class="btn-primary" onclick="BabiesSubmitForm()">Submit</button>
                         </div>
-                    </div>
+                      </div>
         
                     <div id="PamilyPlanFields" class="appointmentFields" style="display: none;">
                         <label for="contraception">Contraceptive Method:</label>
@@ -434,6 +440,9 @@
                         <br />
                         <label for="familyHistoryPlan">Family Planning History:</label>
                         <textarea id="familyHistoryPlan" placeholder="Describe your family planning history"></textarea>
+                        <div>
+                            <button class="btn-primary" onclick="">Submit</button>
+                        </div>
                     </div>
         
                     <div id="PrenatalFields" class="appointmentFields" style="display: none;">
@@ -442,6 +451,9 @@
                         <br />
                         <label for="dueDate">Expected Due Date:</label>
                         <input type="date" id="dueDate" required />
+                        <div>
+                            <button class="btn-primary" onclick="">Submit</button>
+                        </div>
                     </div>
         
                     <div id="DentalFields" class="appointmentFields" style="display: none;">
@@ -450,6 +462,9 @@
                         <br />
                         <label for="lastVisit">Last Dental Visit:</label>
                         <input type="date" id="lastVisit" required />
+                        <div>
+                            <button class="btn-primary" onclick="">Submit</button>
+                        </div>
                     </div>
                 </div>
         </div>
