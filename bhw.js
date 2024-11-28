@@ -368,7 +368,6 @@ function fetchInventory() {
 
           if (inventoryData[key]) {
             inventoryData[key].quantity += item.quantity;
-
             inventoryData[key].expirationDates.push(item.expirationDate);
           } else {
             inventoryData[key] = {
@@ -384,20 +383,22 @@ function fetchInventory() {
         for (const key in inventoryData) {
           const item = inventoryData[key];
           const row = document.createElement("tr");
+
+          const releaseButton = `<button class="btn btn-primary" onclick="showDetailsModal('${key}')">Release</button>`;
+
           row.innerHTML = `
-            <td>${item.category}</td>
             <td>${item.name}</td>
+            <td>${item.category}</td>
             <td>${item.quantity}</td>
             <td>${new Date(item.timestamp).toLocaleDateString()}</td>
-            <td>${item.expirationDates.join(
-              ", "
-            )}</td> <!-- Show all expiration dates -->
+            <td>${item.expirationDates.join(", ")}</td>
+            <td>${releaseButton}</td>
           `;
           inventoryList.appendChild(row);
         }
       } else {
         const row = document.createElement("tr");
-        row.innerHTML = "<td colspan='5'>No inventory found.</td>";
+        row.innerHTML = "<td colspan='6'>No inventory found.</td>";
         inventoryList.appendChild(row);
       }
     })
@@ -405,6 +406,23 @@ function fetchInventory() {
       console.error("Error fetching inventory:", error);
       swal("Error", "Failed to load inventory.", "error");
     });
+}
+
+function showDetailsModal(key) {
+  const inventoryData = {};
+  const item = inventoryData[key];
+
+  document.getElementById("modalProductName").textContent = item.name;
+  document.getElementById("modalCategory").textContent = item.category;
+  document.getElementById("modalQuantity").textContent = item.quantity;
+  document.getElementById("modalDateAdded").textContent = new Date(
+    item.timestamp
+  ).toLocaleDateString();
+  document.getElementById("modalExpirationDates").textContent =
+    item.expirationDates.join(", ");
+
+  const modal = new bootstrap.Modal(document.getElementById("detailsModal"));
+  modal.show();
 }
 
 function handleCategoryChange() {
@@ -998,8 +1016,8 @@ function showFormFields() {
     document.getElementById("GCFields").style.display = "block";
   } else if (selectedComplaint === "BVaccine") {
     document.getElementById("BVaccineFields").style.display = "block";
-  } else if (selectedComplaint === "PamilyPlan") {
-    document.getElementById("PamilyPlanFields").style.display = "block";
+  } else if (selectedComplaint === "FamilyPlan") {
+    document.getElementById("FamilyPlanFields").style.display = "block";
   } else if (selectedComplaint === "Prenatal") {
     document.getElementById("PrenatalFields").style.display = "block";
   } else if (selectedComplaint === "Dental") {

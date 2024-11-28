@@ -58,12 +58,12 @@
                 Messages
             </a>
         </li> -->
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-file-alt mr-2"></i> 
                 <span>Reports</span>
             </a>
-        </li>
+        </li> -->
         <li class="nav-item">
             <a id="logoutBtn" class="nav-link d-flex align-items-center" onclick="logoutUser()">
                 <i class="fa-solid fa-user"></i>
@@ -434,7 +434,7 @@
                         </div>
                       </div>
         
-                    <div id="PamilyPlanFields" class="appointmentFields" style="display: none;">
+                    <div id="FamilyPlanFields" class="appointmentFields" style="display: none;">
                         <label for="contraception">Contraceptive Method:</label>
                         <input type="text" id="contraception" placeholder="Specify method" required />
                         <br />
@@ -560,12 +560,35 @@
                         <th scope="col">Quantity</th>
                         <th scope="col">Date Added</th>
                         <th scope="col">Expiration Date</th>
+                        <th scope="col">Release</th>
                         </tr>
                     </thead>
                     <tbody id="inventoryList">
                         <!-- Inventory items will be populated here from Firebase -->
                     </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Modal Structure -->
+            <div class="modal" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title" id="detailsModalLabel">Inventory Item Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                    <p><strong>Product Name:</strong> <span id="modalProductName"></span></p>
+                    <p><strong>Category:</strong> <span id="modalCategory"></span></p>
+                    <p><strong>Quantity:</strong> <span id="modalQuantity"></span></p>
+                    <p><strong>Date Added:</strong> <span id="modalDateAdded"></span></p>
+                    <p><strong>Expiration Date(s):</strong> <span id="modalExpirationDates"></span></p>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
                 </div>
             </div>
           
@@ -698,10 +721,10 @@
         
     </div>     -->
 
-    <div id="reportSection" class="content-section" style="display: none;">
+    <!-- <div id="reportSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Reports</h1>
         <p>Reports and statistics go here.</p>
-    </div>
+    </div> -->
 
 </div>
 
