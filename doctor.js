@@ -573,7 +573,7 @@ async function getResidentData(patientId) {
     return {
       ...residentData,
       firstName,
-      lastName,
+      lastName
     };
   } catch (error) {
     console.error("Error fetching resident data:", error);
@@ -697,3 +697,7 @@ document.querySelector("tbody").addEventListener("click", function (event) {
     }
   }
 });
+
+
+
+

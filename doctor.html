@@ -52,12 +52,12 @@
                 Babies Vaccination
             </a>
         </li>
-        <li class="nav-item">
+       <!-- <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-file-alt mr-2"></i> 
                 Reports
             </a>
-        </li>
+        </li>-->
         <li class="nav-item">
             <a id="logoutBtn" class="nav-link d-flex align-items-center" onclick="logoutUser()">
                 <i class="fa-solid fa-user"></i>
@@ -349,15 +349,90 @@
     
     </div>
 
-    <div id="VaccineSection" class="content-section" style="display: none;">
-        <h1 class="mt-5">Babies Vaccine</h1>
-    
+<!--Babies Vaccination-->
+
+<div id="VaccineSection" class="content-section" style="display: none;">
+    <h1 class="mt-5">Babies Vaccine</h1>
+
+    <div>
+        <label for="patientIdInput">Enter Resident ID:</label>
+        <input type="text" style="width: 20%;" id="patientIdInput" placeholder="Resident ID" />
+        <button class="btn-primary" onclick="fetchPatientData()">Fetch Patient Data</button>
+
     </div>
 
-    <div id="reportSection" class="content-section" style="display: none;">
+    <div id="patientDataSection" style="display: none;">
+        <h2>Patient Information</h2>
+        <p><strong>Resident ID:</strong> <span id="patientId"></span></p>
+        <p><strong>Name:</strong> <span id="patientName"></span></p>
+        <p><strong>Age:</strong> <span id="patientAge"></span></p>
+        <p><strong>Sex:</strong> <span id="patientSex"></span></p>
+        <p><strong>Address:</strong> <span id="patientAddress"></span></p>
+    </div>
+
+    <div id="bhcmsForm" style="display: none;">
+        <h3>Child Information</h3>
+
+        <div class="row">
+            <div class="col">
+                <label for="appointmentType">Appointment Type:</label>
+                <select id="appointmentType" required>
+                    <option value="Appointment">Appointment</option>
+                    <option value="Walk-in">Walk-in</option>
+                </select>
+            </div>
+
+            <div class="col">
+                <label for="chiefComplaint">Chief Complaint (Reason for Visit):</label>
+                <select id="chiefComplaintType" onchange="showFormFields()" required>
+                    <option value="BVaccine">Babies Vaccine</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Babies Vaccine Section -->
+
+        <div id="BVaccineFields" class="appointmentFields" style="display: block; margin-top: 15px;">
+            <label for="babiesName">Baby's Name:</label>
+            <input type="text" id="babiesName" placeholder="Enter Baby's Name" required />
+            <br />
+            <label for="birthday">Birthday:</label>
+            <input type="date" id="birthday" placeholder="Enter Baby's Birthday" required />
+            <br />
+            <label for="height">Height (cm):</label>
+            <input type="number" id="height" placeholder="Enter height" required />
+            <br />
+            <label for="weight">Weight (kg):</label>
+            <input type="number" id="weight" placeholder="Enter weight" required />
+            <br />
+            <label for="temperature">Temperature (°C):</label>
+            <input type="text" id="temperature" placeholder="Enter temperature" required />
+            <span id="temperatureStatus"></span>
+            <br />
+            <label for="BvaccineType">Vaccine Taken:</label>
+            <div>
+                <input type="checkbox" id="BCG" />
+                <label for="BCG">BCG (Bacillus Calmette-Guerin)</label>
+                <input type="checkbox" id="HepatitisB" />
+                <label for="HepatitisB">Hepatitis B</label>
+                <input type="checkbox" id="Pentavalent" />
+                <label for="Pentavalent">Pentavalent (DPT-HepB-Hib)</label>
+            </div>
+            <br />
+            <div>
+                <button class="btn-primary" onclick="BabiesSubmitForm()">Submit</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+   <!-- <div id="reportSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Reports</h1>
         <p>Reports and statistics go here.</p>
-    </div>
+    </div>-->
 
 </div>
 
@@ -366,7 +441,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
-<!-- Your JS file -->
 <script src="doctor.js"></script>
 
 </body>
