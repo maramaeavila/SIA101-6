@@ -956,4 +956,8 @@ th, td {
     color: black;
 }
 
+#GCFields span{
+    font-style: italic;
+    color: #0c77a8;
+}
   

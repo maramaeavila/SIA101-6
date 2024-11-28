@@ -512,11 +512,11 @@ function updateStatus() {
   if (bloodPressure) {
     const [systolic, diastolic] = bloodPressure.split("/").map(Number);
     if (systolic < 90 || diastolic < 60) {
-      bloodPressureStatus.textContent = "Below normal (low blood pressure)";
+      bloodPressureStatus.textContent = "Low (hypotension)";
     } else if (systolic >= 130 || diastolic >= 80) {
-      bloodPressureStatus.textContent = "Above normal (high blood pressure)";
+      bloodPressureStatus.textContent = "High (hypertension)";
     } else {
-      bloodPressureStatus.textContent = "Normal blood pressure";
+      bloodPressureStatus.textContent = "Normal";
     }
   }
 
@@ -525,11 +525,11 @@ function updateStatus() {
   if (temperature) {
     const tempValue = parseFloat(temperature);
     if (tempValue < 36.5) {
-      temperatureStatus.textContent = "Below normal (hypothermia)";
+      temperatureStatus.textContent = "Low (hypothermia)";
     } else if (tempValue > 38.2) {
-      temperatureStatus.textContent = "Above normal (fever)";
+      temperatureStatus.textContent = "High (fever)";
     } else {
-      temperatureStatus.textContent = "Normal temperature";
+      temperatureStatus.textContent = "Normal";
     }
   }
 
@@ -538,11 +538,11 @@ function updateStatus() {
   if (pulseRate) {
     const pulse = parseInt(pulseRate, 10);
     if (pulse < 60) {
-      pulseRateStatus.textContent = "Below normal (slow heart rate)";
+      pulseRateStatus.textContent = "Low (slow heart rate)";
     } else if (pulse > 100) {
-      pulseRateStatus.textContent = "Above normal (fast heart rate)";
+      pulseRateStatus.textContent = "High (fast heart rate)";
     } else {
-      pulseRateStatus.textContent = "Normal pulse rate";
+      pulseRateStatus.textContent = "Normal";
     }
   }
 
@@ -553,11 +553,11 @@ function updateStatus() {
   if (respiratoryRate) {
     const rate = parseInt(respiratoryRate, 10);
     if (rate < 12) {
-      respiratoryRateStatus.textContent = "Below normal (slow breathing)";
+      respiratoryRateStatus.textContent = "Low (slow breathing)";
     } else if (rate > 20) {
-      respiratoryRateStatus.textContent = "Above normal (fast breathing)";
+      respiratoryRateStatus.textContent = "High (fast breathing)";
     } else {
-      respiratoryRateStatus.textContent = "Normal respiratory rate";
+      respiratoryRateStatus.textContent = "Normal";
     }
   }
 }
@@ -578,12 +578,12 @@ function computeBMI() {
   const weight = document.getElementById("weight").value;
 
   if (height && weight) {
-    const bmi = (weight / (height * height)) * 10000; // BMI formula in kg/m²
+    const bmi = (weight / (height * height)) * 10000;
     document.getElementById("bmi").textContent = bmi.toFixed(2);
 
     let status = "";
     if (bmi < 18.5) {
-      status = "Malnourished (Underweight)";
+      status = "Underweight";
     } else if (bmi >= 18.5 && bmi < 24.9) {
       status = "Normal (Healthy Weight)";
     } else if (bmi >= 30) {
@@ -624,7 +624,21 @@ function getVaccineType() {
   return vaccineTypes.join(", ") || "None";
 }
 
-function submitForm() {
+function validateForm() {
+  const height = document.getElementById("height").value;
+  const weight = document.getElementById("weight").value;
+  const bloodPressure = document.getElementById("bloodPressure").value;
+
+  if (!height || !weight || !bloodPressure) {
+    alert("Please fill out all required fields.");
+    return false;
+  }
+  return true;
+}
+
+function submitGeneralCheckup() {
+  if (!validateForm()) return;
+
   const patientId = document.getElementById("patientId").textContent;
   const height = document.getElementById("height").value;
   const weight = document.getElementById("weight").value;
@@ -632,18 +646,12 @@ function submitForm() {
   const temperature = document.getElementById("temperature").value;
   const pulseRate = document.getElementById("pulseRate").value;
   const respiratoryRate = document.getElementById("respiratoryRate").value;
-  const chiefComplaint = document.getElementById("chiefComplaint").value;
-  const specialty = document.getElementById("specialty").value;
-  const appointmentType = document.getElementById("appointmentType").value;
-
   const allergies = document.getElementById("hasAllergies").checked
     ? document.getElementById("allergiesDetails").value || "None"
     : "None";
-
   const medications = document.getElementById("hasMedications").checked
     ? document.getElementById("medicationsDetails").value || "None"
     : "None";
-
   const pastMedicalHistory = getCheckedConditions("pastMedicalHistory");
   const familyHistory = getCheckedConditions("familyHistory");
 
@@ -656,36 +664,11 @@ function submitForm() {
     : "No";
   const boosterDate = document.getElementById("boosterDate").value;
 
-  if (!height || !weight || !bloodPressure) {
-    alert("Please fill out all required fields.");
-    return;
-  }
-
   computeBMI();
-
   const bmi = document.getElementById("bmi").textContent;
   const bmiStatus = document.getElementById("bmiStatus").textContent;
 
-  const bloodPressureStatus = getBloodPressureStatus(bloodPressure);
-  const temperatureStatus = getTemperatureStatus(temperature);
-  const pulseRateStatus = getPulseRateStatus(pulseRate);
-  const respiratoryRateStatus = getRespiratoryRateStatus(respiratoryRate);
-
-  document.getElementById(
-    "bloodPressureStatus"
-  ).textContent = `Blood Pressure Status: ${bloodPressureStatus}`;
-  document.getElementById(
-    "temperatureStatus"
-  ).textContent = `Temperature Status: ${temperatureStatus}`;
-  document.getElementById(
-    "pulseRateStatus"
-  ).textContent = `Pulse Rate Status: ${pulseRateStatus}`;
-  document.getElementById(
-    "respiratoryRateStatus"
-  ).textContent = `Respiratory Rate Status: ${respiratoryRateStatus}`;
-  document.getElementById("bmiStatus").textContent = `BMI Status: ${bmiStatus}`;
-
-  const formId = `${patientId}-${new Date().getTime()}`;
+  const formId = `${patientId}-${Math.floor(100000 + Math.random() * 900000)}`;
 
   const formData = {
     patientId,
@@ -695,8 +678,6 @@ function submitForm() {
     temperature,
     pulseRate,
     respiratoryRate,
-    chiefComplaint,
-    appointmentType,
     allergies,
     medications,
     pastMedicalHistory,
@@ -707,58 +688,171 @@ function submitForm() {
     boosterDate,
     bmi,
     bmiStatus,
-    bloodPressureStatus,
-    temperatureStatus,
-    pulseRateStatus,
-    respiratoryRateStatus,
-    specialty,
     formId,
     timestamp: new Date().toISOString(),
   };
 
-  db.ref("6-Health-FormData")
-    .child(formId)
+  firebase
+    .database()
+    .ref(`6-GeneralCheckup/${formId}`)
     .set(formData)
     .then(() => {
-      Swal.fire({
-        title: "Success!",
-        text: "Form submitted successfully!",
-        icon: "success",
-        confirmButtonText: "OK",
-      }).then(() => {
-        clearForm();
-      });
-      console.log("Form Data saved:", formData);
+      swal(
+        "Success",
+        `Form submitted successfully! Appointment ID: ${formId}`,
+        "success"
+      );
+      clearForm();
     })
     .catch((error) => {
-      console.error("Error saving form data:", error);
-      alert("Error submitting form.");
+      console.error("Error submitting form: ", error);
+      swal("Error", "Failed to submit the form. Please try again.", "error");
     });
 }
 
 function clearForm() {
-  document.getElementById("height").value = "";
-  document.getElementById("weight").value = "";
-  document.getElementById("bloodPressure").value = "";
-  document.getElementById("temperature").value = "";
-  document.getElementById("pulseRate").value = "";
-  document.getElementById("respiratoryRate").value = "";
-  document.getElementById("chiefComplaint").value = "";
-  document.getElementById("specialty").value = "";
-  document.getElementById("appointmentType").value = "";
-  document.getElementById("hasAllergies").checked = false;
-  document.getElementById("allergiesDetails").value = "";
-  document.getElementById("hasMedications").checked = false;
-  document.getElementById("medicationsDetails").value = "";
-  document.getElementById("vaccinatedYes").checked = false;
-  document.getElementById("vaccinatedNo").checked = false;
-  document.getElementById("boosterYes").checked = false;
-  document.getElementById("boosterNo").checked = false;
-  document.getElementById("boosterDate").value = "";
-  document.getElementById("pastMedicalHistory").reset();
-  document.getElementById("familyHistory").reset();
+  const formFields = document.querySelectorAll(
+    ".appointmentFields input, .appointmentFields select, .appointmentFields textarea"
+  );
+
+  formFields.forEach((field) => {
+    if (field.type === "checkbox" || field.type === "radio") {
+      field.checked = false;
+    } else if (
+      field.type === "date" ||
+      field.type === "number" ||
+      field.type === "text"
+    ) {
+      field.value = "";
+    }
+  });
+
+  const selects = document.querySelectorAll(".appointmentFields select");
+  selects.forEach((select) => {
+    select.selectedIndex = 0;
+  });
+
   document.getElementById("bmi").textContent = "";
   document.getElementById("bmiStatus").textContent = "";
+  document.getElementById("temperatureStatus").textContent = "";
+}
+
+function getVaccineTypes() {
+  const vaccineTypes = [];
+  if (document.getElementById("BCG").checked)
+    vaccineTypes.push("BCG (Bacillus Calmette-Guerin)");
+  if (document.getElementById("HepatitisB").checked)
+    vaccineTypes.push("Hepatitis B");
+  if (document.getElementById("Pentavalent").checked)
+    vaccineTypes.push("Pentavalent (DPT-HepB-Hib)");
+  return vaccineTypes.join(", ") || "None";
+}
+
+function updateTemperatureStatus() {
+  const temperature = document.getElementById("temperature").value;
+  const temperatureStatus = document.getElementById("temperatureStatus");
+  if (temperature) {
+    const tempValue = parseFloat(temperature);
+    if (tempValue < 36.5) {
+      temperatureStatus.textContent = "Low (hypothermia)";
+    } else if (tempValue > 38.2) {
+      temperatureStatus.textContent = "High (fever)";
+    } else {
+      temperatureStatus.textContent = "Normal";
+    }
+  }
+}
+
+document
+  .getElementById("temperature")
+  .addEventListener("input", updateTemperatureStatus);
+
+function validateBabyVaccineForm() {
+  const babiesName = document.getElementById("babiesName").value.trim();
+  const birthday = document.getElementById("birthday").value.trim();
+  const height = document.getElementById("height").value.trim();
+  const weight = document.getElementById("weight").value.trim();
+  const temperature = document.getElementById("temperature").value.trim();
+
+  if (!babiesName || !birthday || !height || !weight || !temperature) {
+    swal("Error", "Please fill out all required fields.", "error");
+    return false;
+  }
+
+  if (isNaN(height) || isNaN(weight) || isNaN(temperature)) {
+    swal(
+      "Error",
+      "Please enter valid numbers for height, weight, and temperature.",
+      "error"
+    );
+    return false;
+  }
+
+  if (parseFloat(temperature) <= 0 || parseFloat(temperature) > 50) {
+    swal("Error", "Please enter a valid temperature.", "error");
+    return false;
+  }
+
+  if (parseFloat(height) <= 0 || parseFloat(weight) <= 0) {
+    swal("Error", "Height and weight must be positive values.", "error");
+    return false;
+  }
+
+  return true;
+}
+
+function BabiesSubmitForm() {
+  if (!validateBabyVaccineForm()) return;
+
+  const babyName = document.getElementById("babiesName").value;
+  const birthday = document.getElementById("birthday").value;
+  const height = document.getElementById("babysheight").value;
+  const weight = document.getElementById("babysweight").value;
+  const temperature = document.getElementById("babystemperature").value;
+
+  const vaccineTypes = getVaccineTypes();
+
+  const formId = `${babyName}-${Math.floor(100000 + Math.random() * 900000)}`;
+
+  const formData = {
+    babyName,
+    birthday,
+    height,
+    weight,
+    temperature,
+    vaccineTypes,
+    formId,
+    timestamp: new Date().toISOString(),
+  };
+
+  firebase
+    .database()
+    .ref(`6-BabyVaccines/${formId}`)
+    .set(formData)
+    .then(() => {
+      swal(
+        "Success",
+        `Form submitted successfully! Appointment ID: ${formId}`,
+        "success"
+      );
+      clearFormBVaccine();
+    })
+    .catch((error) => {
+      console.error("Error submitting form: ", error);
+      swal("Error", "Failed to submit the form. Please try again.", "error");
+    });
+}
+
+function clearFormBVaccine() {
+  document.getElementById("babiesName").value = "";
+  document.getElementById("birthday").value = "";
+  document.getElementById("babysheight").value = "";
+  document.getElementById("babysweight").value = "";
+  document.getElementById("babystemperature").value = "";
+  document.getElementById("babystemperatureStatus").textContent = "";
+  document.getElementById("BCG").checked = false;
+  document.getElementById("HepatitisB").checked = false;
+  document.getElementById("Pentavalent").checked = false;
 }
 
 function getBloodPressureStatus(bloodPressure) {
@@ -913,79 +1007,79 @@ function showFormFields() {
   }
 }
 
-function generateFormId() {
-  return Math.floor(1000 + Math.random() * 9000);
-}
+// function generateFormId() {
+//   return Math.floor(1000 + Math.random() * 9000);
+// }
 
-function BabiesSubmitForm() {
-  const formId = generateFormId();
-  const appointmentType = document.getElementById("appointmentType").value;
-  const chiefComplaint = document.getElementById("chiefComplaintType").value;
-  const specialty = document.getElementById("specialty").value;
+// function BabiesSubmitForm() {
+//   const formId = generateFormId();
+//   const appointmentType = document.getElementById("appointmentType").value;
+//   const chiefComplaint = document.getElementById("chiefComplaintType").value;
+//   const specialty = document.getElementById("specialty").value;
 
-  let babyName = "";
-  let babyBirthday = "";
-  let height = "";
-  let weight = "";
-  let temperature = "";
-  let vaccines = [];
+//   let babyName = "";
+//   let babyBirthday = "";
+//   let height = "";
+//   let weight = "";
+//   let temperature = "";
+//   let vaccines = [];
 
-  if (chiefComplaint === "BVaccine") {
-    babyName = document.getElementById("babiesName").value;
-    babyBirthday = document.getElementById("birthday").value;
+//   if (chiefComplaint === "BVaccine") {
+//     babyName = document.getElementById("babiesName").value;
+//     babyBirthday = document.getElementById("birthday").value;
 
-    height = document.getElementById("height").value || "";
-    weight = document.getElementById("weight").value || "";
-    temperature = document.getElementById("temperature").value || "";
+//     height = document.getElementById("height").value || "";
+//     weight = document.getElementById("weight").value || "";
+//     temperature = document.getElementById("temperature").value || "";
 
-    console.log("Height:", height);
-    console.log("Weight:", weight);
-    console.log("Temperature:", temperature);
+//     console.log("Height:", height);
+//     console.log("Weight:", weight);
+//     console.log("Temperature:", temperature);
 
-    if (document.getElementById("BCG").checked) vaccines.push("BCG");
-    if (document.getElementById("HepatitisB").checked)
-      vaccines.push("Hepatitis B");
-    if (document.getElementById("Pentavalent").checked)
-      vaccines.push("Pentavalent");
-  }
+//     if (document.getElementById("BCG").checked) vaccines.push("BCG");
+//     if (document.getElementById("HepatitisB").checked)
+//       vaccines.push("Hepatitis B");
+//     if (document.getElementById("Pentavalent").checked)
+//       vaccines.push("Pentavalent");
+//   }
 
-  console.log("Form Data:", {
-    formId: formId,
-    appointmentType: appointmentType,
-    chiefComplaint: chiefComplaint,
-    specialty: specialty,
-    babyName: babyName,
-    babyBirthday: babyBirthday,
-    height: height,
-    weight: weight,
-    temperature: temperature,
-    vaccines: vaccines,
-  });
+//   console.log("Form Data:", {
+//     formId: formId,
+//     appointmentType: appointmentType,
+//     chiefComplaint: chiefComplaint,
+//     specialty: specialty,
+//     babyName: babyName,
+//     babyBirthday: babyBirthday,
+//     height: height,
+//     weight: weight,
+//     temperature: temperature,
+//     vaccines: vaccines,
+//   });
 
-  const formData = {
-    formId: formId,
-    appointmentType: appointmentType,
-    chiefComplaint: chiefComplaint,
-    specialty: specialty,
-    babyName: babyName,
-    babyBirthday: babyBirthday,
-    height: height,
-    weight: weight,
-    temperature: temperature,
-    vaccines: vaccines,
-  };
+//   const formData = {
+//     formId: formId,
+//     appointmentType: appointmentType,
+//     chiefComplaint: chiefComplaint,
+//     specialty: specialty,
+//     babyName: babyName,
+//     babyBirthday: babyBirthday,
+//     height: height,
+//     weight: weight,
+//     temperature: temperature,
+//     vaccines: vaccines,
+//   };
 
-  insertIntoDatabase(formData);
-}
+//   insertIntoDatabase(formData);
+// }
 
-function insertIntoDatabase(formData) {
-  const db = firebase.firestore();
-  db.collection("6-BabiesVaccine")
-    .add(formData)
-    .then((docRef) => {
-      console.log("Document written with ID: ", docRef.id);
-    })
-    .catch((error) => {
-      console.error("Error adding document: ", error);
-    });
-}
+// function insertIntoDatabase(formData) {
+//   const db = firebase.firestore();
+//   db.collection("6-BabiesVaccine")
+//     .add(formData)
+//     .then((docRef) => {
+//       console.log("Document written with ID: ", docRef.id);
+//     })
+//     .catch((error) => {
+//       console.error("Error adding document: ", error);
+//     });
+// }

@@ -309,7 +309,7 @@ function fetchPrecheckupForms() {
     return;
   }
 
-  const formsRef = db.ref("6-Health-FormData"); // Firebase reference to the database.
+  const formsRef = db.ref("6-Health-FormData");
 
   formsRef
     .orderByChild("residentID")
@@ -317,13 +317,12 @@ function fetchPrecheckupForms() {
     .once("value")
     .then((snapshot) => {
       const tableBody = document.getElementById("precheckupListData");
-      tableBody.innerHTML = ""; // Clear the table content before rendering new rows.
+      tableBody.innerHTML = "";
 
       if (snapshot.exists()) {
         snapshot.forEach((childSnapshot) => {
           const formID = childSnapshot.key;
 
-          // Dynamically create a row for each formID
           const row = document.createElement("tr");
           row.innerHTML = `<td><a href="#" onclick="fetchPrecheckupFormDetails('${formID}')">${formID}</a></td>`;
           tableBody.appendChild(row);
@@ -344,7 +343,7 @@ function fetchPrecheckupFormDetails(formID) {
     return;
   }
 
-  const formRef = db.ref("6-Health-FormData/" + formID); // Reference to the specific form data.
+  const formRef = db.ref("6-Health-FormData/" + formID);
 
   formRef
     .get()
@@ -352,7 +351,6 @@ function fetchPrecheckupFormDetails(formID) {
       if (snapshot.exists()) {
         const formData = snapshot.val();
 
-        // Populate form fields with data
         document.getElementById("height").value = formData.height || "N/A";
         document.getElementById("weight").value = formData.weight || "N/A";
         document.getElementById("bloodPressure").value =
@@ -390,11 +388,9 @@ function fetchPrecheckupFormDetails(formID) {
         document.getElementById("BMIStatus").value =
           formData.BMIStatus || "N/A";
 
-        // Show the details section
         document.getElementById("precheckupDetailsSection").style.display =
           "block";
 
-        // Smoothly scroll to the details section
         document
           .getElementById("precheckupDetailsSection")
           .scrollIntoView({ behavior: "smooth" });
@@ -460,35 +456,38 @@ window.onload = function () {
   fetchHealthFormData();
 };
 
-//Patient List 
+//Patient List
 let lastFetchedData = [];
 
 function fetchHealthFormData() {
   const formDataTableBody = document.querySelector("#patientSection tbody");
   const selectedDate = document.getElementById("patientDatePicker").value;
-  const searchQuery = document.getElementById("patientSearchBar").value.toLowerCase();
+  const searchQuery = document
+    .getElementById("patientSearchBar")
+    .value.toLowerCase();
 
   formDataTableBody.innerHTML = "";
 
   if (lastFetchedData.length === 0) {
+    db.ref("6-Health-FormData")
+      .once("value")
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          let dataArray = [];
+          snapshot.forEach((childSnapshot) => {
+            const data = childSnapshot.val();
+            dataArray.push(data);
+          });
 
-    db.ref("6-Health-FormData").once("value").then((snapshot) => {
-      if (snapshot.exists()) {
-        let dataArray = [];
-        snapshot.forEach((childSnapshot) => {
-          const data = childSnapshot.val();
-          dataArray.push(data);
-
-        });
-
-        lastFetchedData = dataArray;
-        applyFilters();
-      } else {
-        alert("No data available.");
-      }
-    }).catch((error) => {
-      console.error("Error fetching health form data:", error);
-    });
+          lastFetchedData = dataArray;
+          applyFilters();
+        } else {
+          alert("No data available.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching health form data:", error);
+      });
   } else {
     applyFilters();
   }
@@ -500,12 +499,15 @@ function fetchHealthFormData() {
       let recordDate = null;
       if (data.timestamp) {
         const date = new Date(data.timestamp);
-        recordDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+        recordDate = `${date.getFullYear()}-${String(
+          date.getMonth() + 1
+        ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
       }
 
       const dateMatch = !selectedDate || recordDate === selectedDate;
       const specialtyMatch = data.specialty === "GeneralDoctor";
-      const searchMatch = !searchQuery || data.patientId.toLowerCase().includes(searchQuery);
+      const searchMatch =
+        !searchQuery || data.patientId.toLowerCase().includes(searchQuery);
 
       return dateMatch && specialtyMatch && searchMatch;
     });
@@ -542,17 +544,22 @@ function fetchHealthFormData() {
   }
 }
 
-document.getElementById("patientDatePicker").addEventListener("change", fetchHealthFormData);
-document.getElementById("patientSearchBar").addEventListener("input", fetchHealthFormData);
+document
+  .getElementById("patientDatePicker")
+  .addEventListener("change", fetchHealthFormData);
+document
+  .getElementById("patientSearchBar")
+  .addEventListener("input", fetchHealthFormData);
 
 //Date Setter
 function setDefaultDatePicker() {
   const datePicker = document.getElementById("patientDatePicker");
   const today = new Date();
-  const formattedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const formattedDate = `${today.getFullYear()}-${String(
+    today.getMonth() + 1
+  ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   datePicker.value = formattedDate;
 }
-
 
 // Modal Popup
 async function getResidentData(patientId) {
@@ -560,13 +567,13 @@ async function getResidentData(patientId) {
     const snapshot = await db.ref(`Residents/${patientId}`).once("value");
     const residentData = snapshot.val();
 
-    const firstName = residentData.firstName
-    const lastName = residentData.lastName
+    const firstName = residentData.firstName;
+    const lastName = residentData.lastName;
 
     return {
       ...residentData,
       firstName,
-      lastName
+      lastName,
     };
   } catch (error) {
     console.error("Error fetching resident data:", error);
@@ -589,31 +596,63 @@ async function showModal(patientData) {
       <strong>Sex:</strong> ${residentData.sex || "N/A"}<br>
       <strong>Patient ID:</strong> ${patientData.patientId || "N/A"}<br>
       <strong>Allergies:</strong> ${patientData.allergies || "N/A"}<br>
-      <strong>Appointment Type:</strong> ${patientData.appointmentType || "N/A"}<br>
+      <strong>Appointment Type:</strong> ${
+        patientData.appointmentType || "N/A"
+      }<br>
       <strong>Blood Pressure:</strong> ${patientData.bloodPressure || "N/A"}<br>
-      <strong>Blood Pressure Status:</strong> ${patientData.bloodPressureStatus || "N/A"}<br>
+      <strong>Blood Pressure Status:</strong> ${
+        patientData.bloodPressureStatus || "N/A"
+      }<br>
       <strong>BMI:</strong> ${patientData.bmi || "N/A"}<br>
       <strong>BMI Status:</strong> ${patientData.bmiStatus || "N/A"}<br>
       <strong>Booster Date:</strong> ${patientData.boosterDate || "N/A"}<br>
       <strong>Booster Dose:</strong> ${patientData.boosterDose || "N/A"}<br>
-      <strong>Chief Complaint:</strong> ${patientData.chiefComplaint || "N/A"}<br>
+      <strong>Chief Complaint:</strong> ${
+        patientData.chiefComplaint || "N/A"
+      }<br>
       <strong>Family History:</strong> ${patientData.familyHistory || "N/A"}<br>
       <strong>Form ID:</strong> ${patientData.formId || "N/A"}<br>
       <strong>Height:</strong> ${patientData.height || "N/A"}cm<br>
       <strong>Weight:</strong> ${patientData.weight || "N/A"}kilos <br>
       <strong>Medications:</strong> ${patientData.medications || "N/A"}<br>
-      <strong>Past Medical History:</strong> ${patientData.pastMedicalHistory || "N/A"}<br>
+      <strong>Past Medical History:</strong> ${
+        patientData.pastMedicalHistory || "N/A"
+      }<br>
       <strong>Pulse Rate:</strong> ${patientData.pulseRate || "N/A"}<br>
-      <strong>Pulse Rate Status:</strong> ${patientData.pulseRateStatus || "N/A"}<br>
-      <strong>Respiratory Rate:</strong> ${patientData.respiratoryRate || "N/A"}<br>
-      <strong>Respiratory Rate Status:</strong> ${patientData.respiratoryRateStatus || "N/A"}<br>
+      <strong>Pulse Rate Status:</strong> ${
+        patientData.pulseRateStatus || "N/A"
+      }<br>
+      <strong>Respiratory Rate:</strong> ${
+        patientData.respiratoryRate || "N/A"
+      }<br>
+      <strong>Respiratory Rate Status:</strong> ${
+        patientData.respiratoryRateStatus || "N/A"
+      }<br>
       <strong>Specialty:</strong> ${patientData.specialty || "N/A"}<br>
       <strong>Temperature:</strong> ${patientData.temperature || "N/A"}<br>
-      <strong>Temperature Status:</strong> ${patientData.temperatureStatus || "N/A"}<br>
-      <strong>TimeStamp:</strong> ${patientData.timestamp ? new Date(new Date(patientData.timestamp)
-      .setDate(new Date(patientData.timestamp).getDate() + 1)).toLocaleDateString('en-US', { weekday: 
-      'long', year: 'numeric', month: 'long', day: 'numeric' }) + ', ' + new Date(new Date(patientData.timestamp)
-      .setDate(new Date(patientData.timestamp).getDate() + 1)).toLocaleTimeString() : "N/A"}<br>
+      <strong>Temperature Status:</strong> ${
+        patientData.temperatureStatus || "N/A"
+      }<br>
+      <strong>TimeStamp:</strong> ${
+        patientData.timestamp
+          ? new Date(
+              new Date(patientData.timestamp).setDate(
+                new Date(patientData.timestamp).getDate() + 1
+              )
+            ).toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            }) +
+            ", " +
+            new Date(
+              new Date(patientData.timestamp).setDate(
+                new Date(patientData.timestamp).getDate() + 1
+              )
+            ).toLocaleTimeString()
+          : "N/A"
+      }<br>
       <strong>Vaccinated:</strong> ${patientData.vaccinated || "N/A"}<br>
       <strong>Vaccine Type:</strong> ${patientData.vaccineType || "N/A"}<br>
     </div>
@@ -625,8 +664,10 @@ async function showModal(patientData) {
   downloadBtn.style.display = "inline-block";
 
   downloadBtn.onclick = () => {
-    const plainTextContent = content.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '');
-    const blob = new Blob([plainTextContent], { type: 'text/plain' });
+    const plainTextContent = content
+      .replace(/<br>/g, "\n")
+      .replace(/<[^>]+>/g, "");
+    const blob = new Blob([plainTextContent], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -647,14 +688,12 @@ document.querySelector("tbody").addEventListener("click", function (event) {
     const row = event.target.closest("tr");
     const patientId = row.querySelector("td:first-child").textContent;
 
-    const patientData = lastFetchedData.find((data) => data.patientId === patientId);
+    const patientData = lastFetchedData.find(
+      (data) => data.patientId === patientId
+    );
 
     if (patientData) {
       showModal(patientData);
     }
   }
 });
-
-
-
-
