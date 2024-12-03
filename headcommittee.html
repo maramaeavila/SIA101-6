@@ -3,25 +3,44 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BHCMS Old Capitol</title>
-        <link rel="stylesheet" href="style1.css">
-        <!-- Bootstrap CSS -->
+        <title>Barangay Old Capitol Healthcenter</title>
+        <link rel="stylesheet" href="styles.css">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <!-- Font Awesome Icons -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-        <!-- SweetAlert2 -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.2.0/sweetalert2.min.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.2.0/sweetalert2.all.min.js"></script>
-        <!-- Include CryptoJS Library -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     </head>
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
-    <div class="text-center mb-3" id="profileImageContainer">
+<!-- Navbar -->
+<div class="navbar">
+    <label>Barangay Old Capitol Healthcenter</label>
+    <div class="user-icon">
+        <div class="text-center mb-3" id="profileImageContainer" onclick="toggleUserMenu()">
+            <i class="fa-solid fa-user-circle"></i>
+        </div>
+        <div id="userMenu" class="dropdown-menu" style="display: none;">
+            <a href="#" onclick="showLogoutModal()" class="dropdown-item">
+                <i class="fa-solid fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </div>
+</div>    
+
+<div id="logoutModal" class="modal" style="display: none;">
+    <div class="modal-content">
+    <span class="close" id="cancelLogout">&times;</span>  
+      <h2>Confirm Logout</h2>
+      <p>Are you sure you want to logout?</p>
+      <div class="modal-actions flexend">
+        <button id="confirmLogout" >Logout</button>
       </div>
+    </div>
+  </div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
     <ul class="navbar-nav flex-column">
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
@@ -60,15 +79,9 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#">
-                <i class="fa-solid fa-file-alt mr-2"></i> 
-                Reports
-            </a>
-        </li>
-        <li class="nav-item">
-            <a id="logoutBtn" class="nav-link d-flex align-items-center" onclick="logoutUser()">
-                <i class="fa-solid fa-user"></i>
-                Logout
+            <a href="#" class="nav-link d-flex align-items-center" id="timeInOutLink">
+                <i class="fa-solid fa-clock mr-2"></i> 
+                Time In/Time Out
             </a>
         </li>
     </ul>
@@ -83,9 +96,6 @@
             <div class="col-md-3 offset-md-4">
                 <input type="date" id="appointmentDatePicker" class="form-control">
             </div>
-            <!-- <div class="col-md-1">
-                <button class="btn-primary" onclick="fetchAppointmentsByDate()">Update</button>
-            </div> -->
         </div>
 
         <div class="row">
@@ -142,38 +152,42 @@
 
     <div id="residentSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Resident List</h1>
-    
-        <input type="text" id="searchResident" placeholder="Search residents..." oninput="searchResidents()" />
-    
         <div class="table-container">
+        <input type="text" id="searchResident" placeholder="Search residents..." oninput="searchResidents()" />
             <table>
                 <thead>
                     <tr>
                         <th>Resident ID</th>
                         <th>Name</th>
                         <th>Mobile Number</th>
-                        <th>Address</th>
-                        <th>Age</th>
-                        <th>Sex</th>
-                        <th>Birthdate</th>
-                        <th>Blood Type</th>
                         <th>Email</th>
-                        <th>Emergency Contact Name</th>
-                        <th>Emergency Contact Mobile</th>
-                        <th>Emergency Relationship</th>
                     </tr>
                 </thead>
                 <tbody id="residentListData">
                     
                 </tbody>
             </table>
+        <div class="pagination">
+            <button id="prevPage" onclick="prevPage()">Previous</button>
+            <span id="pageInfo"></span>
+            <button id="nextPage" onclick="nextPage()">Next</button>
+        </div>
+    </div>
+    </div>
+
+    <div id="residentModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Resident Details</h2>
+            <div id="modalContent">
+                
+            </div>
         </div>
     </div>
 
     <div id="appointmentSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Appointment Calendar</h1>
         <div class="calendar-container">
-            <!-- Calendar Area -->
             <div class="calendar">
                 <div class="calendar-header">
                     <button id="prevMonth" class="btn btn-secondary">
@@ -190,7 +204,6 @@
                 </div>
             </div>
 
-            <!-- Schedule Area -->
             <div class="schedule">
                 <div class="schedule-header">Appointments</div>
                 <ul class="appointment-list" id="appointmentList">
@@ -200,35 +213,36 @@
         </div>
     </div>
 
-    <div id="healthcareSection" class="content-section">
+    <div id="healthcareSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Health Department Employees</h1>
         <div class="table-container">
-            <table>
+          <table>
             <thead>
-                <tr>
+              <tr>
                 <th>Employee ID</th>
                 <th>Name</th>
-                <th>Contact</th>
-                <th>Address</th>
-                <th>Email</th>
                 <th>Role</th>
                 <th>Status</th>
-                <th>Profile</th>
-                <th>Resume</th>
-                </tr>
+              </tr>
             </thead>
-            <tbody id="departmentListData">
-                <!-- Data will be dynamically added here -->
-            </tbody>
-            </table>
+            <tbody id="departmentListData"></tbody>
+          </table>
         </div>
+      </div>
+      
+      <div id="employeeModal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <span class="close" onclick="closeEmployeeModal()">&times;</span>
+          <h2>Employee Details</h2>
+          <div id="modalEmployeeContent"></div>
         </div>
+      </div>
 
     <div id="medicineSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Medicine Management</h1>
         <ul class="nav nav-tabs" id="medicineTab" role="tablist" style="margin: 8px;">
             <li class="nav-item">
-                <button class="nav-link" data-tab="medicineTabPane" onclick="showMedicineTab('medicineTabPane')">Medicine & Inventory</button>
+                <button class="nav-link active" data-tab="medicineTabPane" onclick="showMedicineTab('medicineTabPane')">Medicine & Stocks</button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-tab="guidelinesTabPane" onclick="showMedicineTab('guidelinesTabPane')">Guidelines</button>
@@ -237,7 +251,7 @@
     
         <div class="tab-content" id="medicineTabContent">
             <div class="tab-pane fade show active" id="medicineTabPane" role="tabpanel">
-                <h1>Add New Stock</h1>
+                <h1 class="fonts">Add New Stock</h1>
                 <form id="addStockForm" class="mt-4">
                     <div class="row">
                         <div class="col-md-6">
@@ -300,32 +314,50 @@
                             </div>
                         </div>
                     </div>
-        
-                    <button type="submit" class="btn-primary mt-3">Add Stock</button>
+                    
+                    <div class="flexend">
+                        <button type="submit" class="btn-primary mt-3">Add Stock</button>
+                    </div>    
                 </form>
 
-                    <h1 class="mt-5">Current Inventory</h1>
-                    <p>View the current stock of medicines here.</p>
-                    <table class="table table-striped">
-                    <thead>
+                <div id="medicineReleaseModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                      <span class="close" onclick="closeReleaseModal()">&times;</span>
+                      <h2>Release Medicine</h2>
+                      <form id="releaseForm">
+                        <label for="residentId">Resident ID:</label>
+                        <input type="text" id="residentId" required><br><br>
+                  
+                        <div id="batchDetails"></div> 
+                  
+                        <button type="submit" class="btn btn-primary">Release</button>
+                      </form>
+                    </div>
+                  </div>
+                  
+                  <!-- Inventory List -->
+                  <h1 class="mt-5 fonts">Medicine Stocks</h1>
+                  <p>View the current stock of medicines here.</p>
+                  <div class="table-container">
+                    <table id="inventoryList">
+                        <thead>
                         <tr>
-                        <th scope="col">Product Name</th>
-                        <th scope="col">Category</th>
-                        <th scope="col">Quantity</th>
-                        <th scope="col">Date Added</th>
-                        <th scope="col">Expiration Date</th>
+                            <th>Category</th>
+                            <th>Name</th>
+                            <th>Quantity</th>
+                            <th>Date Added</th>
+                            <th>Expiration Date</th>
+                            <th>Action</th>
                         </tr>
-                    </thead>
-                    <tbody id="inventoryList">
-                        <!-- Inventory items will be populated here from Firebase -->
-                    </tbody>
+                        </thead>
+                        <tbody></tbody>
                     </table>
-                </div>
-            </div>
+                </div> 
+            </div>    
           
             <!-- Guidelines Tab Pane -->
             <div class="tab-pane fade" id="guidelinesTabPane" role="tabpanel">
-                <h1>Family Planning Services</h1>
+                <h1 class="fonts">Family Planning Services</h1>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -355,7 +387,7 @@
                     </table>
                 </div>
             
-                <h1>Common Medications</h1>
+                <h1 class="fonts">Common Medications</h1>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -385,7 +417,7 @@
                     </table>
                 </div>
             
-                <h1>Vaccines for Children</h1>
+                <h1 class="fonts">Vaccines for Children</h1>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -415,7 +447,7 @@
                     </table>
                 </div>
             
-                <h1>Medications for Pregnant Women</h1>
+                <h1 class="fonts">Medications for Pregnant Women</h1>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -446,6 +478,7 @@
                 </div>
             </div>
         </div>
+    </div>    
 
     <div id="requestSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Request</h1>
@@ -497,16 +530,16 @@
                     <textarea class="form-control" id="additionalComments" rows="2" placeholder="Any additional information"></textarea>
                 </div>
     
-                <div class="col-12">
+                <div class="col-12 flexend">
                     <button type="submit" class="btn-primary">Submit Request</button>
                 </div>
             </form>
         </div>
     
         <div id="submittedRequestsTab" class="tab-content" style="display: none;">
-            <h1 class="mt-4">Submitted Requests</h1>
-            <div class="table-responsive">
-                <table class="table table-bordered">
+            <h1 class="mt-5">Request List</h1>
+            <div class="table-container">
+                <table>
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -525,10 +558,33 @@
         </div>
     </div>
 
-    <div id="reportSection" class="content-section" style="display: none;">
-        <h1 class="mt-5">Reports</h1>
-        <p>Reports and statistics go here.</p>
+    <div id="timeInOutSection" class="content-section" style="display: none;">
+        <h5 class="mt-3">Time In/Time Out</h5>
+
+        <div class="d-flex mt-2">
+          <button id="timeInButton" style="margin: 10px;" onclick="timeIn()">Time In</button>
+          <button id="timeOutButton" style="margin: 10px;" onclick="timeOut()">Time Out</button>
+        </div>
+
+        <div id="timeRecordsDisplay" class="mt-3 text-center" style="font-size: 0.9rem;"></div>
+
+        <div class="table-container">
+            <table id="timeRecordsTable">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time In</th>
+                    <th>Time Out</th>
+                    <th>Total Hours</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
     </div>
+    
 
 </div>
 </div>
@@ -540,7 +596,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 <!-- Your JS file -->
-<script src="admin.js"></script>
+<script src="headcommittee.js"></script>
 
 </body>
 </html>

@@ -3,29 +3,49 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BHCMS Old Capitol</title>
-        <link rel="stylesheet" href="style1.css">
-        <!-- Bootstrap CSS -->
+        <title>Barangay Old Capitol Healthcenter</title>
+        <link rel="stylesheet" href="styles.css">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <!-- Font Awesome Icons -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-        <!-- SweetAlert2 -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.2.0/sweetalert2.min.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.2.0/sweetalert2.all.min.js"></script>
-        <!-- Include CryptoJS Library -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     </head>
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-    <div class="text-center mb-3" id="profileImageContainer">
+<!-- Navbar -->
+<div class="navbar">
+    <label>Barangay Old Capitol Healthcenter</label>
+    <div class="user-icon">
+        <div class="text-center mb-3" id="profileImageContainer" onclick="toggleUserMenu()">
+            <i class="fa-solid fa-user-circle"></i>
+        </div>
+        <div id="userMenu" class="dropdown-menu" style="display: none;">
+            <a href="#" onclick="showLogoutModal()" class="dropdown-item">
+                <i class="fa-solid fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
     </div>
+</div>    
+
+<div id="logoutModal" class="modal" style="display: none;">
+    <div class="modal-content">
+    <span class="close" id="cancelLogout">&times;</span>  
+      <h2>Confirm Logout</h2>
+      <p>Are you sure you want to logout?</p>
+      <div class="modal-actions flexend">
+        <button id="confirmLogout" >Logout</button>
+      </div>
+    </div>
+  </div>    
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
     <ul class="navbar-nav flex-column">
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-house mr-2"></i> 
-                <span>Dashboard</span>
+                Dashboard
             </a>
         </li>
         <li class="nav-item">
@@ -50,24 +70,6 @@
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-pills mr-2"></i> 
                 <span>Medicine</span>
-            </a>
-        </li>
-        <!-- <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#">
-                <i class="fa-solid fa-message mr-2"></i> 
-                Messages
-            </a>
-        </li> -->
-        <!-- <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#">
-                <i class="fa-solid fa-file-alt mr-2"></i> 
-                <span>Reports</span>
-            </a>
-        </li> -->
-        <li class="nav-item">
-            <a id="logoutBtn" class="nav-link d-flex align-items-center" onclick="logoutUser()">
-                <i class="fa-solid fa-user"></i>
-                <span>Logout</span>
             </a>
         </li>
     </ul>
@@ -140,31 +142,36 @@
 
     <div id="residentSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Resident List</h1>
-    
-        <input type="text" id="searchResident" placeholder="Search residents..." oninput="searchResidents()" />
-    
         <div class="table-container">
+        <input type="text" id="searchResident" placeholder="Search residents..." oninput="searchResidents()" />
             <table>
                 <thead>
                     <tr>
                         <th>Resident ID</th>
                         <th>Name</th>
                         <th>Mobile Number</th>
-                        <th>Address</th>
-                        <th>Age</th>
-                        <th>Sex</th>
-                        <th>Birthdate</th>
-                        <th>Blood Type</th>
                         <th>Email</th>
-                        <th>Emergency Contact Name</th>
-                        <th>Emergency Contact Mobile</th>
-                        <th>Emergency Relationship</th>
                     </tr>
                 </thead>
                 <tbody id="residentListData">
                     
                 </tbody>
             </table>
+        <div class="pagination">
+            <button id="prevPage" onclick="prevPage()">Previous</button>
+            <span id="pageInfo"></span>
+            <button id="nextPage" onclick="nextPage()">Next</button>
+        </div>
+    </div>
+    </div>
+
+    <div id="residentModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Resident Details</h2>
+            <div id="modalContent">
+                
+            </div>
         </div>
     </div>
 
@@ -395,7 +402,7 @@
             </div>
         
                     <!-- Additional Fields based on selected type -->
-                    <div id="BVaccineFields" class="appointmentFields" style="display: block;margin-top: 15px;">
+                    <div id="BVaccineFields" class="appointmentFields" style="display: none;margin-top: 15px;">
                         <div class="row">
                           <div class="col">
                             <label for="babiesName">Baby's Name:</label>
@@ -405,10 +412,10 @@
                             <input type="date" id="birthday" required />
                             <br />
                             <label for="height">Height (cm):</label>
-                            <input type="number" id="Babysheight" placeholder="Enter height" required />
+                            <input type="number" id="babysheight" placeholder="Enter height" required />
                             <br />
                             <label for="weight">Weight (kg):</label>
-                            <input type="number" id="Babysweight" placeholder="Enter weight" required />
+                            <input type="number" id="babysweight" placeholder="Enter weight" required />
                             <br />
                           </div>
                       
@@ -521,7 +528,6 @@
 
                                 <input type="checkbox" id="methodAdvantages" />
                                 <label>Counseling and Education Provided:</label><br />
-                                <label for="methodAdvantages">Advantages and Disadvantages of Each Method</label><br />
 
                                 <input type="checkbox" id="properUse" />                   
                                 <label for="properUse">Proper Use of Chosen Method</label><br />   
@@ -541,15 +547,109 @@
                     </div>
         
                     <div id="PrenatalFields" class="appointmentFields" style="display: none;margin-top: 15px;">
-                        <label for="pregnancyWeeks">Weeks of Pregnancy:</label>
-                        <input type="number" id="pregnancyWeeks" placeholder="Enter weeks of pregnancy" required />
-                        <br />
-                        <label for="dueDate">Expected Due Date:</label>
-                        <input type="date" id="dueDate" required />
+                        <div class="row">
+                            <div class="col">
+                                <label for="bloodPressure">Blood Pressure:</label>
+                                <input type="text" id="bloodPressure" placeholder="Enter Blood Pressure" required />
+                                <br />
+                            
+                                <label for="weight">Weight:</label>
+                                <input type="number" id="weight" placeholder="Enter Weight" required />
+                                <br />
+                            
+                                <label for="height">Height:</label>
+                                <input type="number" id="height" placeholder="Enter Height" required />
+                                <br />
+                            
+                                <label for="fundalHeight">Fundal Height:</label>
+                                <input type="number" id="fundalHeight" placeholder="Enter Fundal Height" required />
+                                <br />
+                            
+                                <label for="fetalHeartTone">Fetal Heart Tone (FHT):</label>
+                                <input type="text" id="fetalHeartTone" placeholder="Enter Fetal Heart Tone" required />
+                                <br />
+
+                                <label>Have you been diagnosed with any of the following? (Check all that apply)</label><br />
+                                <input type="checkbox" id="highBloodPressure" /> High Blood Pressure<br />
+                                <input type="checkbox" id="diabetes" /> Diabetes<br />
+                                <input type="checkbox" id="thyroidDisorder" /> Thyroid Disorder<br />
+                                <input type="checkbox" id="heartDisease" /> Heart Disease<br />
+                                <input type="checkbox" id="kidneyIssues" /> Kidney Issues<br />
+                                <input type="checkbox" id="asthma" /> Asthma/Respiratory Disorders<br />
+                                <input type="checkbox" id="arthritis" /> Arthritis<br />
+                                <input type="checkbox" id="cancer" /> Cancer Type: <input type="text" id="cancerType" placeholder="Specify Type" /><br />
+                                <input type="checkbox" id="otherConditions" /> Other (Specify): <input type="text" id="otherConditionsDetails" placeholder="Specify Other Conditions" /><br />
+                                <br />
+                            </div>   
+                                     
+                            <div class="col">
+                                <label>Are you currently taking any medications?</label><br />
+                                <input type="radio" id="medicationsYes" name="medications" value="Yes" /> Yes
+                                <input type="radio" id="medicationsNo" name="medications" value="No" /> No<br />
+                                <label>If yes, list them:</label>
+                                <input type="text" id="medicationsList" placeholder="List Medications" /><br />
+                                <br />
+
+                                <label>Is this your first pregnancy?</label><br />
+                                <input type="radio" id="firstPregnancyYes" name="firstPregnancy" value="Yes" /> Yes
+                                <input type="radio" id="firstPregnancyNo" name="firstPregnancy" value="No" /> No<br />
+                                <label>If no, number of previous pregnancies:</label>
+                                <input type="number" id="previousPregnancies" placeholder="Enter Number of Previous Pregnancies" /><br />
+                                <br />
+                            
+                                <label>Any history of miscarriages or complications?</label><br />
+                                <input type="radio" id="miscarriagesYes" name="miscarriages" value="Yes" /> Yes
+                                <input type="radio" id="miscarriagesNo" name="miscarriages" value="No" /> No<br />
+                                <label>If yes, details:</label>
+                                <input type="text" id="miscarriageDetails" placeholder="Details of Miscarriages or Complications" /><br />
+                                <br />
+                            
+                                <label for="currentGestation">Current gestation (weeks):</label>
+                                <input type="number" id="currentGestation" placeholder="Enter Current Gestation Weeks" required />
+                                <br />
+                                <br />
+                            
+                                <label>Are you experiencing any of the following? (Check all that apply)</label><br />
+                                <input type="checkbox" id="nausea" /> Nausea/Vomiting<br />
+                                <input type="checkbox" id="backPain" /> Back Pain<br />
+                                <input type="checkbox" id="fatigue" /> Fatigue<br />
+                                <input type="checkbox" id="swelling" /> Swelling<br />
+                                <input type="checkbox" id="headaches" /> Headaches<br />
+                                <input type="checkbox" id="otherSymptoms" /> Other (Specify): <input type="text" id="otherSymptomsDetails" placeholder="Specify Other Symptoms" /><br />
+                                <br />
+                            </div>
+                            
+                            <div class="col">
+                                <label>Smoking:</label>
+                                <input type="radio" id="smokingYes" name="smoking" value="Yes" /> Yes
+                                <input type="radio" id="smokingNo" name="smoking" value="No" /> No | Frequency: <input type="text" id="smokingFrequency" placeholder="Frequency" /><br />
+                            
+                                <label>Alcohol:</label>
+                                <input type="radio" id="alcoholYes" name="alcohol" value="Yes" /> Yes
+                                <input type="radio" id="alcoholNo" name="alcohol" value="No" /> No | Frequency: <input type="text" id="alcoholFrequency" placeholder="Frequency" /><br />
+                            
+                                <label>Caffeine:</label>
+                                <input type="radio" id="caffeineYes" name="caffeine" value="Yes" /> Yes
+                                <input type="radio" id="caffeineNo" name="caffeine" value="No" /> No | Daily Amount: <input type="text" id="caffeineAmount" placeholder="Daily Amount" /><br />
+                            
+                                <label>Exercise:</label>
+                                <input type="radio" id="exerciseYes" name="exercise" value="Yes" /> Yes
+                                <input type="radio" id="exerciseNo" name="exercise" value="No" /> No | Type/Frequency: <input type="text" id="exerciseDetails" placeholder="Type/Frequency" /><br />
+                                <br />
+                            
+                                <label for="pregnancyWeeks">Weeks of Pregnancy:</label>
+                                <input type="number" id="pregnancyWeeks" placeholder="Enter weeks of pregnancy" required />
+                                <br />
+                        
+                                <label for="dueDate">Expected Due Date:</label>
+                                <input type="date" id="dueDate" required />
+                                <br />  
+                            </div>         
                         <div>
-                            <button class="btn-primary" onclick="">Submit</button>
+                            <button class="btn-primary" onclick="submitPrenatalDetails()">Submit</button>
                         </div>
                     </div>
+                </div>
         
                     <div id="DentalFields" class="appointmentFields" style="display: none;margin-top: 15px;">
                         <label for="teethCondition">Teeth Condition:</label>
@@ -561,265 +661,253 @@
                             <button class="btn-primary" onclick="">Submit</button>
                         </div>
                     </div>
+
                 </div>
         </div>
         </div>
 
-    <div id="medicineSection" class="content-section" style="display: none;">
-        <h1 class="mt-5">Medicine Management</h1>
-        <ul class="nav nav-tabs" id="medicineTab" role="tablist" style="margin: 8px;">
-            <li class="nav-item">
-                <button class="nav-link" data-tab="medicineTabPane" onclick="showMedicineTab('medicineTabPane')">Medicine & Inventory</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" data-tab="guidelinesTabPane" onclick="showMedicineTab('guidelinesTabPane')">Guidelines</button>
-            </li>
-        </ul>
+        <div id="medicineSection" class="content-section" style="display: none;">
+            <h1 class="mt-5">Medicine Management</h1>
+            <ul class="nav nav-tabs" id="medicineTab" role="tablist" style="margin: 8px;">
+                <li class="nav-item">
+                    <button class="nav-link active" data-tab="medicineTabPane" onclick="showMedicineTab('medicineTabPane')">Medicine & Stocks</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-tab="guidelinesTabPane" onclick="showMedicineTab('guidelinesTabPane')">Guidelines</button>
+                </li>
+            </ul>
+        
+            <div class="tab-content" id="medicineTabContent">
+                <div class="tab-pane fade show active" id="medicineTabPane" role="tabpanel">
+                    <h1 class="fonts">Add New Stock</h1>
+                    <form id="addStockForm" class="mt-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="productCategory">Category:</label>
+                                    <select class="form-control" id="productCategory" required onchange="handleCategoryChange()">
+                                        <option value="Medicine">Medicine</option>
+                                        <option value="Contraceptives">Contraceptives</option>
+                                        <option value="Vaccine">Vaccine</option>
+                                    </select>
+                                </div>
+            
+                                <div class="form-group" id="contraceptivesType" style="display: none;">
+                                    <label for="productType">Select Contraceptive Product:</label>
+                                    <select class="form-control" id="productType" required>
+                                        <option value="Pills">Pills (Oral Contraceptives)</option>
+                                        <option value="Condoms">Condoms</option>
+                                        <option value="Injectables">Injectables (Depo-Provera)</option>
+                                    </select>
+                                </div>
+            
+                                <div class="form-group" id="medicineType" style="display: none;">
+                                    <label for="productType">Select Medicine:</label>
+                                    <select class="form-control" id="productType" required>
+                                        <option value="Paracetamol">Paracetamol</option>
+                                        <option value="Amoxicillin">Amoxicillin</option>
+                                        <option value="Cough Syrup">Cough Syrup</option>
+                                    </select>
+                                </div>
+            
     
-        <div class="tab-content" id="medicineTabContent">
-            <div class="tab-pane fade show active" id="medicineTabPane" role="tabpanel">
-                <h1>Add New Stock</h1>
-                <form id="addStockForm" class="mt-4">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="productCategory">Category:</label>
-                                <select class="form-control" id="productCategory" required onchange="handleCategoryChange()">
-                                    <option value="Medicine">Medicine</option>
-                                    <option value="Contraceptives">Contraceptives</option>
-                                    <option value="Vaccine">Vaccine</option>
-                                </select>
+                                <div class="form-group" id="vaccineType" style="display: none;">
+                                    <label for="productType">Select Vaccine:</label>
+                                    <select class="form-control" id="productType" required>
+                                        <option value="BCG">BCG (Bacillus Calmette-Guerin)</option>
+                                        <option value="HepatitisB">Hepatitis B</option>
+                                        <option value="Pentavalent">Pentavalent (DPT-HepB-Hib)</option>
+                                    </select>
+                                </div>
+            
+                                <div class="form-group">
+                                    <label for="productName">Product Name:</label>
+                                    <input type="text" class="form-control" id="productName" placeholder="Enter product name" required>
+                                </div>
                             </div>
-        
-                            <div class="form-group" id="contraceptivesType" style="display: none;">
-                                <label for="productType">Select Contraceptive Product:</label>
-                                <select class="form-control" id="productType" required>
-                                    <option value="Pills">Pills (Oral Contraceptives)</option>
-                                    <option value="Condoms">Condoms</option>
-                                    <option value="Injectables">Injectables (Depo-Provera)</option>
-                                </select>
-                            </div>
-        
-                            <div class="form-group" id="medicineType" style="display: none;">
-                                <label for="productType">Select Medicine:</label>
-                                <select class="form-control" id="productType" required>
-                                    <option value="Paracetamol">Paracetamol</option>
-                                    <option value="Amoxicillin">Amoxicillin</option>
-                                    <option value="Cough Syrup">Cough Syrup</option>
-                                </select>
-                            </div>
-        
-
-                            <div class="form-group" id="vaccineType" style="display: none;">
-                                <label for="productType">Select Vaccine:</label>
-                                <select class="form-control" id="productType" required>
-                                    <option value="BCG">BCG (Bacillus Calmette-Guerin)</option>
-                                    <option value="HepatitisB">Hepatitis B</option>
-                                    <option value="Pentavalent">Pentavalent (DPT-HepB-Hib)</option>
-                                </select>
-                            </div>
-        
-                            <div class="form-group">
-                                <label for="productName">Product Name:</label>
-                                <input type="text" class="form-control" id="productName" placeholder="Enter product name" required>
+            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="stockQuantity">Quantity:</label>
+                                    <input type="number" class="form-control" id="stockQuantity" placeholder="Enter quantity to add" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="currentDate">Date Added:</label>
+                                    <input type="date" class="form-control" id="currentDate" value="" required>
+                                </div>
+            
+                                <div class="form-group">
+                                    <label for="expirationDate">Expiration Date:</label>
+                                    <input type="date" class="form-control" id="expirationDate" required>
+                                </div>
                             </div>
                         </div>
-        
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="stockQuantity">Quantity:</label>
-                                <input type="number" class="form-control" id="stockQuantity" placeholder="Enter quantity to add" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="currentDate">Date Added:</label>
-                                <input type="date" class="form-control" id="currentDate" value="" required>
-                            </div>
-        
-                            <div class="form-group">
-                                <label for="expirationDate">Expiration Date:</label>
-                                <input type="date" class="form-control" id="expirationDate" required>
-                            </div>
+                        
+                        <div class="flexend">
+                            <button type="submit" class="btn-primary mt-3">Add Stock</button>
+                        </div>    
+                    </form>
+    
+                    <div id="medicineReleaseModal" class="modal" style="display: none;">
+                        <div class="modal-content">
+                          <span class="close" onclick="closeReleaseModal()">&times;</span>
+                          <h2>Release Medicine</h2>
+                          <form id="releaseForm">
+                            <label for="residentId">Resident ID:</label>
+                            <input type="text" id="residentId" required><br><br>
+                      
+                            <div id="batchDetails"></div> 
+                      
+                            <button type="submit" class="btn btn-primary">Release</button>
+                          </form>
                         </div>
+                      </div>
+                      
+                      <!-- Inventory List -->
+                      <h1 class="mt-5 fonts">Medicine Stocks</h1>
+                      <p>View the current stock of medicines here.</p>
+                      <div class="table-container">
+                        <table id="inventoryList">
+                            <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Name</th>
+                                <th>Quantity</th>
+                                <th>Date Added</th>
+                                <th>Expiration Date</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div> 
+                </div>    
+              
+                <!-- Guidelines Tab Pane -->
+                <div class="tab-pane fade" id="guidelinesTabPane" role="tabpanel">
+                    <h1 class="fonts">Family Planning Services</h1>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Service/Product</th>
+                                    <th>Usage Instructions</th>
+                                    <th>Additional Information</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Pills (Oral Contraceptives)</td>
+                                    <td>Take daily, one tablet per day.</td>
+                                    <td>Usually provided as a one-month supply.</td>
+                                </tr>
+                                <tr>
+                                    <td>Condoms</td>
+                                    <td>Use each time during intercourse; apply correctly before starting.</td>
+                                    <td>Free, available in quantities as needed.</td>
+                                </tr>
+                                <tr>
+                                    <td>Injectables (Depo-Provera)</td>
+                                    <td>One injection every 3 months.</td>
+                                    <td>Maximum dose: one injection every 3 months.</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-        
-                    <button type="submit" class="btn-primary mt-3">Add Stock</button>
-                </form>
-
-                    <h3 class="mt-5">Current Inventory</h3>
-                    <p>View the current stock of medicines here.</p>
-                    <table class="table table-striped">
-                    <thead>
-                        <tr>
-                        <th scope="col">Product Name</th>
-                        <th scope="col">Category</th>
-                        <th scope="col">Quantity</th>
-                        <th scope="col">Date Added</th>
-                        <th scope="col">Expiration Date</th>
-                        <th scope="col">Release</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inventoryList">
-                        <!-- Inventory items will be populated here from Firebase -->
-                    </tbody>
-                    </table>
+                
+                    <h1 class="fonts">Common Medications</h1>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Medication</th>
+                                    <th>Usage</th>
+                                    <th>Maximum Dose</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Paracetamol</td>
+                                    <td>1 tablet (500 mg) every 4-6 hours.</td>
+                                    <td>Up to 8 tablets within 24 hours.</td>
+                                </tr>
+                                <tr>
+                                    <td>Amoxicillin</td>
+                                    <td>Antibiotic, usually taken 3 times a day (500 mg).</td>
+                                    <td>Typically a 7-10 day course.</td>
+                                </tr>
+                                <tr>
+                                    <td>Cough Syrup</td>
+                                    <td>1-2 teaspoons every 6 hours.</td>
+                                    <td>Duration depends on doctor's prescription.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                
+                    <h1 class="fonts">Vaccines for Children</h1>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Vaccine</th>
+                                    <th>Usage</th>
+                                    <th>Additional Information</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>BCG (Bacillus Calmette-Guerin) Vaccine</td>
+                                    <td>For TB, given at birth.</td>
+                                    <td>Single dose.</td>
+                                </tr>
+                                <tr>
+                                    <td>Hepatitis B Vaccine</td>
+                                    <td>For Hepatitis B, given within the first 24 hours of life.</td>
+                                    <td>First dose.</td>
+                                </tr>
+                                <tr>
+                                    <td>Pentavalent Vaccine (DPT-HepB-Hib)</td>
+                                    <td>For diphtheria, pertussis, tetanus, hepatitis B, and Hib.</td>
+                                    <td>3 doses (at 6, 10, and 14 weeks).</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                
+                    <h1 class="fonts">Medications for Pregnant Women</h1>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Medication/Supplement</th>
+                                    <th>Usage</th>
+                                    <th>Duration/Maximum Dose</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Folic Acid</td>
+                                    <td>To prevent neural tube defects, 400-800 mcg daily.</td>
+                                    <td>From before conception to 12 weeks of pregnancy.</td>
+                                </tr>
+                                <tr>
+                                    <td>Iron (Ferrous Sulfate)</td>
+                                    <td>To prevent anemia, 1 tablet (325 mg) daily.</td>
+                                    <td>1 tablet per day.</td>
+                                </tr>
+                                <tr>
+                                    <td>Calcium</td>
+                                    <td>For bones and teeth, 1,000-1,300 mg daily.</td>
+                                    <td>Throughout pregnancy.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+        </div>    
 
-            <!-- Modal Structure -->
-            <div class="modal" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                    <h5 class="modal-title" id="detailsModalLabel">Inventory Item Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                    <p><strong>Product Name:</strong> <span id="modalProductName"></span></p>
-                    <p><strong>Category:</strong> <span id="modalCategory"></span></p>
-                    <p><strong>Quantity:</strong> <span id="modalQuantity"></span></p>
-                    <p><strong>Date Added:</strong> <span id="modalDateAdded"></span></p>
-                    <p><strong>Expiration Date(s):</strong> <span id="modalExpirationDates"></span></p>
-                    </div>
-                    <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </div>
-                </div>
-            </div>
-          
-            <!-- Guidelines Tab Pane -->
-            <div class="tab-pane fade" id="guidelinesTabPane" role="tabpanel">
-                <h1>Family Planning Services</h1>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Service/Product</th>
-                                <th>Usage Instructions</th>
-                                <th>Additional Information</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Pills (Oral Contraceptives)</td>
-                                <td>Take daily, one tablet per day.</td>
-                                <td>Usually provided as a one-month supply.</td>
-                            </tr>
-                            <tr>
-                                <td>Condoms</td>
-                                <td>Use each time during intercourse; apply correctly before starting.</td>
-                                <td>Free, available in quantities as needed.</td>
-                            </tr>
-                            <tr>
-                                <td>Injectables (Depo-Provera)</td>
-                                <td>One injection every 3 months.</td>
-                                <td>Maximum dose: one injection every 3 months.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            
-                <h1>Common Medications</h1>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Medication</th>
-                                <th>Usage</th>
-                                <th>Maximum Dose</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Paracetamol</td>
-                                <td>1 tablet (500 mg) every 4-6 hours.</td>
-                                <td>Up to 8 tablets within 24 hours.</td>
-                            </tr>
-                            <tr>
-                                <td>Amoxicillin</td>
-                                <td>Antibiotic, usually taken 3 times a day (500 mg).</td>
-                                <td>Typically a 7-10 day course.</td>
-                            </tr>
-                            <tr>
-                                <td>Cough Syrup</td>
-                                <td>1-2 teaspoons every 6 hours.</td>
-                                <td>Duration depends on doctor's prescription.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            
-                <h1>Vaccines for Children</h1>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Vaccine</th>
-                                <th>Usage</th>
-                                <th>Additional Information</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>BCG (Bacillus Calmette-Guerin) Vaccine</td>
-                                <td>For TB, given at birth.</td>
-                                <td>Single dose.</td>
-                            </tr>
-                            <tr>
-                                <td>Hepatitis B Vaccine</td>
-                                <td>For Hepatitis B, given within the first 24 hours of life.</td>
-                                <td>First dose.</td>
-                            </tr>
-                            <tr>
-                                <td>Pentavalent Vaccine (DPT-HepB-Hib)</td>
-                                <td>For diphtheria, pertussis, tetanus, hepatitis B, and Hib.</td>
-                                <td>3 doses (at 6, 10, and 14 weeks).</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            
-                <h1>Medications for Pregnant Women</h1>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Medication/Supplement</th>
-                                <th>Usage</th>
-                                <th>Duration/Maximum Dose</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Folic Acid</td>
-                                <td>To prevent neural tube defects, 400-800 mcg daily.</td>
-                                <td>From before conception to 12 weeks of pregnancy.</td>
-                            </tr>
-                            <tr>
-                                <td>Iron (Ferrous Sulfate)</td>
-                                <td>To prevent anemia, 1 tablet (325 mg) daily.</td>
-                                <td>1 tablet per day.</td>
-                            </tr>
-                            <tr>
-                                <td>Calcium</td>
-                                <td>For bones and teeth, 1,000-1,300 mg daily.</td>
-                                <td>Throughout pregnancy.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-    <!-- <div id="messagesSection" class="content-section" style="display: none;">
-        <h1 class="mt-5">Messages</h1>
-        
-    </div>     -->
-
-    <!-- <div id="reportSection" class="content-section" style="display: none;">
-        <h1 class="mt-5">Reports</h1>
-        <p>Reports and statistics go here.</p>
-    </div> -->
 
 </div>
 

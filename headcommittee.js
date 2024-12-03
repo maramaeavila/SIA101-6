@@ -9,7 +9,6 @@ var firebaseConfig = {
   appId: "1:258109532727:web:73d735dc749d2cb4ebedb2",
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 var db = firebase.database();
@@ -45,15 +44,21 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
       fetchResidentData();
     } else if (sectionName === "Appointment") {
       document.getElementById("appointmentSection").style.display = "block";
-    } else if (sectionName === "Form") {
-      document.getElementById("formSection").style.display = "block";
+      fetchAppointmentData();
+    } else if (sectionName === "Healthcare Workers") {
+      document.getElementById("healthcareSection").style.display = "block";
+      fetchHealthDepartmentEmployees();
     } else if (sectionName === "Medicine") {
       document.getElementById("medicineSection").style.display = "block";
       fetchInventory();
+    } else if (sectionName === "Request") {
+      document.getElementById("requestSection").style.display = "block";
+      fetchRequests();
     } else if (sectionName === "Reports") {
       document.getElementById("reportSection").style.display = "block";
-    } else if (sectionName === "Change Account") {
-      document.getElementById("changeAccountSection").style.display = "block";
+    } else if (sectionName === "Time In/Time Out") {
+      document.getElementById("timeInOutSection").style.display = "block";
+      fetchTimeRecords();
     }
   });
 });
@@ -442,6 +447,86 @@ function updateAppointmentDashboard(appointments) {
   document.getElementById("canceledAppointments").textContent = canceled;
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  fetchHealthDepartmentEmployees();
+});
+
+function fetchHealthDepartmentEmployees() {
+  const departmentListBody = document.getElementById("departmentListData");
+  departmentListBody.innerHTML = "";
+
+  db.ref("3-Employees")
+    .orderByChild("department")
+    .equalTo("HEALTH_DEPARTMENT")
+    .once("value")
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        snapshot.forEach((childSnapshot) => {
+          const employee = childSnapshot.val();
+          const employeeID = childSnapshot.key;
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${employeeID}</td>
+            <td>${employee.firstName} ${employee.middleName || ""} ${
+            employee.lastName
+          }</td>
+            <td>${employee.role}</td>
+            <td>${employee.status}</td>
+          `;
+
+          row.addEventListener("click", () =>
+            openEmployeeModal(employeeID, employee)
+          );
+
+          departmentListBody.appendChild(row);
+        });
+      } else {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td colspan="4">No employees found in Health Department.</td>`;
+        departmentListBody.appendChild(row);
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching health department employees:", error);
+      const row = document.createElement("tr");
+      row.innerHTML = `<td colspan="4">Error loading data.</td>`;
+      departmentListBody.appendChild(row);
+    });
+}
+
+function openEmployeeModal(employeeID, employee) {
+  const modal = document.getElementById("employeeModal");
+  const modalContent = document.getElementById("modalEmployeeContent");
+
+  const profileImage = employee.profileUrl
+    ? `<img src="${employee.profileUrl}" alt="Profile Image" style="width: 90px; height: 90px; margin: 10px;">`
+    : `<i class="fa-solid fa-user" style="font-size: 80px; color: gray;"></i>`;
+
+  modalContent.innerHTML = `
+    <p><strong>Employee ID:</strong> ${employeeID}</p>
+    <p><strong>Name:</strong> ${employee.firstName} ${
+    employee.middleName || ""
+  } ${employee.lastName}</p>
+    <p><strong>Role:</strong> ${employee.role}</p>
+    <p><strong>Status:</strong> ${employee.status}</p>
+    <p><strong>Contact Number:</strong> ${employee.contactNumber}</p>
+    <p><strong>Address:</strong> ${employee.address}</p>
+    <p><strong>Email:</strong> ${employee.email}</p>
+    <p><strong>Profile Picture:</strong><br>${profileImage}</p>
+    <p><strong>Resume:</strong> <a href="${
+      employee.resumeUrl
+    }" target="_blank">View Resume</a></p>
+  `;
+
+  modal.style.display = "flex";
+}
+
+function closeEmployeeModal() {
+  const modal = document.getElementById("employeeModal");
+  modal.style.display = "none";
+}
+
 function showMedicineTab(tabId) {
   document.querySelectorAll(".tab-content .tab-pane").forEach((tab) => {
     tab.classList.remove("show", "active");
@@ -757,298 +842,333 @@ document
       });
   });
 
-function fetchPatientData() {
-  const patientId = document.getElementById("patientIdInput").value;
+function showRequestTab(tabId) {
+  document.querySelectorAll(".tab-content").forEach((tabContent) => {
+    tabContent.style.display = "none";
+  });
 
-  if (patientId.trim() === "") {
-    alert("Please enter a valid Patient ID.");
-    return;
+  document.querySelectorAll(".nav-link").forEach((tab) => {
+    tab.classList.remove("active");
+  });
+
+  document.getElementById(tabId).style.display = "block";
+
+  if (tabId === "requestFormContent") {
+    document
+      .querySelector("button[data-tab='requestFormContent']")
+      .classList.add("active");
+  } else if (tabId === "submittedRequestsTab") {
+    document
+      .querySelector("button[data-tab='submittedRequestsTab']")
+      .classList.add("active");
+    fetchRequests();
   }
+}
 
-  db.ref(`Residents/${patientId}`)
+document
+  .getElementById("requestForm")
+  .addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const requesterName = document.getElementById("requesterName").value.trim();
+    const requesterEmail = document
+      .getElementById("requesterEmail")
+      .value.trim();
+    const requestType = document.getElementById("requestType").value.trim();
+    const requestDescription = document
+      .getElementById("requestDescription")
+      .value.trim();
+    const additionalComments = document
+      .getElementById("additionalComments")
+      .value.trim();
+    const file = document.getElementById("fileUpload").files[0];
+
+    if (
+      !requesterName ||
+      !requesterEmail ||
+      !requestType ||
+      !requestDescription
+    ) {
+      swal("Error", "Please fill in all required fields.", "error");
+      return;
+    }
+
+    if (!file) {
+      swal("Error", "Please upload a file.", "error");
+      return;
+    }
+
+    const requestData = {
+      name: requesterName,
+      email: requesterEmail,
+      type: requestType,
+      description: requestDescription,
+      comments: additionalComments,
+      status: "Pending",
+      timestamp: Date.now(),
+    };
+
+    const storageRef = storage.ref("6-requestfiles/" + file.name);
+    console.log("Uploading file...");
+
+    storageRef
+      .put(file)
+      .then((snapshot) => {
+        console.log("File upload snapshot:", snapshot);
+        return snapshot.ref.getDownloadURL();
+      })
+      .then((downloadURL) => {
+        console.log("Download URL retrieved:", downloadURL);
+        requestData.fileURL = downloadURL;
+        return db.ref("6-SupplyRequests").push(requestData);
+      })
+      .then(() => {
+        console.log("Data successfully pushed to Firebase.");
+        swal("Success", "Request submitted successfully!", "success");
+        document.getElementById("requestForm").reset();
+        document.getElementById("fileUpload").value = "";
+        showRequestTab("submittedRequestsContent");
+      });
+  });
+
+function fetchRequests() {
+  const requestListBody = document.getElementById("requestListBody");
+  requestListBody.innerHTML = "";
+
+  db.ref("6-SupplyRequests")
     .once("value")
     .then((snapshot) => {
       if (snapshot.exists()) {
-        const resident = snapshot.val();
+        snapshot.forEach((childSnapshot) => {
+          const request = childSnapshot.val();
+          console.log("Fetched request:", request);
 
-        const firstName = resident.firstName || "";
-        const middleName = resident.middleName || "";
-        const lastName = resident.lastName || "";
+          const row = document.createElement("tr");
 
-        const fullName = `${firstName} ${
-          middleName ? middleName + " " : ""
-        }${lastName}`;
+          console.log("File URL:", request.fileURL);
 
-        document.getElementById("patientId").textContent = patientId;
-        document.getElementById("patientName").textContent = fullName;
-        document.getElementById("patientAge").textContent = resident.age;
-        document.getElementById("patientSex").textContent = resident.sex;
-        document.getElementById("patientAddress").textContent =
-          resident.address;
+          const fileColumnContent = request.fileURL
+            ? `<a href="${request.fileURL}" target="_blank">File</a>`
+            : "No file uploaded";
 
-        document.getElementById("patientDataSection").style.display = "block";
-        document.getElementById("bhcmsForm").style.display = "block";
+          row.innerHTML = `
+                <td>${request.name}</td>
+                <td>${request.email}</td>
+                <td>${request.type}</td>
+                <td>${request.description}</td>
+                <td>${fileColumnContent}</td>
+                <td>${request.status}</td>
+              `;
+          requestListBody.appendChild(row);
+        });
       } else {
-        alert("Patient ID not found.");
+        const row = document.createElement("tr");
+        row.innerHTML = "<td colspan='6'>No requests found.</td>";
+        requestListBody.appendChild(row);
       }
     })
     .catch((error) => {
-      console.error("Error fetching patient data:", error);
-      alert("Error loading patient data.");
+      console.error("Error fetching requests:", error);
+      const row = document.createElement("tr");
+      row.innerHTML = "<td colspan='6'>Error loading requests.</td>";
+      requestListBody.appendChild(row);
     });
 }
 
-function updateStatus() {
-  const bloodPressure = document.getElementById("bloodPressure").value;
-  const bloodPressureStatus = document.getElementById("bloodPressureStatus");
-  if (bloodPressure) {
-    const [systolic, diastolic] = bloodPressure.split("/").map(Number);
-    if (systolic < 90 || diastolic < 60) {
-      bloodPressureStatus.textContent = "Below normal (low blood pressure)";
-    } else if (systolic >= 130 || diastolic >= 80) {
-      bloodPressureStatus.textContent = "Above normal (high blood pressure)";
-    } else {
-      bloodPressureStatus.textContent = "Normal blood pressure";
-    }
-  }
+function showRequestTab(tabId) {
+  document.querySelectorAll(".tab-content").forEach((tab) => {
+    tab.style.display = "none";
+  });
 
-  const temperature = document.getElementById("temperature").value;
-  const temperatureStatus = document.getElementById("temperatureStatus");
-  if (temperature) {
-    const tempValue = parseFloat(temperature);
-    if (tempValue < 36.5) {
-      temperatureStatus.textContent = "Below normal (hypothermia)";
-    } else if (tempValue > 38.2) {
-      temperatureStatus.textContent = "Above normal (fever)";
-    } else {
-      temperatureStatus.textContent = "Normal temperature";
-    }
-  }
+  document.getElementById(tabId).style.display = "block";
 
-  const pulseRate = document.getElementById("pulseRate").value;
-  const pulseRateStatus = document.getElementById("pulseRateStatus");
-  if (pulseRate) {
-    const pulse = parseInt(pulseRate, 10);
-    if (pulse < 60) {
-      pulseRateStatus.textContent = "Below normal (slow heart rate)";
-    } else if (pulse > 100) {
-      pulseRateStatus.textContent = "Above normal (fast heart rate)";
-    } else {
-      pulseRateStatus.textContent = "Normal pulse rate";
-    }
-  }
+  document.querySelectorAll(".nav-link").forEach((tab) => {
+    tab.classList.remove("active");
+  });
 
-  const respiratoryRate = document.getElementById("respiratoryRate").value;
-  const respiratoryRateStatus = document.getElementById(
-    "respiratoryRateStatus"
-  );
-  if (respiratoryRate) {
-    const rate = parseInt(respiratoryRate, 10);
-    if (rate < 12) {
-      respiratoryRateStatus.textContent = "Below normal (slow breathing)";
-    } else if (rate > 20) {
-      respiratoryRateStatus.textContent = "Above normal (fast breathing)";
-    } else {
-      respiratoryRateStatus.textContent = "Normal respiratory rate";
-    }
+  document.querySelector(`[data-tab="${tabId}"]`).classList.add("active");
+
+  if (tabId === "submittedRequestsTab") {
+    fetchRequests();
   }
 }
 
-document.getElementById("height").addEventListener("input", updateStatus);
-document.getElementById("weight").addEventListener("input", updateStatus);
-document
-  .getElementById("bloodPressure")
-  .addEventListener("input", updateStatus);
-document.getElementById("temperature").addEventListener("input", updateStatus);
-document.getElementById("pulseRate").addEventListener("input", updateStatus);
-document
-  .getElementById("respiratoryRate")
-  .addEventListener("input", updateStatus);
-
-function computeBMI() {
-  const height = document.getElementById("height").value;
-  const weight = document.getElementById("weight").value;
-
-  if (height && weight) {
-    const bmi = (weight / (height * height)) * 10000; // BMI formula in kg/m²
-    document.getElementById("bmi").textContent = bmi.toFixed(2);
-
-    let status = "";
-    if (bmi < 18.5) {
-      status = "Malnourished (Underweight)";
-    } else if (bmi >= 18.5 && bmi < 24.9) {
-      status = "Normal (Healthy Weight)";
-    } else if (bmi >= 30) {
-      status = "Obese";
-    } else {
-      status = "Overweight";
-    }
-
-    document.getElementById("bmiStatus").textContent = status;
-  } else {
-    document.getElementById("bmi").textContent = "N/A";
-    document.getElementById("bmiStatus").textContent = "N/A";
-  }
-}
-
-document.getElementById("height").addEventListener("input", computeBMI);
-document.getElementById("weight").addEventListener("input", computeBMI);
-
-function getCheckedConditions(category) {
-  const conditions = [];
-  document
-    .querySelectorAll(`#${category} input[type="checkbox"]:checked`)
-    .forEach((checkbox) => {
-      if (checkbox.id !== "n/a") {
-        conditions.push(checkbox.labels[0].textContent.trim());
-      }
-    });
-  return conditions.join(", ") || "None";
-}
-
-function getVaccineType() {
-  const vaccineTypes = [];
-  if (document.getElementById("pfizer").checked) vaccineTypes.push("Pfizer");
-  if (document.getElementById("moderna").checked) vaccineTypes.push("Moderna");
-  if (document.getElementById("astrazeneca").checked)
-    vaccineTypes.push("AstraZeneca");
-  if (document.getElementById("sinovac").checked) vaccineTypes.push("Sinovac");
-  return vaccineTypes.join(", ") || "None";
-}
-
-function submitForm() {
-  const patientId = document.getElementById("patientId").textContent;
-  const height = document.getElementById("height").value;
-  const weight = document.getElementById("weight").value;
-  const bloodPressure = document.getElementById("bloodPressure").value;
-  const temperature = document.getElementById("temperature").value;
-  const pulseRate = document.getElementById("pulseRate").value;
-  const respiratoryRate = document.getElementById("respiratoryRate").value;
-  const chiefComplaint = document.getElementById("chiefComplaint").value;
-  const specialty = document.getElementById("specialty").value;
-
-  const allergies = document.getElementById("hasAllergies").checked
-    ? document.getElementById("allergiesDetails").value || "None"
-    : "None";
-
-  const medications = document.getElementById("hasMedications").checked
-    ? document.getElementById("medicationsDetails").value || "None"
-    : "None";
-
-  const pastMedicalHistory = getCheckedConditions("pastMedicalHistory");
-  const familyHistory = getCheckedConditions("familyHistory");
-
-  const vaccinated = document.getElementById("vaccinatedYes").checked
-    ? "Yes"
-    : "No";
-  const vaccineType = getVaccineType();
-  const boosterDose = document.getElementById("boosterYes").checked
-    ? "Yes"
-    : "No";
-  const boosterDate = document.getElementById("boosterDate").value;
-
-  if (!height || !weight || !bloodPressure) {
-    alert("Please fill out all required fields.");
+function timeIn() {
+  const username = getLoggedInUsername();
+  if (!username) {
+    swal("Error", "You must be logged in to clock in.", "error");
     return;
   }
 
-  computeBMI();
+  const todayDate = getCurrentDate();
+  const timeRecordsRef = db.ref(`6-timeRecords/${username}/${todayDate}`);
 
-  const bmi = document.getElementById("bmi").textContent;
-  const bmiStatus = document.getElementById("bmiStatus").textContent;
+  timeRecordsRef.once("value", (snapshot) => {
+    const data = snapshot.val();
+    if (data && data.timeIn) {
+      swal("Error", "You have already clocked in today.", "error");
+      return;
+    }
 
-  const bloodPressureStatus = getBloodPressureStatus(bloodPressure);
-  const temperatureStatus = getTemperatureStatus(temperature);
-  const pulseRateStatus = getPulseRateStatus(pulseRate);
-  const respiratoryRateStatus = getRespiratoryRateStatus(respiratoryRate);
-
-  document.getElementById(
-    "bloodPressureStatus"
-  ).textContent = `Blood Pressure Status: ${bloodPressureStatus}`;
-  document.getElementById(
-    "temperatureStatus"
-  ).textContent = `Temperature Status: ${temperatureStatus}`;
-  document.getElementById(
-    "pulseRateStatus"
-  ).textContent = `Pulse Rate Status: ${pulseRateStatus}`;
-  document.getElementById(
-    "respiratoryRateStatus"
-  ).textContent = `Respiratory Rate Status: ${respiratoryRateStatus}`;
-  document.getElementById("bmiStatus").textContent = `BMI Status: ${bmiStatus}`;
-
-  const formId = `${patientId}-${new Date().getTime()}`;
-
-  const formData = {
-    patientId,
-    height,
-    weight,
-    bloodPressure,
-    temperature,
-    pulseRate,
-    respiratoryRate,
-    chiefComplaint,
-    allergies,
-    medications,
-    pastMedicalHistory,
-    familyHistory,
-    vaccinated,
-    vaccineType,
-    boosterDose,
-    boosterDate,
-    bmi,
-    bmiStatus,
-    bloodPressureStatus,
-    temperatureStatus,
-    pulseRateStatus,
-    respiratoryRateStatus,
-    specialty,
-    formId,
-    timestamp: new Date().toISOString(),
-  };
-
-  db.ref("6-Health-FormData")
-    .child(formId)
-    .set(formData)
-    .then(() => {
-      alert("Form submitted successfully!");
-      console.log("Form Data saved:", formData);
-    })
-    .catch((error) => {
-      console.error("Error saving form data:", error);
-      alert("Error submitting form.");
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
     });
+
+    const timeInData = { timeIn: formattedTime, timestamp: now.toISOString() };
+
+    timeRecordsRef
+      .set(timeInData)
+      .then(() => {
+        swal("Success", "Time In recorded successfully!", "success");
+        fetchTimeRecords();
+      })
+      .catch((error) => {
+        console.error("Error recording Time In:", error);
+        swal("Error", "Failed to record Time In.", "error");
+      });
+  });
 }
 
-function getBloodPressureStatus(bloodPressure) {
-  if (!bloodPressure) return "Unknown";
-  const [systolic, diastolic] = bloodPressure.split("/").map(Number);
-  if (systolic && diastolic) {
-    if (systolic < 90 || diastolic < 60) return "Low";
-    if (systolic < 120 && diastolic < 80) return "Normal";
-    if (systolic < 130 && diastolic < 80) return "Elevated";
-    if (systolic >= 130 || diastolic >= 80) return "High";
+function timeOut() {
+  const username = getLoggedInUsername();
+  if (!username) {
+    swal("Error", "You must be logged in to clock out.", "error");
+    return;
   }
-  return "Unknown";
+
+  const todayDate = getCurrentDate();
+  const timeRecordsRef = db.ref(`6-timeRecords/${username}/${todayDate}`);
+
+  timeRecordsRef.once("value", (snapshot) => {
+    const data = snapshot.val();
+    if (!data || !data.timeIn) {
+      swal("Error", "You must clock in first before clocking out.", "error");
+      return;
+    }
+
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const timeOutData = {
+      timeOut: formattedTime,
+      timestamp: now.toISOString(),
+    };
+
+    timeRecordsRef
+      .update(timeOutData)
+      .then(() => {
+        swal("Success", "Time Out recorded successfully!", "success");
+        fetchTimeRecords();
+      })
+      .catch((error) => {
+        console.error("Error recording Time Out:", error);
+        swal("Error", "Failed to record Time Out.", "error");
+      });
+  });
 }
 
-function getTemperatureStatus(temperature) {
-  if (!temperature) return "Unknown";
-  if (parseFloat(temperature) < 36.5) return "Low";
-  if (parseFloat(temperature) >= 36.5 && parseFloat(temperature) <= 37.5)
-    return "Normal";
-  return "High";
+function fetchTimeRecords() {
+  const username = getLoggedInUsername();
+  if (!username) {
+    swal("Error", "You must be logged in to view time records.", "error");
+    return;
+  }
+
+  const timeRecordsRef = db.ref(`6-timeRecords/${username}`);
+
+  timeRecordsRef.once("value", (snapshot) => {
+    const data = snapshot.val();
+    const timeRecordsTable = document.getElementById("timeRecordsTable");
+
+    if (data) {
+      let tableHTML = `
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time In</th>
+            <th>Time Out</th>
+            <th>Total Hours</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      for (const dateKey in data) {
+        const record = data[dateKey];
+        const timeIn = record.timeIn;
+        const timeOut = record.timeOut;
+
+        if (timeIn && timeOut) {
+          const totalHours = calculateTotalHours(timeIn, timeOut);
+          tableHTML += `
+            <tr>
+              <td>${dateKey}</td>
+              <td>${timeIn}</td>
+              <td>${timeOut}</td>
+              <td>${totalHours}</td>
+            </tr>
+          `;
+        }
+      }
+
+      tableHTML += `</tbody>`;
+      timeRecordsTable.innerHTML = tableHTML;
+    } else {
+      timeRecordsTable.innerHTML =
+        "<tr><td colspan='4'>No records found.</td></tr>";
+    }
+  });
 }
 
-function getPulseRateStatus(pulseRate) {
-  if (!pulseRate) return "Unknown";
-  if (pulseRate < 60) return "Low";
-  if (pulseRate >= 60 && pulseRate <= 100) return "Normal";
-  return "High";
+function calculateTotalHours(timeIn, timeOut) {
+  const timeIn24 = convertTo24HourFormat(timeIn);
+  const timeOut24 = convertTo24HourFormat(timeOut);
+
+  const timeInDate = new Date(`1970-01-01T${timeIn24}:00`);
+  const timeOutDate = new Date(`1970-01-01T${timeOut24}:00`);
+  let diffInMilliseconds = timeOutDate - timeInDate;
+
+  if (diffInMilliseconds < 0) {
+    const nextDay = new Date(timeOutDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    diffInMilliseconds = nextDay - timeInDate;
+  }
+
+  const diffInHours = diffInMilliseconds / (1000 * 60 * 60);
+  return diffInHours.toFixed(2);
 }
 
-function getRespiratoryRateStatus(respiratoryRate) {
-  if (!respiratoryRate) return "Unknown";
-  if (respiratoryRate < 12) return "Low";
-  if (respiratoryRate >= 12 && respiratoryRate <= 20) return "Normal";
-  return "High";
+function convertTo24HourFormat(time) {
+  const [timePart, modifier] = time.split(" ");
+  let [hours, minutes] = timePart.split(":").map((num) => parseInt(num));
+
+  if (modifier === "PM" && hours !== 12) {
+    hours += 12;
+  } else if (modifier === "AM" && hours === 12) {
+    hours = 0;
+  }
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+    2,
+    "0"
+  )}`;
+}
+
+function getLoggedInUsername() {
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  return loggedInUser ? loggedInUser.username : null;
+}
+
+function getCurrentDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }

@@ -3,194 +3,38 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BHCMS Old Capitol</title>
+        <title>Barangay Old Capitol Site Management Login</title>
         <link rel="stylesheet" href="style1.css">
-        <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <!-- Font Awesome Icons -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-        <!-- SweetAlert2 -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.2.0/sweetalert2.min.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.2.0/sweetalert2.all.min.js"></script>
-        <!-- Include CryptoJS Library -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     </head>
 <body>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg py-2 fixed-top">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#"><img src="image/logo.png" style="width: 80px; height: 80px;"></a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse nav-buttons" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center fs-5" href="#home">
-                        <i class="fa-solid fa-house mr-2"></i> 
-                        Home
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center fs-5" href="#about-us">
-                        <i class="fa-solid fa-house-medical mr-2"></i> 
-                        Services
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center fs-5" href="#contact-us">
-                        <i class="fa-solid fa-phone mr-2"></i> 
-                        Contact Us
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a id="loginBtn" class="nav-link d-flex align-items-center fs-5" href="#" data-bs-toggle="modal" data-bs-target="#residentCheckModal">
-                        <i class="fa-solid fa-user"></i>
-                        Login
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
 
-<section id="home" class="d-flex"></section>
-
-<section id="about-us" class="services-section">
     <div class="container">
-        <h2 class="section-title">Health Services</h2>
-        <div class="services-wrapper">
-            <div class="service-card" id="general-checkup" onclick="openResidentLogin()">
-                <div class="overlay">
-                    <h3>General Checkup</h3>
-                    <p>Regular health assessments to ensure well-being.</p>
-                </div>
-            </div>
-            <div class="service-card" id="pre-natal-checkup" onclick="openResidentLogin()">
-                <div class="overlay">
-                    <h3>Pre-Natal Checkup</h3>
-                    <p>Comprehensive care for expecting mothers.</p>
-                </div>
-            </div>
-            <div class="service-card" id="babies-vaccination" onclick="openResidentLogin()">
-                <div class="overlay">
-                    <h3>Babies Vaccination</h3>
-                    <p>Timely vaccinations for your baby’s health.</p>
-                </div>
-            </div>
-            <div class="service-card" id="dental-checkup" onclick="openResidentLogin()">
-                <div class="overlay">
-                    <h3>Dental Checkup</h3>
-                    <p>Keep your smile healthy with regular dental care.</p>
-                </div>
-            </div>
+        <div class="left-side">
+          <h1>Welcome to Barangay Management</h1>
+          <p>Old Capitol Site</p>
         </div>
-    </div>
-</section>
-
-<section id="contact-us" class="contact-section">
-    <div class="container" style="background-color: #fff;border-radius: 10px; padding: 2%;">
-        <h2 class="section-title">Contact Us</h2>
-        <p class="section-description">Feel free to reach out to us through the form below or using our contact details.</p>
-        
-        <div class="contact-content">
-            <!-- Contact Info -->
-            <div class="contact-info">
-                <div class="info-item">
-                    <i class="fa-solid fa-location-dot"></i>
-                    <p>Masaya Interior corner Matiwasay Extension, <br>
-                        Old Capitol Site, Quezon City, <br>
-                        Philippines, 1101</p>
-                </div>
-                <div class="info-item">
-                    <i class="fa-solid fa-phone"></i>
-                    <p>(02) 3434 6359</p>
-                </div>
-                <div class="info-item">
-                    <i class="fa-solid fa-envelope"></i>
-                    <p>oldcapitolsitemercado@gmail.com</p>
-                </div>
+    
+        <div class="right-side">
+          <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required>
+            <div class="password-container">
+                <input type="password" id="password" placeholder="Password" required>
+                <i class="fas fa-eye eye-icon" id="eye-icon"></i>
             </div>
-            
-    </div>
-</section>
-
-<!-- Resident Check Modal -->
-<div class="modal fade" id="residentCheckModal" tabindex="-1" aria-labelledby="residentCheckModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="residentCheckModalLabel">OLD CAPITOL HEALTH CENTER</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you a resident?</p>
-                <button type="button" class="btn btn-primary w-100 mb-2" onclick="openResidentLogin()" data-bs-dismiss="modal">Yes</button>
-                <button type="button" class="btn btn-secondary w-100" onclick="openDefaultLogin()" data-bs-dismiss="modal">No</button>
-            </div>
+            <button type="button">Login</button>
+          </form>
+          <div class="footer">
+            &copy; 2024 Barangay Management System. All rights reserved.
+          </div>
         </div>
-    </div>
-</div>
-
-<!-- Resident Login Modal -->
-<div class="modal fade" id="residentLoginModal" tabindex="-1" aria-labelledby="residentLoginModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="residentLoginModalLabel">Resident Login</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="resident-login-form" onsubmit="event.preventDefault();">
-                    <div class="form-group mb-3">
-                        <input type="text" class="form-control" id="residentID" placeholder="Enter PatientID" required>
-                    </div>
-                    <div class="form-group mb-3">
-                        <input type="text" class="form-control" id="residentBirthday" placeholder="Enter Birthday (MM/DD/YYYY)" required>
-                    </div>
-                    <button type="button" class="btn btn-primary w-100" onclick="loginResident()">Login</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Login Modal -->
-<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="loginModalLabel">OLD CAPITOL HEALTH CENTER</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="login-form" onsubmit="event.preventDefault();">
-                    <div class="form-group mb-3">
-                        <input type="text" class="form-control" id="username" placeholder="Enter username" required>
-                    </div>
-                    <div class="form-group mb-3">
-                        <input type="password" class="form-control" id="password" placeholder="Password" required>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label for="role" class="form-label">Select Role</label>
-                        <select class="form-select" id="role" required>
-                            <option value="" selected disabled>Choose a role</option>
-                            <option value="HEALTH_COMMITTEE_HEAD">Health Committee - Head</option>
-                            <option value="BHW">BHW</option>
-                            <option value="GENERAL_DOCTOR">Doctor - General</option>
-                            <option value="DENTAL">Doctor - Dental</option>
-                            <option value="MIDWIFE">Midwife</option>
-                            <option value="DNS">DNS</option>
-                        </select>
-                    </div>
-                    <button type="button" class="btn btn-primary w-100" onclick="loginUser()">Login</button> 
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+      </div>
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

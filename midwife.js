@@ -14,34 +14,15 @@ firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 var db = firebase.database();
 
-function logoutUser() {
-  firebase
-    .auth()
-    .signOut()
-    .then(() => {
-      window.location.href = "index.html";
-      swal("Logged Out", "You have successfully logged out.", "success");
-    })
-    .catch((error) => {
-      console.error("Error logging out:", error);
-      swal("Error", "Could not log out. Please try again.", "error");
-    });
+function toggleSidebar() {
+  const sidebar = document.querySelector(".sidebar");
+  sidebar.classList.toggle("active");
 }
 
-document.getElementById("logoutBtn").addEventListener("click", logoutUser);
-
-function displayLoggedInUserProfile() {
-  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-  if (loggedInUser && loggedInUser.profileUrl) {
-    const profileImage = `<img src="${loggedInUser.profileUrl}" alt="Profile Image" style="width: 120px; height: 120px; border-radius: 50%;margin:20px;">`;
-    document.getElementById("profileImageContainer").innerHTML = profileImage;
-  } else {
-    const defaultIcon = `<i class="fa-solid fa-user" style="font-size: 80px; color: white; margin: 15%;"></i>`;
-    document.getElementById("profileImageContainer").innerHTML = defaultIcon;
-  }
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", logoutUser);
 }
-
-window.onload = displayLoggedInUserProfile;
 
 document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("dashboardSection").style.display = "block";
@@ -75,6 +56,42 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
     }
   });
 });
+
+function toggleUserMenu() {
+  const userMenu = document.getElementById("userMenu");
+  userMenu.style.display = userMenu.style.display === "none" ? "block" : "none";
+}
+
+function showLogoutModal() {
+  const modal = document.getElementById("logoutModal");
+  modal.style.display = "flex";
+}
+
+function closeLogoutModal() {
+  const modal = document.getElementById("logoutModal");
+  modal.style.display = "none";
+}
+
+document.getElementById("confirmLogout").addEventListener("click", () => {
+  window.location.href = "index.html";
+});
+
+document.getElementById("cancelLogout").addEventListener("click", () => {
+  closeLogoutModal();
+});
+
+function displayLoggedInUserProfile() {
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  if (loggedInUser && loggedInUser.profileUrl) {
+    const profileImage = `<img src="${loggedInUser.profileUrl}" alt="Profile Image" style="width: 40px; height: 40px; border-radius: 50%;margin-top:10px">`;
+    document.getElementById("profileImageContainer").innerHTML = profileImage;
+  } else {
+    const defaultIcon = `<i class="fa-solid fa-user" style="font-size: 80px; color: white; margin: 15%;"></i>`;
+    document.getElementById("profileImageContainer").innerHTML = defaultIcon;
+  }
+}
+
+window.onload = displayLoggedInUserProfile;
 
 const monthNames = [
   "January",
@@ -260,7 +277,7 @@ function fetchHealthFormData() {
 
   formDataTableBody.innerHTML = "";
 
-  db.ref("6-Health-FormData")
+  db.ref("6-FamilyPlan")
     .once("value")
     .then((snapshot) => {
       if (snapshot.exists()) {
@@ -271,30 +288,19 @@ function fetchHealthFormData() {
             <tr>
               <td>${data.patientId || "N/A"}</td>
               <td>${data.formId || "N/A"}</td>
-              <td>${data.allergies || "N/A"}</td>
-              <td>${data.appointmentType || "N/A"}</td>
-              <td>${data.bloodPressure || "N/A"}</td>
-              <td>${data.bloodPressureStatus || "N/A"}</td>
-              <td>${data.bmi || "N/A"}</td>
-              <td>${data.bmiStatus || "N/A"}</td>
-              <td>${data.boosterDose || "N/A"}</td>
-              <td>${data.boosterDate || "N/A"}</td>
-              <td>${data.chiefComplaint || "N/A"}</td>
-              <td>${data.familyHistory || "N/A"}</td>
-              <td>${data.height || "N/A"}</td>
-              <td>${data.weight || "N/A"}</td>
-              <td>${data.medications || "N/A"}</td>
-              <td>${data.pastMedicalHistory || "N/A"}</td>
-              <td>${data.pulseRate || "N/A"}</td>
-              <td>${data.pulseRateStatus || "N/A"}</td>
-              <td>${data.respiratoryRate || "N/A"}</td>
-              <td>${data.respiratoryRateStatus || "N/A"}</td>
-              <td>${data.specialty || "N/A"}</td>
-              <td>${data.temperature || "N/A"}</td>
-              <td>${data.temperatureStatus || "N/A"}</td>
-              <td>${data.vaccinated || "N/A"}</td>
-              <td>${data.vaccineType || "N/A"}</td>
               <td>${new Date(data.timestamp).toLocaleString() || "N/A"}</td>
+              <td>${data.diabetes || "N/A"}</td>
+              <td>${data.heartDisease || "N/A"}</td>
+              <td>${data.hypertension || "N/A"}</td>
+              <td>${data.gravida || "N/A"}</td>
+              <td>${data.para || "N/A"}</td>
+              <td>${data.numChildren || "N/A"}</td>
+              <td>${data.lmp || "N/A"}</td>
+              <td>${data.menstrualCycle || "N/A"}</td>
+              <td>${data.preferredMethods || "N/A"}</td>
+              <td>${data.counselingProvided || "N/A"}</td>
+              <td>${data.otherMedical || "N/A"}</td>
+              <td>${data.weight || "N/A"}</td>
             </tr>
           `;
 
@@ -302,15 +308,72 @@ function fetchHealthFormData() {
         });
       } else {
         formDataTableBody.innerHTML =
-          "<tr><td colspan='26'>No data available</td></tr>";
+          "<tr><td colspan='15'>No data available</td></tr>";
       }
     })
     .catch((error) => {
       console.error("Error fetching data:", error);
       formDataTableBody.innerHTML =
-        "<tr><td colspan='26'>Error fetching data</td></tr>";
+        "<tr><td colspan='15'>Error fetching data</td></tr>";
     });
 }
+
+// function fetchHealthFormData() {
+//   const formDataTableBody = document.querySelector("#patientSection tbody");
+
+//   formDataTableBody.innerHTML = "";
+
+//   db.ref("6-Health-FormData")
+//     .once("value")
+//     .then((snapshot) => {
+//       if (snapshot.exists()) {
+//         snapshot.forEach((childSnapshot) => {
+//           const data = childSnapshot.val();
+
+//           const row = `
+//             <tr>
+//               <td>${data.patientId || "N/A"}</td>
+//               <td>${data.formId || "N/A"}</td>
+//               <td>${data.allergies || "N/A"}</td>
+//               <td>${data.appointmentType || "N/A"}</td>
+//               <td>${data.bloodPressure || "N/A"}</td>
+//               <td>${data.bloodPressureStatus || "N/A"}</td>
+//               <td>${data.bmi || "N/A"}</td>
+//               <td>${data.bmiStatus || "N/A"}</td>
+//               <td>${data.boosterDose || "N/A"}</td>
+//               <td>${data.boosterDate || "N/A"}</td>
+//               <td>${data.chiefComplaint || "N/A"}</td>
+//               <td>${data.familyHistory || "N/A"}</td>
+//               <td>${data.height || "N/A"}</td>
+//               <td>${data.weight || "N/A"}</td>
+//               <td>${data.medications || "N/A"}</td>
+//               <td>${data.pastMedicalHistory || "N/A"}</td>
+//               <td>${data.pulseRate || "N/A"}</td>
+//               <td>${data.pulseRateStatus || "N/A"}</td>
+//               <td>${data.respiratoryRate || "N/A"}</td>
+//               <td>${data.respiratoryRateStatus || "N/A"}</td>
+//               <td>${data.specialty || "N/A"}</td>
+//               <td>${data.temperature || "N/A"}</td>
+//               <td>${data.temperatureStatus || "N/A"}</td>
+//               <td>${data.vaccinated || "N/A"}</td>
+//               <td>${data.vaccineType || "N/A"}</td>
+//               <td>${new Date(data.timestamp).toLocaleString() || "N/A"}</td>
+//             </tr>
+//           `;
+
+//           formDataTableBody.insertAdjacentHTML("beforeend", row);
+//         });
+//       } else {
+//         formDataTableBody.innerHTML =
+//           "<tr><td colspan='26'>No data available</td></tr>";
+//       }
+//     })
+//     .catch((error) => {
+//       console.error("Error fetching data:", error);
+//       formDataTableBody.innerHTML =
+//         "<tr><td colspan='26'>Error fetching data</td></tr>";
+//     });
+// }
 
 document.querySelector(".nav-item a").addEventListener("click", function () {
   const sectionName = this.textContent.trim();

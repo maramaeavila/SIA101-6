@@ -137,7 +137,7 @@ function fetchResidentData(residentID) {
 }
 
 function fetchPrecheckupDetails(residentID) {
-  const precheckupRef = db.ref("6-Health-FormData/");
+  const precheckupRef = db.ref("6-GeneralCheckup/");
 
   precheckupRef
     .get()
@@ -267,7 +267,7 @@ document
   });
 
 function fetchPrecheckupFormDetails(formID) {
-  const formRef = db.ref("6-Health-FormData/" + formID);
+  const formRef = db.ref("6-GeneralCheckup/" + formID);
 
   formRef
     .get()

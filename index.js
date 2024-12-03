@@ -1,3 +1,4 @@
+// Firebase configuration
 var firebaseConfig = {
   apiKey: "AIzaSyDiOsr6bY5BDKdiBPRzDgSpurHdkkUlc3k",
   authDomain: "sia101-d60a1.firebaseapp.com",
@@ -8,64 +9,49 @@ var firebaseConfig = {
   appId: "1:258109532727:web:73d735dc749d2cb4ebedb2",
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 
-function openResidentLogin() {
-  $("#residentLoginModal").modal("show");
-}
+// Function
 
-function openDefaultLogin() {
-  $("#loginModal").modal("show");
-}
+const passwordInput = document.getElementById("password");
+const eyeIcon = document.getElementById("eye-icon");
 
-function openResidentCheckModal() {
-  $("#residentCheckModal").modal("show");
-}
+eyeIcon.addEventListener("click", function () {
+  if (passwordInput.type === "password") {
+    passwordInput.type = "text";
+    eyeIcon.classList.remove("fa-eye");
+    eyeIcon.classList.add("fa-eye-slash");
+  } else {
+    passwordInput.type = "password";
+    eyeIcon.classList.remove("fa-eye-slash");
+    eyeIcon.classList.add("fa-eye");
+  }
+});
 
-async function loginResident() {
-  const residentID = document.getElementById("residentID").value.trim();
-  const birthdate = document.getElementById("residentBirthday").value.trim();
+document.addEventListener("DOMContentLoaded", function () {
+  const loginButton = document.querySelector("button");
+  loginButton.addEventListener("click", loginUser);
+});
 
-  if (!residentID || !birthdate) {
-    swal("Error", "Please fill in all required fields.", "error");
+// Connection to Database
+
+async function loginUser(event) {
+  event.preventDefault();
+
+  const usernameElement = document.getElementById("username");
+  const passwordElement = document.getElementById("password");
+
+  if (!usernameElement || !passwordElement) {
+    console.error("Username or password element not found");
+    swal("Error", "Username or password field is missing", "error");
     return;
   }
 
-  try {
-    const snapshot = await db.ref("Residents/" + residentID).once("value");
+  const username = usernameElement.value.trim();
+  const password = passwordElement.value.trim();
 
-    if (snapshot.exists()) {
-      const residentData = snapshot.val();
-
-      if (residentData.birthdate === birthdate) {
-        localStorage.setItem("residentID", residentID);
-
-        swal("Success", "Login successful!", "success").then(() => {
-          window.location.href = "resident.html";
-        });
-      } else {
-        swal("Error", "Incorrect birthdate.", "error");
-      }
-    } else {
-      swal("Error", "Resident ID not found.", "error").then(() => {
-        // window.location.href =
-        //   "https://old-capitol-site-69.netlify.app/index.html";
-      });
-    }
-  } catch (error) {
-    console.error("Error during login:", error);
-    swal("Error", "Login failed. Please try again later.", "error");
-  }
-}
-
-async function loginUser() {
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const role = document.getElementById("role").value.trim().toUpperCase();
-
-  if (!username || !password || !role) {
+  if (!username || !password) {
     swal("Error", "Please fill in all required fields.", "error");
     return;
   }
@@ -73,7 +59,7 @@ async function loginUser() {
   try {
     const snapshot = await db
       .ref("3-Employees")
-      .orderByChild("email")
+      .orderByChild("username")
       .equalTo(username)
       .once("value");
 
@@ -82,13 +68,13 @@ async function loginUser() {
       const userKey = Object.keys(userData)[0];
       const user = userData[userKey];
 
-      if (user.password === password && user.role === role) {
+      if (user.password === password) {
         localStorage.setItem("loggedInUser", JSON.stringify(user));
 
         swal("Success", "Login successful!", "success").then(() => {
-          switch (role) {
+          switch (user.role.toUpperCase()) {
             case "HEALTH_COMMITTEE_HEAD":
-              window.location.href = "admin.html";
+              window.location.href = "headcommittee.html";
               break;
             case "BHW":
               window.location.href = "bhw.html";
@@ -105,12 +91,15 @@ async function loginUser() {
             case "DNS":
               window.location.href = "dns.html";
               break;
+            case "SECRETARY":
+              window.location.href = "secretary.html";
+              break;
             default:
               swal("Error", "Unknown role. Please contact admin.", "error");
           }
         });
       } else {
-        swal("Error", "Incorrect password or role.", "error");
+        swal("Error", "Incorrect password.", "error");
       }
     } else {
       swal("Error", "User not found. Please check your username.", "error");
@@ -124,16 +113,3 @@ async function loginUser() {
     );
   }
 }
-
-function displayLoggedInUserProfile() {
-  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-  if (loggedInUser && loggedInUser.profileUrl) {
-    const profileImage = `<img src="${loggedInUser.profileUrl}" alt="Profile Image" style="width: 80px; height: 80px; border-radius: 50%;">`;
-    document.getElementById("profileImageContainer").innerHTML = profileImage;
-  } else {
-    const defaultIcon = `<i class="fa-solid fa-user" style="font-size: 80px; color: white; margin: 15%;"></i>`;
-    document.getElementById("profileImageContainer").innerHTML = defaultIcon;
-  }
-}
-
-window.onload = displayLoggedInUserProfile;

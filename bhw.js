@@ -14,34 +14,15 @@ firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 var db = firebase.database();
 
-function logoutUser() {
-  firebase
-    .auth()
-    .signOut()
-    .then(() => {
-      window.location.href = "index.html";
-      swal("Logged Out", "You have successfully logged out.", "success");
-    })
-    .catch((error) => {
-      console.error("Error logging out:", error);
-      swal("Error", "Could not log out. Please try again.", "error");
-    });
+function toggleSidebar() {
+  const sidebar = document.querySelector(".sidebar");
+  sidebar.classList.toggle("active");
 }
 
-function displayLoggedInUserProfile() {
-  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-  if (loggedInUser && loggedInUser.profileUrl) {
-    const profileImage = `<img src="${loggedInUser.profileUrl}" alt="Profile Image" style="width: 120px; height: 120px; border-radius: 50%;margin:20px;">`;
-    document.getElementById("profileImageContainer").innerHTML = profileImage;
-  } else {
-    const defaultIcon = `<i class="fa-solid fa-user" style="font-size: 80px; color: white; margin: 15%;"></i>`;
-    document.getElementById("profileImageContainer").innerHTML = defaultIcon;
-  }
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", logoutUser);
 }
-
-window.onload = displayLoggedInUserProfile;
-
-document.getElementById("logoutBtn").addEventListener("click", logoutUser);
 
 document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("dashboardSection").style.display = "block";
@@ -69,8 +50,6 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
     } else if (sectionName === "Medicine") {
       document.getElementById("medicineSection").style.display = "block";
       fetchInventory();
-      // } else if (sectionName === "Messages") {
-      //   document.getElementById("messageSection").style.display = "block";
     } else if (sectionName === "Reports") {
       document.getElementById("reportSection").style.display = "block";
     } else if (sectionName === "Change Account") {
@@ -78,6 +57,47 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
     }
   });
 });
+
+function toggleUserMenu() {
+  const userMenu = document.getElementById("userMenu");
+  userMenu.style.display = userMenu.style.display === "none" ? "block" : "none";
+}
+
+function showLogoutModal() {
+  const modal = document.getElementById("logoutModal");
+  modal.style.display = "flex";
+}
+
+function closeLogoutModal() {
+  const modal = document.getElementById("logoutModal");
+  modal.style.display = "none";
+}
+
+document.getElementById("confirmLogout").addEventListener("click", () => {
+  window.location.href = "index.html";
+});
+
+document.getElementById("cancelLogout").addEventListener("click", () => {
+  closeLogoutModal();
+});
+
+function displayLoggedInUserProfile() {
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  if (loggedInUser && loggedInUser.profileUrl) {
+    const profileImage = `<img src="${loggedInUser.profileUrl}" alt="Profile Image" style="width: 40px; height: 40px; border-radius: 50%;margin-top:10px">`;
+    document.getElementById("profileImageContainer").innerHTML = profileImage;
+  } else {
+    const defaultIcon = `<i class="fa-solid fa-user" style="font-size: 80px; color: white; margin: 15%;"></i>`;
+    document.getElementById("profileImageContainer").innerHTML = defaultIcon;
+  }
+}
+
+window.onload = displayLoggedInUserProfile;
+
+let allResidents = [];
+let filteredResidents = [];
+let currentPage = 1;
+const rowsPerPage = 10;
 
 function fetchResidentData() {
   const residentListBody = document.getElementById("residentListData");
@@ -87,40 +107,32 @@ function fetchResidentData() {
     .once("value")
     .then((snapshot) => {
       if (snapshot.exists()) {
+        allResidents = [];
         snapshot.forEach((childSnapshot) => {
           const resident = childSnapshot.val();
 
-          const firstName = resident.firstName || "";
-          const lastName = resident.lastName || "";
-          const middleName = resident.middleName || "";
-          const mobileNumber = resident.mobileNumber || "";
-          const address = resident.address || "";
-          const age = resident.age || "";
-          const sex = resident.sex || "";
-          const birthdate = resident.birthdate || "";
-          const bloodType = resident.bloodType || "";
-          const email = resident.email || "";
-          const emergencyFirstName = resident.emergencyFirstName || "";
-          const emergencyMobileNumber = resident.emergencyMobileNumber || "";
-          const emergencyRelationship = resident.emergencyRelationship || "";
+          const residentData = {
+            id: childSnapshot.key,
+            name: `${resident.firstName || ""} ${resident.middleName || ""} ${
+              resident.lastName || ""
+            }`,
+            mobileNumber: resident.mobileNumber || "",
+            address: resident.address || "",
+            age: resident.age || "",
+            sex: resident.sex || "",
+            birthdate: resident.birthdate || "",
+            bloodType: resident.bloodType || "",
+            email: resident.email || "",
+            emergencyName: resident.emergencyFirstName || "",
+            emergencyMobile: resident.emergencyMobileNumber || "",
+            emergencyRelationship: resident.emergencyRelationship || "",
+          };
 
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${childSnapshot.key}</td>
-            <td>${firstName} ${middleName} ${lastName}</td>
-            <td>${mobileNumber}</td>
-            <td>${address}</td>
-            <td>${age}</td>
-            <td>${sex}</td>
-            <td>${birthdate}</td>
-            <td>${bloodType}</td>
-            <td>${email}</td>
-            <td>${emergencyFirstName}</td>
-            <td>${emergencyMobileNumber}</td>
-            <td>${emergencyRelationship}</td>
-          `;
-          residentListBody.appendChild(row);
+          allResidents.push(residentData);
         });
+
+        filteredResidents = [...allResidents];
+        displayResidents();
       } else {
         const row = document.createElement("tr");
         row.innerHTML = `<td colspan="16">No residents found.</td>`;
@@ -135,21 +147,101 @@ function fetchResidentData() {
     });
 }
 
+function displayResidents() {
+  const residentListBody = document.getElementById("residentListData");
+  residentListBody.innerHTML = "";
+
+  const start = (currentPage - 1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  const paginatedResidents = filteredResidents.slice(start, end);
+
+  if (paginatedResidents.length > 0) {
+    paginatedResidents.forEach((resident) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${resident.id}</td>
+        <td>${resident.name}</td>
+        <td>${resident.mobileNumber}</td>
+        <td>${resident.email}</td>
+      `;
+
+      row.addEventListener("click", () => openModal(resident));
+
+      residentListBody.appendChild(row);
+    });
+  } else {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td colspan="4">No residents found for this page.</td>`;
+    residentListBody.appendChild(row);
+  }
+
+  updatePagination();
+}
+
+function openModal(resident) {
+  const modal = document.getElementById("residentModal");
+  const modalContent = document.getElementById("modalContent");
+
+  modalContent.innerHTML = `
+    <p><strong>ID:</strong> ${resident.id}</p>
+    <p><strong>Name:</strong> ${resident.name}</p>
+    <p><strong>Mobile Number:</strong> ${resident.mobileNumber}</p>
+    <p><strong>Address:</strong> ${resident.address}</p>
+    <p><strong>Age:</strong> ${resident.age}</p>
+    <p><strong>Sex:</strong> ${resident.sex}</p>
+    <p><strong>Birthdate:</strong> ${resident.birthdate}</p>
+    <p><strong>Blood Type:</strong> ${resident.bloodType}</p>
+    <p><strong>Email:</strong> ${resident.email}</p>
+    <p><strong>Emergency Contact Name:</strong> ${resident.emergencyName}</p>
+    <p><strong>Emergency Contact Mobile:</strong> ${resident.emergencyMobile}</p>
+    <p><strong>Emergency Contact Relationship:</strong> ${resident.emergencyRelationship}</p>
+  `;
+
+  modal.style.display = "flex";
+}
+
+function closeModal() {
+  const modal = document.getElementById("residentModal");
+  modal.style.display = "none";
+}
+
+function updatePagination() {
+  const totalPages = Math.ceil(filteredResidents.length / rowsPerPage);
+  const pageInfo = document.getElementById("pageInfo");
+  pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+
+  document.getElementById("prevPage").disabled = currentPage === 1;
+  document.getElementById("nextPage").disabled = currentPage === totalPages;
+}
+
+function nextPage() {
+  const totalPages = Math.ceil(filteredResidents.length / rowsPerPage);
+  if (currentPage < totalPages) {
+    currentPage++;
+    displayResidents();
+  }
+}
+
+function prevPage() {
+  if (currentPage > 1) {
+    currentPage--;
+    displayResidents();
+  }
+}
+
 function searchResidents() {
   const searchInput = document
     .getElementById("searchResident")
     .value.trim()
     .toLowerCase();
-  const residentRows = document.querySelectorAll("#residentListData tr");
 
-  residentRows.forEach((row) => {
-    const rowText = row.textContent.toLowerCase();
-    if (rowText.includes(searchInput)) {
-      row.style.display = "";
-    } else {
-      row.style.display = "none";
-    }
+  filteredResidents = allResidents.filter((resident) => {
+    const residentData = `${resident.name} ${resident.mobileNumber} ${resident.email}`;
+    return residentData.toLowerCase().includes(searchInput);
   });
+
+  currentPage = 1;
+  displayResidents();
 }
 
 const monthNames = [
@@ -221,6 +313,8 @@ function displayAppointments(date) {
   const appointmentList = document.getElementById("appointmentList");
   appointmentList.innerHTML = "";
 
+  const providerCounts = {};
+
   db.ref("6-Health-Appointments")
     .orderByChild("appointmentDate")
     .equalTo(date)
@@ -228,11 +322,27 @@ function displayAppointments(date) {
       if (snapshot.exists()) {
         snapshot.forEach((childSnapshot) => {
           const appointment = childSnapshot.val();
+          const { healthcareProvider } = appointment;
+
+          providerCounts[healthcareProvider] =
+            (providerCounts[healthcareProvider] || 0) + 1;
+
           const listItem = document.createElement("li");
           listItem.classList.add("appointment-item");
-          listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${appointment.healthcareProvider} (${appointment.status}) - ${appointment.remarks}`;
+          listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${healthcareProvider} (${appointment.status}) - ${appointment.remarks}`;
           appointmentList.appendChild(listItem);
         });
+
+        const totalsList = document.createElement("ul");
+        totalsList.classList.add("totals-list");
+        totalsList.innerHTML =
+          "<strong>Total Appointments Per Healthcare Provider:</strong>";
+        for (const provider in providerCounts) {
+          const totalItem = document.createElement("li");
+          totalItem.innerText = `${provider}: ${providerCounts[provider]} appointments`;
+          totalsList.appendChild(totalItem);
+        }
+        appointmentList.appendChild(totalsList);
       } else {
         const listItem = document.createElement("li");
         listItem.classList.add("appointment-item");
@@ -242,6 +352,7 @@ function displayAppointments(date) {
     })
     .catch((error) => {
       console.error("Error fetching appointments:", error);
+
       const listItem = document.createElement("li");
       listItem.classList.add("appointment-item");
       listItem.innerText = "Error loading appointments.";
@@ -348,11 +459,60 @@ function showMedicineTab(tabId) {
 
   if (tabId === "medicineTabPane") {
     fetchInventory();
+
+    const guidelinesTabContent = document.getElementById("guidelinesTabPane");
+    if (guidelinesTabContent) {
+      guidelinesTabContent.classList.remove("show", "active");
+    }
   }
 }
 
+document
+  .getElementById("addStockForm")
+  .addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const productCategory = document.getElementById("productCategory").value;
+    const productType = document.getElementById("productType").value;
+    const productName = document.getElementById("productName").value;
+    const stockQuantity = parseInt(
+      document.getElementById("stockQuantity").value
+    );
+    const currentDate = document.getElementById("currentDate").value;
+    const expirationDate = document.getElementById("expirationDate").value;
+
+    if (!productName || !stockQuantity || !currentDate || !expirationDate) {
+      swal("Error", "Please fill in all fields.", "error");
+      return;
+    }
+
+    const stockData = {
+      category: productCategory,
+      productType: productType,
+      name: productName,
+      quantity: stockQuantity,
+      dateAdded: currentDate,
+      expirationDate: expirationDate,
+      timestamp: Date.now(),
+    };
+
+    db.ref("6-Inventory")
+      .push(stockData)
+      .then(() => {
+        swal("Success", "Stock added successfully!", "success");
+        document.getElementById("addStockForm").reset();
+        fetchInventory();
+      })
+      .catch((error) => {
+        console.error("Error adding stock:", error);
+        swal("Error", "Failed to add stock. Please try again.", "error");
+      });
+  });
+
 function fetchInventory() {
-  const inventoryList = document.getElementById("inventoryList");
+  const inventoryList = document
+    .getElementById("inventoryList")
+    .getElementsByTagName("tbody")[0];
   inventoryList.innerHTML = "";
 
   db.ref("6-Inventory")
@@ -363,38 +523,31 @@ function fetchInventory() {
 
         snapshot.forEach((childSnapshot) => {
           const item = childSnapshot.val();
-
           const key = `${item.category}-${item.name}`;
 
-          if (inventoryData[key]) {
-            inventoryData[key].quantity += item.quantity;
-            inventoryData[key].expirationDates.push(item.expirationDate);
-          } else {
-            inventoryData[key] = {
-              category: item.category,
-              name: item.name,
-              quantity: item.quantity,
-              timestamp: item.timestamp,
-              expirationDates: [item.expirationDate],
-            };
+          if (!inventoryData[key]) {
+            inventoryData[key] = [];
           }
+
+          inventoryData[key].push(item);
         });
 
         for (const key in inventoryData) {
-          const item = inventoryData[key];
-          const row = document.createElement("tr");
-
-          const releaseButton = `<button class="btn btn-primary" onclick="showDetailsModal('${key}')">Release</button>`;
-
-          row.innerHTML = `
-            <td>${item.name}</td>
-            <td>${item.category}</td>
-            <td>${item.quantity}</td>
-            <td>${new Date(item.timestamp).toLocaleDateString()}</td>
-            <td>${item.expirationDates.join(", ")}</td>
-            <td>${releaseButton}</td>
-          `;
-          inventoryList.appendChild(row);
+          const items = inventoryData[key];
+          items.forEach((item) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${item.category}</td>
+              <td>${item.name}</td>
+              <td>${item.quantity}</td>
+              <td>${new Date(item.timestamp).toLocaleDateString()}</td>
+              <td>${item.expirationDate}</td>
+              <td><button class="btn btn-primary" onclick="openReleaseModal('${
+                item.name
+              }')">Release</button></td>
+            `;
+            inventoryList.appendChild(row);
+          });
         }
       } else {
         const row = document.createElement("tr");
@@ -408,21 +561,142 @@ function fetchInventory() {
     });
 }
 
-function showDetailsModal(key) {
-  const inventoryData = {};
-  const item = inventoryData[key];
+function openReleaseModal(itemName) {
+  const releaseModal = document.getElementById("medicineReleaseModal");
+  const batchDetails = document.getElementById("batchDetails");
 
-  document.getElementById("modalProductName").textContent = item.name;
-  document.getElementById("modalCategory").textContent = item.category;
-  document.getElementById("modalQuantity").textContent = item.quantity;
-  document.getElementById("modalDateAdded").textContent = new Date(
-    item.timestamp
-  ).toLocaleDateString();
-  document.getElementById("modalExpirationDates").textContent =
-    item.expirationDates.join(", ");
+  batchDetails.innerHTML = "";
 
-  const modal = new bootstrap.Modal(document.getElementById("detailsModal"));
-  modal.show();
+  const lowStockThreshold = 20;
+
+  db.ref("6-Inventory")
+    .orderByChild("name")
+    .equalTo(itemName)
+    .once("value")
+    .then((snapshot) => {
+      snapshot.forEach((childSnapshot) => {
+        const item = childSnapshot.val();
+
+        if (item.name === itemName) {
+          const row = document.createElement("div");
+          row.classList.add("stock-row");
+          row.innerHTML = `
+            <p>Batch Date: ${new Date(item.dateAdded).toLocaleDateString()}</p>
+            <p>Quantity Available: ${item.quantity}</p>
+            <input type="number" id="releaseQuantity_${
+              childSnapshot.key
+            }" max="${
+            item.quantity
+          }" placeholder="Enter quantity to release" required>
+          `;
+          batchDetails.appendChild(row);
+
+          if (item.quantity < lowStockThreshold) {
+            swal({
+              title: "Low Stock Alert",
+              text: `Stock for ${item.name} is low! Only ${item.quantity} units available.`,
+              icon: "warning",
+              buttons: ["Cancel", "Release"],
+            }).then((willRelease) => {
+              if (willRelease) {
+                console.log("Proceeding with stock release...");
+              }
+            });
+          }
+        }
+      });
+
+      releaseModal.style.display = "flex";
+    })
+    .catch((error) => {
+      console.error("Error fetching inventory item:", error);
+      swal("Error", "Failed to load stock details.", "error");
+    });
+}
+
+document
+  .getElementById("releaseForm")
+  .addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const residentId = document.getElementById("residentId").value;
+    let releaseSuccess = true;
+
+    const batchDetails = document.getElementById("batchDetails");
+    const releaseRequests = [];
+
+    batchDetails.querySelectorAll(".stock-row").forEach((row) => {
+      const batchId = row.querySelector("input").id.split("_")[1];
+      const releaseQuantity = parseInt(row.querySelector("input").value);
+
+      if (releaseQuantity && releaseQuantity > 0) {
+        releaseRequests.push({
+          batchId,
+          quantity: releaseQuantity,
+        });
+      }
+    });
+
+    if (!residentId || releaseRequests.length === 0) {
+      swal(
+        "Error",
+        "Please fill in all required fields and select quantities to release.",
+        "error"
+      );
+      return;
+    }
+
+    releaseRequests.forEach((request) => {
+      db.ref(`6-Inventory/${request.batchId}`)
+        .once("value")
+        .then((snapshot) => {
+          const item = snapshot.val();
+
+          if (item.quantity >= request.quantity) {
+            const newQuantity = item.quantity - request.quantity;
+
+            db.ref(`6-Inventory/${request.batchId}`).update({
+              quantity: newQuantity,
+            });
+
+            const releaseData = {
+              residentId,
+              itemName: item.name,
+              quantity: request.quantity,
+              releaseDate: new Date().toISOString(),
+            };
+
+            db.ref("6-MedicineReleases")
+              .push(releaseData)
+              .catch((error) => {
+                console.error("Error recording release:", error);
+                swal("Error", "Failed to record release transaction.", "error");
+              });
+          } else {
+            swal(
+              "Error",
+              `Insufficient stock in the batch for ${item.name}.`,
+              "error"
+            );
+            releaseSuccess = false;
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching item:", error);
+          swal("Error", "Failed to fetch item data.", "error");
+          releaseSuccess = false;
+        });
+    });
+
+    if (releaseSuccess) {
+      swal("Success", "Medicine released successfully!", "success");
+      fetchInventory();
+      closeReleaseModal();
+    }
+  });
+
+function closeReleaseModal() {
+  document.getElementById("medicineReleaseModal").style.display = "none";
 }
 
 function handleCategoryChange() {
@@ -786,11 +1060,33 @@ document
   .addEventListener("input", updateTemperatureStatus);
 
 function BabiesSubmitForm() {
-  const babyName = document.getElementById("babiesName").value;
-  const birthday = document.getElementById("birthday").value;
-  const height = document.getElementById("babysheight").value;
-  const weight = document.getElementById("babysweight").value;
-  const temperature = document.getElementById("babystemperature").value;
+  const babyNameElement = document.getElementById("babiesName");
+  const birthdayElement = document.getElementById("birthday");
+  const heightElement = document.getElementById("babysheight");
+  const weightElement = document.getElementById("babysweight");
+  const temperatureElement = document.getElementById("babystemperature");
+
+  if (
+    !babyNameElement ||
+    !birthdayElement ||
+    !heightElement ||
+    !weightElement ||
+    !temperatureElement
+  ) {
+    alert("Please make sure all form fields are filled out correctly.");
+    return;
+  }
+
+  const babyName = babyNameElement.value.trim().replace(/\s+/g, "_"); // Replace spaces with underscores
+  const birthday = birthdayElement.value.trim();
+  const height = heightElement.value.trim();
+  const weight = weightElement.value.trim();
+  const temperature = temperatureElement.value.trim();
+
+  if (!babyName || !birthday || !height || !weight || !temperature) {
+    alert("Please make sure all form fields are filled out correctly.");
+    return;
+  }
 
   const vaccineTypes = getVaccineTypes();
 
@@ -931,6 +1227,129 @@ function getCheckedConditions(prefix) {
 function clearFamilyPlanForm() {
   const formFields = document.querySelectorAll(
     "#FamilyPlanFields input, #FamilyPlanFields textarea"
+  );
+
+  formFields.forEach((field) => {
+    if (field.type === "checkbox" || field.type === "radio") {
+      field.checked = false;
+    } else {
+      field.value = "";
+    }
+  });
+}
+
+function submitPrenatalDetails() {
+  const patientId = document.getElementById("patientId").textContent; // Assuming patientId is displayed somewhere
+  const bloodPressure = document.getElementById("bloodPressure").value;
+  const weight = document.getElementById("weight").value;
+  const height = document.getElementById("height").value;
+  const fundalHeight = document.getElementById("fundalHeight").value;
+  const fetalHeartTone = document.getElementById("fetalHeartTone").value;
+
+  const diagnosedConditions = getCheckedConditions("diagnosedCondition");
+  const medications = document.querySelector(
+    'input[name="medications"]:checked'
+  )
+    ? document.getElementById("medicationsList").value || "None"
+    : "None";
+
+  const firstPregnancy = document.querySelector(
+    'input[name="firstPregnancy"]:checked'
+  )
+    ? document.querySelector('input[name="firstPregnancy"]:checked').value
+    : "Not specified";
+
+  const previousPregnancies =
+    firstPregnancy === "No"
+      ? document.getElementById("previousPregnancies").value || "0"
+      : "N/A";
+
+  const miscarriages = document.querySelector(
+    'input[name="miscarriages"]:checked'
+  )
+    ? document.getElementById("miscarriageDetails").value || "None"
+    : "No";
+
+  const symptoms = getCheckedConditions("symptom");
+  const smoking = document.querySelector('input[name="smoking"]:checked')
+    ? document.getElementById("smokingFrequency").value || "None"
+    : "No";
+  const alcohol = document.querySelector('input[name="alcohol"]:checked')
+    ? document.getElementById("alcoholFrequency").value || "None"
+    : "No";
+  const caffeine = document.querySelector('input[name="caffeine"]:checked')
+    ? document.getElementById("caffeineAmount").value || "None"
+    : "No";
+  const exercise = document.querySelector('input[name="exercise"]:checked')
+    ? document.getElementById("exerciseDetails").value || "None"
+    : "No";
+
+  const pregnancyWeeks = document.getElementById("pregnancyWeeks").value;
+  const dueDate = document.getElementById("dueDate").value;
+
+  const formId = `${patientId}-${Math.floor(100000 + Math.random() * 900000)}`;
+
+  const prenatalData = {
+    patientId,
+    bloodPressure,
+    weight,
+    height,
+    fundalHeight,
+    fetalHeartTone,
+    diagnosedConditions,
+    medications,
+    firstPregnancy,
+    previousPregnancies,
+    miscarriages,
+    symptoms,
+    smoking,
+    alcohol,
+    caffeine,
+    exercise,
+    pregnancyWeeks,
+    dueDate,
+    formId,
+    timestamp: new Date().toISOString(),
+  };
+
+  // Save data to Firebase
+  firebase
+    .database()
+    .ref(`6-Prenatal/${formId}`)
+    .set(prenatalData)
+    .then(() => {
+      swal(
+        "Success",
+        `Prenatal form submitted successfully! Form ID: ${formId}`,
+        "success"
+      );
+      clearPrenatalForm();
+    })
+    .catch((error) => {
+      console.error("Error submitting form: ", error);
+      swal("Error", "Failed to submit the form. Please try again.", "error");
+    });
+}
+
+function getCheckedConditions(prefix) {
+  const checkedConditions = [];
+  const checkboxes = document.querySelectorAll(
+    `input[id^="${prefix}"]:checked`
+  );
+  checkboxes.forEach((checkbox) => {
+    const relatedInput = checkbox.nextElementSibling;
+    const conditionDetail =
+      relatedInput && relatedInput.tagName === "INPUT"
+        ? `${checkbox.value} (${relatedInput.value})`
+        : checkbox.value;
+    checkedConditions.push(conditionDetail);
+  });
+  return checkedConditions.join(", ");
+}
+
+function clearPrenatalForm() {
+  const formFields = document.querySelectorAll(
+    "#PrenatalFields input, #PrenatalFields textarea"
   );
 
   formFields.forEach((field) => {
@@ -1093,80 +1512,3 @@ function showFormFields() {
     document.getElementById("DentalFields").style.display = "block";
   }
 }
-
-// function generateFormId() {
-//   return Math.floor(1000 + Math.random() * 9000);
-// }
-
-// function BabiesSubmitForm() {
-//   const formId = generateFormId();
-//   const appointmentType = document.getElementById("appointmentType").value;
-//   const chiefComplaint = document.getElementById("chiefComplaintType").value;
-//   const specialty = document.getElementById("specialty").value;
-
-//   let babyName = "";
-//   let babyBirthday = "";
-//   let height = "";
-//   let weight = "";
-//   let temperature = "";
-//   let vaccines = [];
-
-//   if (chiefComplaint === "BVaccine") {
-//     babyName = document.getElementById("babiesName").value;
-//     babyBirthday = document.getElementById("birthday").value;
-
-//     height = document.getElementById("height").value || "";
-//     weight = document.getElementById("weight").value || "";
-//     temperature = document.getElementById("temperature").value || "";
-
-//     console.log("Height:", height);
-//     console.log("Weight:", weight);
-//     console.log("Temperature:", temperature);
-
-//     if (document.getElementById("BCG").checked) vaccines.push("BCG");
-//     if (document.getElementById("HepatitisB").checked)
-//       vaccines.push("Hepatitis B");
-//     if (document.getElementById("Pentavalent").checked)
-//       vaccines.push("Pentavalent");
-//   }
-
-//   console.log("Form Data:", {
-//     formId: formId,
-//     appointmentType: appointmentType,
-//     chiefComplaint: chiefComplaint,
-//     specialty: specialty,
-//     babyName: babyName,
-//     babyBirthday: babyBirthday,
-//     height: height,
-//     weight: weight,
-//     temperature: temperature,
-//     vaccines: vaccines,
-//   });
-
-//   const formData = {
-//     formId: formId,
-//     appointmentType: appointmentType,
-//     chiefComplaint: chiefComplaint,
-//     specialty: specialty,
-//     babyName: babyName,
-//     babyBirthday: babyBirthday,
-//     height: height,
-//     weight: weight,
-//     temperature: temperature,
-//     vaccines: vaccines,
-//   };
-
-//   insertIntoDatabase(formData);
-// }
-
-// function insertIntoDatabase(formData) {
-//   const db = firebase.firestore();
-//   db.collection("6-BabiesVaccine")
-//     .add(formData)
-//     .then((docRef) => {
-//       console.log("Document written with ID: ", docRef.id);
-//     })
-//     .catch((error) => {
-//       console.error("Error adding document: ", error);
-//     });
-// }

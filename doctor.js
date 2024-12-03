@@ -14,34 +14,15 @@ firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 var db = firebase.database();
 
-function logoutUser() {
-  firebase
-    .auth()
-    .signOut()
-    .then(() => {
-      window.location.href = "index.html";
-      swal("Logged Out", "You have successfully logged out.", "success");
-    })
-    .catch((error) => {
-      console.error("Error logging out:", error);
-      swal("Error", "Could not log out. Please try again.", "error");
-    });
+function toggleSidebar() {
+  const sidebar = document.querySelector(".sidebar");
+  sidebar.classList.toggle("active");
 }
 
-document.getElementById("logoutBtn").addEventListener("click", logoutUser);
-
-function displayLoggedInUserProfile() {
-  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-  if (loggedInUser && loggedInUser.profileUrl) {
-    const profileImage = `<img src="${loggedInUser.profileUrl}" alt="Profile Image" style="width: 120px; height: 120px; border-radius: 50%;margin:20px;">`;
-    document.getElementById("profileImageContainer").innerHTML = profileImage;
-  } else {
-    const defaultIcon = `<i class="fa-solid fa-user" style="font-size: 80px; color: white; margin: 15%;"></i>`;
-    document.getElementById("profileImageContainer").innerHTML = defaultIcon;
-  }
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", logoutUser);
 }
-
-window.onload = displayLoggedInUserProfile;
 
 document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("dashboardSection").style.display = "block";
@@ -61,6 +42,7 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
       document.getElementById("dashboardSection").style.display = "block";
     } else if (sectionName === "Patient") {
       document.getElementById("patientSection").style.display = "block";
+      fetchHealthFormData();
     } else if (sectionName === "Appointment") {
       document.getElementById("appointmentSection").style.display = "block";
     } else if (sectionName === "Consultation") {
@@ -73,6 +55,42 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
     }
   });
 });
+
+function toggleUserMenu() {
+  const userMenu = document.getElementById("userMenu");
+  userMenu.style.display = userMenu.style.display === "none" ? "block" : "none";
+}
+
+function showLogoutModal() {
+  const modal = document.getElementById("logoutModal");
+  modal.style.display = "flex";
+}
+
+function closeLogoutModal() {
+  const modal = document.getElementById("logoutModal");
+  modal.style.display = "none";
+}
+
+document.getElementById("confirmLogout").addEventListener("click", () => {
+  window.location.href = "index.html";
+});
+
+document.getElementById("cancelLogout").addEventListener("click", () => {
+  closeLogoutModal();
+});
+
+function displayLoggedInUserProfile() {
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  if (loggedInUser && loggedInUser.profileUrl) {
+    const profileImage = `<img src="${loggedInUser.profileUrl}" alt="Profile Image" style="width: 40px; height: 40px; border-radius: 50%;margin-top:10px">`;
+    document.getElementById("profileImageContainer").innerHTML = profileImage;
+  } else {
+    const defaultIcon = `<i class="fa-solid fa-user" style="font-size: 80px; color: white; margin: 15%;"></i>`;
+    document.getElementById("profileImageContainer").innerHTML = defaultIcon;
+  }
+}
+
+window.onload = displayLoggedInUserProfile;
 
 function fetchAppointmentsByDate() {
   const selectedDate = document.getElementById("appointmentDatepicker").value;
@@ -447,102 +465,210 @@ function fetchPrecheckupForms() {
 }
 
 // Initialize profile on page load
-window.onload = function () {
-  setDefaultDatePicker();
-  displayLoggedInUserProfile();
-  populateYearDropdown();
-  updateMonthYearDisplay();
-  generateCalendarDays();
-  fetchHealthFormData();
-};
-
-//Patient List
-let lastFetchedData = [];
+// window.onload = function () {
+//   setDefaultDatePicker();
+//   displayLoggedInUserProfile();
+//   populateYearDropdown();
+//   updateMonthYearDisplay();
+//   generateCalendarDays();
+//   fetchHealthFormData();
+// };
 
 function fetchHealthFormData() {
   const formDataTableBody = document.querySelector("#patientSection tbody");
-  const selectedDate = document.getElementById("patientDatePicker").value;
-  const searchQuery = document
-    .getElementById("patientSearchBar")
-    .value.toLowerCase();
 
   formDataTableBody.innerHTML = "";
 
-  if (lastFetchedData.length === 0) {
-    db.ref("6-GeneralCheckup")
-      .once("value")
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          let dataArray = [];
-          snapshot.forEach((childSnapshot) => {
-            const data = childSnapshot.val();
-            dataArray.push(data);
-          });
+  db.ref("6-GeneralCheckup")
+    .once("value")
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        snapshot.forEach((childSnapshot) => {
+          const data = childSnapshot.val();
 
-          lastFetchedData = dataArray;
-          applyFilters();
-        } else {
-          alert("No data available.");
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching health form data:", error);
-      });
-  } else {
-    applyFilters();
-  }
+          const row = `
+            <tr>
+             <td>${data.patientId || "N/A"}</td>
+             <td>${data.allergies || "N/A"}</td>
+             <td>${data.appointmentType || "N/A"}</td>
+             <td>${data.bloodPressure || "N/A"}</td>
+             <td>${data.bmi || "N/A"}</td>
+             <td>${data.chiefComplaint || "N/A"}</td>
+             <td>${data.height || "N/A"}</td>
+             <td>${data.weight || "N/A"}</td>
+             <td>${data.medications || "N/A"}</td>
+             <td>${data.pulseRate || "N/A"}</td>
+             <td>${data.respiratoryRate || "N/A"}</td>
+             <td>${data.respiratoryRateStatus || "N/A"}</td>
+             <td>${data.specialty || "N/A"}</td>
+             <td>${data.temperature || "N/A"}</td>
+            </tr>
+          `;
 
-  function applyFilters() {
-    const displayedPatientIds = new Set();
-
-    const filteredData = lastFetchedData.filter((data) => {
-      let recordDate = null;
-      if (data.timestamp) {
-        const date = new Date(data.timestamp);
-        recordDate = `${date.getFullYear()}-${String(
-          date.getMonth() + 1
-        ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+          formDataTableBody.insertAdjacentHTML("beforeend", row);
+        });
+      } else {
+        formDataTableBody.innerHTML =
+          "<tr><td colspan='15'>No data available</td></tr>";
       }
-
-      const dateMatch = !selectedDate || recordDate === selectedDate;
-      const specialtyMatch = data.specialty === "GeneralDoctor";
-      const searchMatch =
-        !searchQuery || data.patientId.toLowerCase().includes(searchQuery);
-
-      return dateMatch && specialtyMatch && searchMatch;
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+      formDataTableBody.innerHTML =
+        "<tr><td colspan='15'>Error fetching data</td></tr>";
     });
-
-    filteredData.forEach((data) => {
-      if (displayedPatientIds.has(data.patientId)) return;
-
-      displayedPatientIds.add(data.patientId);
-
-      const row = `
-        <tr>
-          <td>${data.patientId || "N/A"}</td>
-          <td>${data.allergies || "N/A"}</td>
-          <td>${data.appointmentType || "N/A"}</td>
-          <td>${data.bloodPressure || "N/A"}</td>
-          <td>${data.bmi || "N/A"}</td>
-          <td>${data.chiefComplaint || "N/A"}</td>
-          <td>${data.height || "N/A"}</td>
-          <td>${data.weight || "N/A"}</td>
-          <td>${data.medications || "N/A"}</td>
-          <td>${data.pulseRate || "N/A"}</td>
-          <td>${data.respiratoryRate || "N/A"}</td>
-          <td>${data.respiratoryRateStatus || "N/A"}</td>
-          <td>${data.specialty || "N/A"}</td>
-          <td>${data.temperature || "N/A"}</td>
-        </tr>`;
-      formDataTableBody.innerHTML += row;
-    });
-
-    if (filteredData.length === 0) {
-      const row = `<tr><td colspan="15">No matching records found.</td></tr>`;
-      formDataTableBody.innerHTML += row;
-    }
-  }
 }
+
+function fetchPrecheckupForms() {
+  const residentID = document.getElementById("patientIdInput").value;
+
+  if (!residentID) {
+    alert("Please enter a Resident ID.");
+    return;
+  }
+
+  const formsRef = db.ref("6-GeneralCheckup");
+
+  formsRef
+    .orderByChild("residentID")
+    .equalTo(residentID)
+    .once("value")
+    .then((snapshot) => {
+      const patientDataSection = document.getElementById("patientDataSection");
+      const bhcmsForm = document.getElementById("bhcmsForm");
+
+      patientDataSection.style.display = "none"; // Hide patient data section initially
+      bhcmsForm.style.display = "none"; // Hide form until data is fetched
+
+      if (snapshot.exists()) {
+        snapshot.forEach((childSnapshot) => {
+          const data = childSnapshot.val();
+
+          // Populate Patient Data Section
+          document.getElementById("patientId").innerText =
+            data.residentID || "N/A";
+          document.getElementById("patientName").innerText = data.name || "N/A";
+          document.getElementById("patientAge").innerText = data.age || "N/A";
+          document.getElementById("patientSex").innerText = data.sex || "N/A";
+          document.getElementById("patientAddress").innerText =
+            data.address || "N/A";
+
+          // Populate Baby's Information Section (assuming data for baby is present)
+          document.getElementById("babiesName").value =
+            data.babiesName || "N/A";
+          document.getElementById("birthday").value = data.birthday || "N/A";
+          document.getElementById("Babysheight").value = data.height || "N/A";
+          document.getElementById("Babysweight").value = data.weight || "N/A";
+          document.getElementById("babystemperature").value =
+            data.temperature || "N/A";
+
+          // Check and update vaccine checkboxes based on data
+          document.getElementById("BCG").checked = data.vaccineBCG || false;
+          document.getElementById("HepatitisB").checked =
+            data.vaccineHepatitisB || false;
+          document.getElementById("Pentavalent").checked =
+            data.vaccinePentavalent || false;
+
+          // Show the patient data section and form
+          patientDataSection.style.display = "block";
+          bhcmsForm.style.display = "block";
+        });
+      } else {
+        alert("No forms found for this Resident ID.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching forms:", error);
+      alert("An error occurred while fetching the precheckup data.");
+    });
+}
+
+// let lastFetchedData = [];
+
+// function fetchHealthFormData() {
+//   const formDataTableBody = document.querySelector("#patientSection tbody");
+//   const selectedDate = document.getElementById("patientDatePicker").value;
+//   const searchQuery = document
+//     .getElementById("patientSearchBar")
+//     .value.toLowerCase();
+
+//   formDataTableBody.innerHTML = "";
+
+//   if (lastFetchedData.length === 0) {
+//     db.ref("6-GeneralCheckup")
+//       .once("value")
+//       .then((snapshot) => {
+//         if (snapshot.exists()) {
+//           let dataArray = [];
+//           snapshot.forEach((childSnapshot) => {
+//             const data = childSnapshot.val();
+//             dataArray.push(data);
+//           });
+
+//           lastFetchedData = dataArray;
+//           applyFilters();
+//         } else {
+//           alert("No data available.");
+//         }
+//       })
+//       .catch((error) => {
+//         console.error("Error fetching health form data:", error);
+//       });
+//   } else {
+//     applyFilters();
+//   }
+
+//   function applyFilters() {
+//     const displayedPatientIds = new Set();
+
+//     const filteredData = lastFetchedData.filter((data) => {
+//       let recordDate = null;
+//       if (data.timestamp) {
+//         const date = new Date(data.timestamp);
+//         recordDate = `${date.getFullYear()}-${String(
+//           date.getMonth() + 1
+//         ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+//       }
+
+//       const dateMatch = !selectedDate || recordDate === selectedDate;
+//       const specialtyMatch = data.specialty === "GeneralDoctor";
+//       const searchMatch =
+//         !searchQuery || data.patientId.toLowerCase().includes(searchQuery);
+
+//       return dateMatch && specialtyMatch && searchMatch;
+//     });
+
+//     filteredData.forEach((data) => {
+//       if (displayedPatientIds.has(data.patientId)) return;
+
+//       displayedPatientIds.add(data.patientId);
+
+//       const row = `
+//         <tr>
+//           <td>${data.patientId || "N/A"}</td>
+//           <td>${data.allergies || "N/A"}</td>
+//           <td>${data.appointmentType || "N/A"}</td>
+//           <td>${data.bloodPressure || "N/A"}</td>
+//           <td>${data.bmi || "N/A"}</td>
+//           <td>${data.chiefComplaint || "N/A"}</td>
+//           <td>${data.height || "N/A"}</td>
+//           <td>${data.weight || "N/A"}</td>
+//           <td>${data.medications || "N/A"}</td>
+//           <td>${data.pulseRate || "N/A"}</td>
+//           <td>${data.respiratoryRate || "N/A"}</td>
+//           <td>${data.respiratoryRateStatus || "N/A"}</td>
+//           <td>${data.specialty || "N/A"}</td>
+//           <td>${data.temperature || "N/A"}</td>
+//         </tr>`;
+//       formDataTableBody.innerHTML += row;
+//     });
+
+//     if (filteredData.length === 0) {
+//       const row = `<tr><td colspan="15">No matching records found.</td></tr>`;
+//       formDataTableBody.innerHTML += row;
+//     }
+//   }
+// }
 
 document
   .getElementById("patientDatePicker")
