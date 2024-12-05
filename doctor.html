@@ -10,6 +10,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.2.0/sweetalert2.min.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.2.0/sweetalert2.all.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     </head>
 <body>
 
@@ -50,12 +51,6 @@
         </li>
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
-                <i class="fa-solid fa-house-medical mr-2"></i> 
-                Patient
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-phone mr-2"></i> 
                 Appointment
             </a>
@@ -72,6 +67,24 @@
                 Babies Vaccination
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center" href="#">
+                <i class="fa-solid fa-baby mr-2"></i> 
+                Babies Vaccination Records
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center" href="#">
+                <i class="fa-solid fa-file-medical mr-2"></i>
+                Patient Records
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link d-flex align-items-center" id="timeInOutLink">
+                <i class="fa-solid fa-clock mr-2"></i> 
+                Time In/Time Out
+            </a>
+        </li>
     </ul>
 </div>
 
@@ -80,8 +93,9 @@
     <div id="dashboardSection" class="content-section">
         <h1 class="mt-5">Appointment Dashboard</h1>
         
-        <div class="row mb-4 right">
+        <div class="row mb-4 right flexend">
             <div class="col-md-3 offset-md-4">
+                <label>Select Date: </label>
                 <input type="date" id="appointmentDatePicker" class="form-control">
             </div>
         </div>
@@ -135,51 +149,7 @@
                 </div>
             </div>
         </div>
-    </div>
-    
-
-     <!-- Patient Section -->
-    <div id="patientSection" class="content-section" style="display: none;">
-        <h1 class="mt-5">Patient List</h1>
-        <!-- <div class="row mb-4">
-          <div class="col-md-4">
-            <input type="text" id="patientSearchBar" class="form-control" placeholder="Search by Patient ID" oninput="fetchHealthFormData()">
-          </div>
-          <div class="col-md-4">
-            <input type="date" id="patientDatePicker" class="form-control" onchange="fetchHealthFormData()">
-          </div>
-        </div> -->
-        <table>
-          <thead>
-            <tr>
-              <th>Patient ID</th>
-              <th>Allergies</th>
-              <th>Appointment Type</th>
-              <th>Blood Pressure</th>
-              <th>BMI</th>
-              <th>Chief Complaint</th>
-              <th>Height</th>
-              <th>Weight</th>
-              <th>Medications</th>
-              <th>Pulse Rate</th>
-              <th>Respiratory Rate</th>
-              <th>Respiratory Rate Status</th>
-              <th>Specialty</th>
-              <th>Temperature</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      
-      <div id="patientModal" class="modal" style="display: none;">
-        <button id="downloadBtn" style="display: none;">Download Details</button>
-        <div class="modal-content">
-          <span class="close-btn">&times;</span>
-          <h2>Patient Details</h2>
-          <p id="modalContent"></p>
-        </div>
-      </div>      
+    </div>  
       
     <div id="appointmentSection" class="content-section" style="display: none;">
         <h1 class="mt-5">Appointment Calendar</h1>
@@ -201,7 +171,6 @@
                 </div>
             </div>
 
-            <!-- Schedule Area -->
             <div class="schedule">
                 <div class="schedule-header">Appointments</div>
                 <ul class="appointment-list" id="appointmentList">
@@ -212,118 +181,160 @@
     </div>
 
     <div id="ConsultationSection" class="content-section" style="display: none;">
-        <h1 class="mt-5">Consultation</h1>
         <div>
-            <input type="text" id="formIDInput" placeholder="Enter Form ID" style="width: 50%;"/>
-            <button onclick="fetchPrecheckupFormDetails(document.getElementById('formIDInput').value)" class="btn-primary">
-                Fetch Details
-            </button>
-            <!-- <table>
-                <thead>
-                    <tr>
-                    <th>Form ID</th>
-                    </tr>
-                </thead>
-                <tbody id="precheckupListData">
-                    
-                </tbody>
-            </table> -->
+            <label for="patientIdInput">Enter Resident ID:</label>
+            <input type="text" style="width: 20%;" id="patientIdInput" placeholder="Resident ID" />
+            <button class="btn-primary" onclick="fetchPatientData()">Fetch Patient Data</button>
         </div>
-        <div id="precheckupDetailsSection"  style="display: none;">
-            <h1 class="mt-5">Precheckup Details</h1>
-            <form id="precheckupDetailsForm">
-                <div class="row">
-                    <!-- Column 1 -->
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="height">Height</label>
-                            <input type="text" class="form-control" id="height" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="weight">Weight</label>
-                            <input type="text" class="form-control" id="weight" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="bloodPressure">Blood Pressure</label>
-                            <input type="text" class="form-control" id="bloodPressure" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="bloodPressureStatus">Blood Pressure Status</label>
-                            <input type="text" class="form-control" id="bloodPressureStatus" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="temperature">Temperature</label>
-                            <input type="text" class="form-control" id="temperature" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="temperatureStatus">Temperature Status</label>
-                            <input type="text" class="form-control" id="temperatureStatus" disabled>
-                        </div>
-                    </div>
-        
-                    <!-- Column 2 -->
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="pulseRate">Pulse Rate</label>
-                            <input type="text" class="form-control" id="pulseRate" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="pulseRateStatus">Pulse Rate Status</label>
-                            <input type="text" class="form-control" id="pulseRateStatus" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="respiratoryRate">Respiratory Rate</label>
-                            <input type="text" class="form-control" id="respiratoryRate" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="allergies">Allergies</label>
-                            <textarea class="form-control" id="allergies" rows="3" disabled></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="currentMedications">Current Medications</label>
-                            <textarea class="form-control" id="currentMedications" rows="3" disabled></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="pastMedicalHistory">Past Medical History</label>
-                            <textarea class="form-control" id="pastMedicalHistory" rows="3" disabled></textarea>
-                        </div>
-                    </div>
-        
-                    <!-- Column 3 -->
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="familyHistory">Family History</label>
-                            <textarea class="form-control" id="familyHistory" rows="3" disabled></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="covidVaccinated">COVID Vaccinated</label>
-                            <input type="text" class="form-control" id="covidVaccinated" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="vaccineType">Vaccine Type</label>
-                            <input type="text" class="form-control" id="vaccineType" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="boosterDose">Booster Dose</label>
-                            <input type="text" class="form-control" id="boosterDose" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="boosterDate">Booster Date</label>
-                            <input type="text" class="form-control" id="boosterDate" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="BMI">BMI</label>
-                            <input type="text" class="form-control" id="BMI" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="BMIStatus">BMI Status</label>
-                            <input type="text" class="form-control" id="BMIStatus" disabled>
-                        </div>
-                    </div>
-                </div>
-            </form>
+    
+        <div id="patientDataSection" style="display: none;">
+            <h1 class="mt-5">Patient Information</h1>
+            <p><strong>Resident ID:</strong> <span id="patientId"></span></p>
+            <p><strong>Name:</strong> <span id="patientName"></span></p>
+            <p><strong>Age:</strong> <span id="patientAge"></span></p>
+            <p><strong>Sex:</strong> <span id="patientSex"></span></p>
+            <p><strong>Address:</strong> <span id="patientAddress"></span></p>
+        </div>
 
-            <div class="form-container">
+        <h1 class="mt-5">Consultation</h1>
+        <div class="row">
+            <div class="col">
+                <label for="height">Height (cm):</label>
+                <input type="number" id="height" placeholder="Enter height" required />
+                <br />
+
+                <label for="weight">Weight (kg):</label>
+                <input type="number" id="weight" placeholder="Enter weight" required />
+                <br />
+
+                <label for="bloodPressure">Blood Pressure:</label>
+                <input type="text" id="bloodPressure" placeholder="Enter blood pressure" required />
+                <span id="bloodPressureStatus"></span>
+                <br />
+
+                <label for="temperature">Temperature (°C):</label>
+                <input type="text" id="temperature" placeholder="Enter temperature" required />
+                <span id="temperatureStatus"></span>
+                <br />
+
+                <label for="pulseRate">Pulse Rate (bpm):</label>
+                <input type="text" id="pulseRate" placeholder="Enter pulse rate" required />
+                <span id="pulseRateStatus"></span>
+                <br />
+
+                <label for="respiratoryRate">Respiratory Rate (bpm):</label>
+                <input type="text" id="respiratoryRate" placeholder="Enter respiratory rate" required />
+                <span id="respiratoryRateStatus"></span>
+                <br />
+
+                <label for="allergies">Allergies (If any):</label>
+                <div>
+                    <input type="checkbox" id="noAllergies" onclick="toggleCheckboxAllergies('noAllergies')" />
+                    <label for="noAllergies">None</label>
+                    <br />
+                    <input type="checkbox" id="hasAllergies" onclick="toggleCheckboxAllergies('hasAllergies')" />
+                    <label for="hasAllergies">Yes, please specify:</label>
+                    <input type="text" id="allergiesDetails" placeholder="Specify allergies" />
+                </div>
+                <br />
+
+                <label for="currentMedications">Current Medications:</label>
+                <div>
+                    <input type="checkbox" id="noMedications" onclick="toggleCheckbox('noMedications')" />
+                    <label for="noMedications">None</label>
+                    <br />
+                    <input type="checkbox" id="hasMedications" onclick="toggleCheckbox('hasMedications')" />
+                    <label for="hasMedications">Yes, please specify:</label>
+                    <input type="text" id="medicationsDetails" placeholder="Specify medications" />
+                </div>
+                <br />
+
+                <label for="pastMedicalHistory">Past Medical History (Check all that apply):</label>
+                <div>
+                    <input type="checkbox" id="n/a" />
+                    <label for="hypertension">N/A</label>
+                    <br />
+                    <input type="checkbox" id="hypertension" />
+                    <label for="hypertension">Hypertension</label>
+                    <br />
+                    <input type="checkbox" id="diabetes" />
+                    <label for="diabetes">Diabetes</label>
+                    <br />
+                    <input type="checkbox" id="heartDisease" />
+                    <label for="heartDisease">Heart Disease</label>
+                    <br />
+                    <input type="checkbox" id="asthma" />
+                    <label for="asthma">Asthma</label>
+                    <br />
+                    <input type="checkbox" id="tuberculosis" />
+                    <label for="tuberculosis">Tuberculosis</label>
+                    <br />
+                    <input type="checkbox" id="otherConditions" />
+                    <label for="otherConditions">Others (Please specify):</label>
+                    <input type="text" id="otherConditionsDetails" placeholder="Specify other conditions" />
+                </div>
+                <br />
+            </div>
+
+            <div class="col">
+                <label for="familyHistory">Family History of Illnesses:</label>
+                <div>
+                    <input type="checkbox" id="n/a" />
+                    <label for="hypertension">N/A</label>
+                    <br />
+                    <input type="checkbox" id="familyHypertension" />
+                    <label for="familyHypertension">Hypertension</label>
+                    <br />
+                    <input type="checkbox" id="familyDiabetes" />
+                    <label for="familyDiabetes">Diabetes</label>
+                    <br />
+                    <input type="checkbox" id="familyHeartDisease" />
+                    <label for="familyHeartDisease">Heart Disease</label>
+                    <br />
+                    <input type="checkbox" id="familyOther" />
+                    <label for="familyOther">Others (Please specify):</label>
+                    <input type="text" id="familyOtherDetails" placeholder="Specify family conditions" />
+                </div>
+                <br />
+
+                <label for="covidVaccinated">Are You Covid-19 Vaccinated?</label>
+                <div>
+                    <input type="checkbox" id="vaccinatedYes" onclick="toggleVaccinationCheckbox('vaccinatedYes')" />
+                    <label for="vaccinatedYes">Yes</label>
+                    <input type="checkbox" id="vaccinatedNo" onclick="toggleVaccinationCheckbox('vaccinatedNo')" />
+                    <label for="vaccinatedNo">No</label>
+                </div>
+                <br />
+
+                <label for="vaccineType">Type of Vaccine:</label>
+                <div>
+                    <input type="checkbox" id="pfizer" onclick="toggleVaccineCheckbox('pfizer')" />
+                    <label for="pfizer">Pfizer</label>
+                    <input type="checkbox" id="moderna" onclick="toggleVaccineCheckbox('moderna')" />
+                    <label for="moderna">Moderna</label>
+                    <input type="checkbox" id="astrazeneca" onclick="toggleVaccineCheckbox('astrazeneca')" />
+                    <label for="astrazeneca">AstraZeneca</label>
+                    <input type="checkbox" id="sinovac" onclick="toggleVaccineCheckbox('sinovac')" />
+                    <label for="sinovac">Sinovac</label>
+                </div>
+                <br />
+
+                <label for="boosterDose">Booster Dose Received?</label>
+                <div>
+                    <input type="checkbox" id="boosterYes" onclick="toggleBoosterCheckbox('boosterYes')" />
+                    <label for="boosterYes">Yes</label>
+                    <input type="checkbox" id="boosterNo" onclick="toggleBoosterCheckbox('boosterNo')" />
+                    <label for="boosterNo">No</label>
+                </div>
+                <br />
+
+                <label for="boosterDate">Date of Last Booster Received:</label>
+                <input type="date" id="boosterDate" />
+                <br />
+
+                <p><strong>BMI:</strong> <span id="bmi"></span></p>
+                <p><strong>BMI Status:</strong> <span id="bmiStatus"></span></p>
+
                 <label>Common Diseases</label>
                 <div>
                   <label><input type="checkbox" id="hypertension" /> Hypertension</label><br />
@@ -339,67 +350,61 @@
                 
                   <label for="consultation">Consultation:</label>
                   <div>
-                  <textarea id="consultation" rows="5" placeholder="Enter consultation details" class="form-control"></textarea>
+                  <textarea id="consultation" rows="3" placeholder="Enter consultation details" class="form-control"></textarea>
                 </div>
               
                 
                   <label for="remarks">Remarks:</label>
                   <div>
-                  <textarea id="remarks" rows="5" placeholder="Enter remarks" class="form-control"></textarea>
+                  <textarea id="remarks" rows="3" placeholder="Enter remarks" class="form-control"></textarea>
                 </div>
                 <br />
-              
-                <button type="button" class="btn-primary" onclick="updatePrecheckupForm()">Update Precheckup Form</button>
               </div>
-              
-
-        </div>
-    
+            </div>
+            <div class="mb-5 flexend">
+                <button  onclick="submitGeneralCheckup()">Submit General Checkup</button>
+            </div>
     </div>
 
-<!--Babies Vaccination-->
 
 <div id="VaccineSection" class="content-section" style="display: none;">
     <h1 class="mt-5">Babies Vaccine</h1>
-
     <div>
         <label for="patientIdInput">Enter Resident ID:</label>
-        <input type="text" style="width: 20%;" id="patientIdInput" placeholder="Resident ID" />
-        <button class="btn-primary" onclick="fetchBabiesData()">Fetch Patient Data</button>
-
+        <input type="text" style="width: 20%;" id="patientIdInputBabys" placeholder="Resident ID" />
+        <button class="btn-primary" onclick="fetchPatientBabysData()">Fetch Patient Data</button>
     </div>
 
-    <div id="patientDataSection" style="display: none;">
-        <h2>Patient Information</h2>
-        <p><strong>Resident ID:</strong> <span id="patientId"></span></p>
-        <p><strong>Name:</strong> <span id="patientName"></span></p>
-        <p><strong>Age:</strong> <span id="patientAge"></span></p>
-        <p><strong>Sex:</strong> <span id="patientSex"></span></p>
-        <p><strong>Address:</strong> <span id="patientAddress"></span></p>
+    <div id="patientDataSectionBabys" style="display: none;">
+        <h1 class="mt-5">Patient Information</h1>
+        <p><strong>Resident ID:</strong> <span id="patientIdBabys"></span></p>
+        <p><strong>Name:</strong> <span id="patientNameBabys"></span></p>
+        <p><strong>Age:</strong> <span id="patientAgeBabys"></span></p>
+        <p><strong>Sex:</strong> <span id="patientSexBabys"></span></p>
+        <p><strong>Address:</strong> <span id="patientAddressBabys"></span></p>
     </div>
 
-    <div id="bhcmsForm" style="display: none;">
-        <h3>Child Information</h3>
 
+    <h1 class="mt-5">Child Information</h1>
         <div class="row">
             <div class="col">
               <label for="babiesName">Baby's Name:</label>
-              <input type="text" id="babiesName" placeholder="Enter Baby's Name" disabled />
+              <input type="text" id="babiesName" placeholder="Enter Baby's Name" required />
               <br />
               <label for="birthday">Birthday:</label>
-              <input type="date" id="birthday" disabled />
+              <input type="date" id="birthday" required />
               <br />
               <label for="height">Height (cm):</label>
-              <input type="number" id="Babysheight" placeholder="Enter height" disabled />
+              <input type="number" id="babysheight" placeholder="Enter height" required />
               <br />
               <label for="weight">Weight (kg):</label>
-              <input type="number" id="Babysweight" placeholder="Enter weight" disabled />
+              <input type="number" id="babysweight" placeholder="Enter weight" required />
               <br />
             </div>
         
             <div class="col">
               <label for="temperature">Temperature (°C):</label>
-              <input type="text" id="babystemperature" placeholder="Enter temperature" disabled />
+              <input type="text" id="babystemperature" placeholder="Enter temperature" required />
               <span id="babystemperatureStatus"></span>
               <br />
               <label for="BvaccineType">Vaccine Taken:</label>
@@ -409,50 +414,137 @@
                 <input type="checkbox" id="HepatitisB" />
                 <label for="HepatitisB">Hepatitis B</label><br />
                 <input type="checkbox" id="Pentavalent" />
-                <label for="Pentavalent">Pentavalent (DPT-HepB-Hib)</label>
+                <label for="Pentavalent">Pentavalent (DPT-HepB-Hib)</label><br />
+                <input type="checkbox" id="OPV" />
+                <label for="OPV">Oral Polio Vaccine (OPV)</label><br />
+                <input type="checkbox" id="Rotavirus" />
+                <label for="Rotavirus">Rotavirus Vaccine</label><br />
+                <input type="checkbox" id="JE" />
+                <label for="JE">Japanese Encephalitis (JE) Vaccine</label><br />
+                <input type="checkbox" id="Measles" />
+                <label for="Measles">Tigdas (Measles) Vaccine</label><br />
               </div>        
             </div>
             <br />
           </div>
+          <div>
+            <button class="flexend" onclick="BabiesSubmitForm()">Submit</button>
+          </div>
+    </div>
 
-        <!-- Babies Vaccine Section -->
+    <div id="babiesVaccineRecord" class="content-section" style="display: none;">
+        <h1 class="mt-5">Babies Vaccine Records</h1>
+    
+        <!-- Search Feature -->
+        <div class="search-bar mt-3">
+            <input 
+                type="text" 
+                id="searchBabiesRecord" 
+                placeholder="Search by Baby's Name or Resident ID" 
+                oninput="filterBabiesRecord()"
+                style="width: 50%; padding: 10px; margin-bottom: 20px;"
+            />
+        </div>
+    
+        <!-- Babies Vaccine Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Form ID</th>
+                    <th>Resident ID</th>
+                    <th>Baby's Name</th>
+                    <th>Birthday</th>
+                    <th>Height (cm)</th>
+                    <th>Weight (kg)</th>
+                    <th>Temperature (°C)</th>
+                    <th>Vaccines Taken</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody id="babiesRecordTableBody">
+                <!-- Dynamic Rows Added Here via JavaScript -->
+            </tbody>
+        </table>
+    </div>
+    
 
-        <div id="BVaccineFields" class="appointmentFields" style="display: block; margin-top: 15px;">
-            <label for="babiesName">Baby's Name:</label>
-            <input type="text" id="babiesName" placeholder="Enter Baby's Name" required />
-            <br />
-            <label for="birthday">Birthday:</label>
-            <input type="date" id="birthday" placeholder="Enter Baby's Birthday" required />
-            <br />
-            <label for="height">Height (cm):</label>
-            <input type="number" id="height" placeholder="Enter height" required />
-            <br />
-            <label for="weight">Weight (kg):</label>
-            <input type="number" id="weight" placeholder="Enter weight" required />
-            <br />
-            <label for="temperature">Temperature (°C):</label>
-            <input type="text" id="temperature" placeholder="Enter temperature" required />
-            <span id="temperatureStatus"></span>
-            <br />
-            <label for="BvaccineType">Vaccine Taken:</label>
-            <div>
-                <input type="checkbox" id="BCG" />
-                <label for="BCG">BCG (Bacillus Calmette-Guerin)</label>
-                <input type="checkbox" id="HepatitisB" />
-                <label for="HepatitisB">Hepatitis B</label>
-                <input type="checkbox" id="Pentavalent" />
-                <label for="Pentavalent">Pentavalent (DPT-HepB-Hib)</label>
-            </div>
-            <br />
-            <div>
-                <button class="btn-primary" onclick="BabiesSubmitForm()">Submit</button>
+    <div id="generalCheckupRecords" class="content-section" style="display: none;">
+        <h1 class="mt-5">General Checkup Records</h1>
+        
+        <input type="text" id="searchCheckup" placeholder="Search Checkup Records" onkeyup="searchCheckups()" style="width: 20%;">
 
+        <table>
+          <thead>
+            <tr>
+              <th>Form ID</th>
+              <th>Patient Name</th>
+              <th>Height (cm)</th>
+              <th>Weight (kg)</th>
+              <th>Blood Pressure</th>
+              <th>Temperature (°C)</th>
+              <th>Vaccinated</th>
+              <th>Consultation</th>
+            </tr>
+          </thead>
+          <tbody id="generalCheckupListData">
+          </tbody>
+        </table>
+        
+        <div class="pagination">
+          <button id="prevPage" onclick="prevPage()">Previous</button>
+          <span id="pageInfo">Page 1</span>
+          <button id="nextPage" onclick="nextPage()">Next</button>
+        </div>
+      </div>
+
+      <div id="checkupModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Patient Record</h2>
+            <div id="modalContent">
+                
             </div>
         </div>
     </div>
-</div>
+    <!-- <div id="checkupModal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <span class="close" onclick="closeModal()">&times;</span>
+          <h2>Patient Record</h2>
+          <div id="modalContent">
+          </div>
+          <button id="downloadBtn" onclick="downloadPDF()" style="display: none;">Download Patient Record</button>
+        </div>
+      </div> -->
+
+      <div id="timeInOutSection" class="content-section" style="display: none;">
+        <h5 class="mt-3">Time In/Time Out</h5>
+
+        <div class="d-flex mt-2">
+          <button id="timeInButton" style="margin: 10px;" onclick="timeIn()">Time In</button>
+          <button id="timeOutButton" style="margin: 10px;" onclick="timeOut()">Time Out</button>
+        </div>
+
+        <div id="timeRecordsDisplay" class="mt-3 text-center" style="font-size: 0.9rem;"></div>
+
+        <div class="table-container">
+            <table id="timeRecordsTable">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time In</th>
+                    <th>Time Out</th>
+                    <th>Total Hours</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
 
 
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

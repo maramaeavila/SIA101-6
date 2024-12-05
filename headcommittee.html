@@ -21,6 +21,9 @@
             <i class="fa-solid fa-user-circle"></i>
         </div>
         <div id="userMenu" class="dropdown-menu" style="display: none;">
+            <!-- <a href="#" onclick="showChangeCredentialsModal()" class="dropdown-item">
+                <i class="fa-solid fa-cogs"></i> Change Username/Password
+            </a> -->
             <a href="#" onclick="showLogoutModal()" class="dropdown-item">
                 <i class="fa-solid fa-sign-out-alt"></i> Logout
             </a>
@@ -38,6 +41,37 @@
       </div>
     </div>
   </div>
+
+<div id="changeCredentialsModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" id="cancelChangeCredentials">&times;</span>
+        <h2>Change Username and Password</h2>
+        <form id="changeCredentialsForm">
+            <div class="form-group mb-3">
+                <label for="oldUsername">Old Username</label>
+                <input type="text" class="form-control" id="oldUsername" placeholder="Enter your old username" required>
+            </div>
+            <div class="form-group mb-3">
+                <label for="oldPassword">Old Password</label>
+                <input type="password" class="form-control" id="oldPassword" placeholder="Enter your old password" required>
+            </div>
+            <div class="form-group mb-3">
+                <label for="newUsername">New Username</label>
+                <input type="text" class="form-control" id="newUsername" placeholder="Enter new username" required>
+            </div>
+            <div class="form-group mb-3">
+                <label for="newPassword">New Password</label>
+                <input type="password" class="form-control" id="newPassword" placeholder="Enter new password" required>
+            </div>
+            <div class="form-group mb-3">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password" required>
+            </div>
+            <button type="button" class="btn btn-primary w-100" onclick="changeCredentials()">Save Changes</button>
+        </form>
+    </div>
+</div>
+
 
 <!-- Sidebar -->
 <div class="sidebar" id="sidebar">
@@ -92,8 +126,9 @@
     <div id="dashboardSection" class="content-section">
         <h1 class="mt-5">Appointment Dashboard</h1>
         
-        <div class="row mb-4 right">
+        <div class="row mb-4 right flexend">
             <div class="col-md-3 offset-md-4">
+                <label>Select Date: </label>
                 <input type="date" id="appointmentDatePicker" class="form-control">
             </div>
         </div>
@@ -251,31 +286,34 @@
     
         <div class="tab-content" id="medicineTabContent">
             <div class="tab-pane fade show active" id="medicineTabPane" role="tabpanel">
-                <h1 class="fonts">Add New Stock</h1>
+                <h1 class="fonts mt-5">Add New Stock</h1>
                 <form id="addStockForm" class="mt-4">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="productCategory">Category:</label>
-                                <select class="form-control" id="productCategory" required onchange="handleCategoryChange()">
+                                <select class="form-control mt-2" id="productCategory" required onchange="handleCategoryChange()">
+                                    <option value="" disabled selected>--Select Category--</option>
                                     <option value="Medicine">Medicine</option>
                                     <option value="Contraceptives">Contraceptives</option>
                                     <option value="Vaccine">Vaccine</option>
                                 </select>
                             </div>
         
-                            <div class="form-group" id="contraceptivesType" style="display: none;">
+                            <div class="form-group mt-2" id="contraceptivesType" style="display: none;">
                                 <label for="productType">Select Contraceptive Product:</label>
-                                <select class="form-control" id="productType" required>
+                                <select class="form-control mt-2" id="productType" required>
+                                    <option value="" disabled selected>--Select Contraceptive--</option>
                                     <option value="Pills">Pills (Oral Contraceptives)</option>
                                     <option value="Condoms">Condoms</option>
                                     <option value="Injectables">Injectables (Depo-Provera)</option>
                                 </select>
                             </div>
         
-                            <div class="form-group" id="medicineType" style="display: none;">
+                            <div class="form-group mt-2" id="medicineType" style="display: none;">
                                 <label for="productType">Select Medicine:</label>
-                                <select class="form-control" id="productType" required>
+                                <select class="form-control mt-2" id="productType" required>
+                                    <option value="" disabled selected>--Select Medicine--</option>
                                     <option value="Paracetamol">Paracetamol</option>
                                     <option value="Amoxicillin">Amoxicillin</option>
                                     <option value="Cough Syrup">Cough Syrup</option>
@@ -283,16 +321,21 @@
                             </div>
         
 
-                            <div class="form-group" id="vaccineType" style="display: none;">
+                            <div class="form-group mt-2" id="vaccineType" style="display: none;">
                                 <label for="productType">Select Vaccine:</label>
-                                <select class="form-control" id="productType" required>
+                                <select class="form-control mt-2" id="productType" required>
+                                    <option value="" disabled selected>--Select Vaccine--</option>
                                     <option value="BCG">BCG (Bacillus Calmette-Guerin)</option>
                                     <option value="HepatitisB">Hepatitis B</option>
                                     <option value="Pentavalent">Pentavalent (DPT-HepB-Hib)</option>
+                                    <option value="OralPolio">Oral Polio Vaccine (OPV)</option>
+                                    <option value="Rotavirus">Rotavirus Vaccine</option>
+                                    <option value="JE">Japanese Encephalitis (JE) Vaccine</option>
+                                    <option value="Tigdas">Tigdas (Measles) Vaccine</option>
                                 </select>
                             </div>
         
-                            <div class="form-group">
+                            <div class="form-group mt-2">
                                 <label for="productName">Product Name:</label>
                                 <input type="text" class="form-control" id="productName" placeholder="Enter product name" required>
                             </div>
@@ -512,6 +555,7 @@
                         <option value="medicine">Medicine</option>
                         <option value="equipment">Equipment</option>
                         <option value="event">Event</option>
+                        <option value="staff">Staff</option>
                     </select>
                 </div>
     

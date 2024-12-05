@@ -329,7 +329,7 @@ function displayAppointments(date) {
 
           const listItem = document.createElement("li");
           listItem.classList.add("appointment-item");
-          listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${healthcareProvider} (${appointment.status}) - ${appointment.remarks}`;
+          listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${healthcareProvider} (${appointment.status}) - ${appointment.healthService}`;
           appointmentList.appendChild(listItem);
         });
 

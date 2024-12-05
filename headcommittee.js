@@ -73,6 +73,10 @@ function showLogoutModal() {
   modal.style.display = "flex";
 }
 
+// function showChangeCredentialsModal() {
+//   document.getElementById("changeCredentialsModal").style.display = "block";
+// }
+
 function closeLogoutModal() {
   const modal = document.getElementById("logoutModal");
   modal.style.display = "none";
@@ -99,58 +103,89 @@ function displayLoggedInUserProfile() {
 
 window.onload = displayLoggedInUserProfile;
 
-let allResidents = [];
-let filteredResidents = [];
-let currentPage = 1;
-const rowsPerPage = 10;
+// async function changeCredentials() {
+//   const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+//   if (!loggedInUser) {
+//     swal("Error", "User is not authenticated. Please log in again.", "error");
+//     return;
+//   }
 
-function fetchResidentData() {
-  const residentListBody = document.getElementById("residentListData");
-  residentListBody.innerHTML = "";
+//   const oldUsername = document.getElementById("oldUsername").value.trim();
+//   const oldPassword = document.getElementById("oldPassword").value.trim();
+//   const newUsername = document.getElementById("newUsername").value.trim();
+//   const newPassword = document.getElementById("newPassword").value.trim();
+//   const confirmPassword = document
+//     .getElementById("confirmPassword")
+//     .value.trim();
 
-  db.ref("Residents")
-    .once("value")
-    .then((snapshot) => {
-      if (snapshot.exists()) {
-        allResidents = [];
-        snapshot.forEach((childSnapshot) => {
-          const resident = childSnapshot.val();
+//   if (
+//     !oldUsername ||
+//     !oldPassword ||
+//     !newUsername ||
+//     !newPassword ||
+//     !confirmPassword
+//   ) {
+//     swal("Error", "Please fill in all required fields.", "error");
+//     return;
+//   }
 
-          const residentData = {
-            id: childSnapshot.key,
-            name: `${resident.firstName || ""} ${resident.middleName || ""} ${
-              resident.lastName || ""
-            }`,
-            mobileNumber: resident.mobileNumber || "",
-            address: resident.address || "",
-            age: resident.age || "",
-            sex: resident.sex || "",
-            birthdate: resident.birthdate || "",
-            bloodType: resident.bloodType || "",
-            email: resident.email || "",
-            emergencyName: resident.emergencyFirstName || "",
-            emergencyMobile: resident.emergencyMobileNumber || "",
-            emergencyRelationship: resident.emergencyRelationship || "",
-          };
+//   if (newPassword !== confirmPassword) {
+//     swal("Error", "Passwords do not match.", "error");
+//     return;
+//   }
 
-          allResidents.push(residentData);
-        });
+//   try {
+//     const snapshot = await db
+//       .ref("3-Employees")
+//       .orderByChild("username")
+//       .equalTo(oldUsername)
+//       .once("value");
 
-        filteredResidents = [...allResidents];
-        displayResidents();
-      } else {
-        const row = document.createElement("tr");
-        row.innerHTML = `<td colspan="16">No residents found.</td>`;
-        residentListBody.appendChild(row);
-      }
-    })
-    .catch((error) => {
-      console.error("Error fetching resident data:", error);
-      const row = document.createElement("tr");
-      row.innerHTML = `<td colspan="16">Error loading resident data.</td>`;
-      residentListBody.appendChild(row);
-    });
-}
+//     if (snapshot.exists()) {
+//       const userData = snapshot.val();
+//       const userKey = Object.keys(userData)[0];
+//       const user = userData[userKey];
+
+//       if (user.password === oldPassword) {
+//         const firebaseUser = firebase.auth().currentUser;
+
+//         if (firebaseUser) {
+//           if (firebaseUser.email !== newUsername) {
+//             await firebaseUser.updateEmail(newUsername + "@yourdomain.com");
+//           }
+//           await firebaseUser.updatePassword(newPassword);
+
+//           await db.ref("3-Employees/" + userKey).update({
+//             username: newUsername,
+//             password: newPassword,
+//           });
+
+//           swal(
+//             "Success",
+//             "Username and Password have been updated.",
+//             "success"
+//           ).then(() => {
+//             document.getElementById("changeCredentialsModal").style.display =
+//               "none";
+//           });
+//         } else {
+//           swal(
+//             "Error",
+//             "Firebase user not authenticated. Please log in again.",
+//             "error"
+//           );
+//         }
+//       } else {
+//         swal("Error", "Old password is incorrect.", "error");
+//       }
+//     } else {
+//       swal("Error", "Old username not found.", "error");
+//     }
+//   } catch (error) {
+//     console.error("Error changing credentials:", error);
+//     swal("Error", "An error occurred. Please try again later.", "error");
+//   }
+// }
 
 function displayResidents() {
   const residentListBody = document.getElementById("residentListData");
@@ -334,7 +369,7 @@ function displayAppointments(date) {
 
           const listItem = document.createElement("li");
           listItem.classList.add("appointment-item");
-          listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${healthcareProvider} (${appointment.status}) - ${appointment.remarks}`;
+          listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${healthcareProvider} (${appointment.status}) - ${appointment.healthService}`;
           appointmentList.appendChild(listItem);
         });
 
@@ -403,7 +438,12 @@ function fetchAppointmentsByDate() {
   let selectedDate = document.getElementById("appointmentDatePicker").value;
 
   if (!selectedDate) {
-    alert("Please select a date.");
+    swal({
+      title: "Warning",
+      text: "Please select a date.",
+      icon: "warning",
+      button: "OK",
+    });
     return;
   }
 
@@ -666,8 +706,12 @@ function openReleaseModal(itemName) {
           const row = document.createElement("div");
           row.classList.add("stock-row");
           row.innerHTML = `
-            <p>Batch Date: ${new Date(item.dateAdded).toLocaleDateString()}</p>
-            <p>Quantity Available: ${item.quantity}</p>
+            <p style="font-weight: bold;">Batch Date: ${new Date(
+              item.dateAdded
+            ).toLocaleDateString()}</p>
+            <p style="font-weight: bold;">Quantity Available: ${
+              item.quantity
+            }</p>
             <input type="number" id="releaseQuantity_${
               childSnapshot.key
             }" max="${

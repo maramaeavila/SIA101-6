@@ -1,4 +1,3 @@
-// Firebase configuration object
 var firebaseConfig = {
   apiKey: "AIzaSyDiOsr6bY5BDKdiBPRzDgSpurHdkkUlc3k",
   authDomain: "sia101-d60a1.firebaseapp.com",
@@ -9,7 +8,6 @@ var firebaseConfig = {
   appId: "1:258109532727:web:73d735dc749d2cb4ebedb2",
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 var db = firebase.database();
@@ -47,11 +45,16 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
       document.getElementById("appointmentSection").style.display = "block";
     } else if (sectionName === "Consultation") {
       document.getElementById("ConsultationSection").style.display = "block";
-      fetchPrecheckupFormDetails(formID);
     } else if (sectionName === "Babies Vaccination") {
       document.getElementById("VaccineSection").style.display = "block";
-    } else if (sectionName === "Reports") {
-      document.getElementById("reportSection").style.display = "block";
+    } else if (sectionName === "Babies Vaccination Records") {
+      document.getElementById("babiesVaccineRecord").style.display = "block";
+    } else if (sectionName === "Patient Records") {
+      document.getElementById("generalCheckupRecords").style.display = "block";
+      fetchCheckupData();
+    } else if (sectionName === "Time In/Time Out") {
+      document.getElementById("timeInOutSection").style.display = "block";
+      fetchTimeRecords();
     }
   });
 });
@@ -216,10 +219,13 @@ function displayAppointments(date) {
       if (snapshot.exists()) {
         snapshot.forEach((childSnapshot) => {
           const appointment = childSnapshot.val();
-          const listItem = document.createElement("li");
-          listItem.classList.add("appointment-item");
-          listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${appointment.healthcareProvider} (${appointment.status}) - ${appointment.remarks}`;
-          appointmentList.appendChild(listItem);
+
+          if (appointment.healthcareProvider.toLowerCase().includes("doctor")) {
+            const listItem = document.createElement("li");
+            listItem.classList.add("appointment-item");
+            listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${appointment.healthcareProvider} (${appointment.status}) - ${appointment.remarks}`;
+            appointmentList.appendChild(listItem);
+          }
         });
       } else {
         const listItem = document.createElement("li");
@@ -275,7 +281,12 @@ function fetchAppointmentsByDate() {
   let selectedDate = document.getElementById("appointmentDatePicker").value;
 
   if (!selectedDate) {
-    alert("Please select a date.");
+    swal({
+      title: "Warning",
+      text: "Please select a date.",
+      icon: "warning",
+      button: "OK",
+    });
     return;
   }
 
@@ -319,507 +330,1165 @@ function updateAppointmentDashboard(appointments) {
   document.getElementById("canceledAppointments").textContent = canceled;
 }
 
-function fetchPrecheckupForms() {
-  const residentID = document.getElementById("residentIdInput").value.trim();
+function fetchPatientData() {
+  const patientId = document.getElementById("patientIdInput").value;
 
-  if (!residentID) {
-    alert("Please enter a valid Resident ID.");
+  if (patientId.trim() === "") {
+    swal({
+      title: "Warning",
+      text: "Please enter a valid Resident ID.",
+      icon: "warning",
+      button: "OK",
+    });
     return;
   }
 
-  const formsRef = db.ref("6-GeneralCheckup");
-
-  formsRef
-    .orderByChild("residentID")
-    .equalTo(residentID)
+  db.ref(`Residents/${patientId}`)
     .once("value")
     .then((snapshot) => {
-      const tableBody = document.getElementById("precheckupListData");
-      tableBody.innerHTML = "";
-
       if (snapshot.exists()) {
-        snapshot.forEach((childSnapshot) => {
-          const formID = childSnapshot.key;
+        const resident = snapshot.val();
 
-          const row = document.createElement("tr");
-          row.innerHTML = `<td><a href="#" onclick="fetchPrecheckupFormDetails('${formID}')">${formID}</a></td>`;
-          tableBody.appendChild(row);
-        });
+        const firstName = resident.firstName || "";
+        const middleName = resident.middleName || "";
+        const lastName = resident.lastName || "";
+
+        const fullName = `${firstName} ${
+          middleName ? middleName + " " : ""
+        }${lastName}`;
+
+        document.getElementById("patientId").textContent = patientId;
+        document.getElementById("patientName").textContent = fullName;
+        document.getElementById("patientAge").textContent =
+          resident.age || "N/A";
+        document.getElementById("patientSex").textContent =
+          resident.sex || "N/A";
+        document.getElementById("patientAddress").textContent =
+          resident.address || "N/A";
+
+        const patientDataSection =
+          document.getElementById("patientDataSection");
+        if (patientDataSection) {
+          patientDataSection.style.display = "block";
+        } else {
+          console.error("Element with ID 'patientDataSection' not found.");
+        }
       } else {
-        alert("No forms found for this Resident ID.");
+        swal({
+          title: "Warning",
+          text: "Resident ID not found.",
+          icon: "warning",
+          button: "OK",
+        });
       }
     })
     .catch((error) => {
-      console.error("Error fetching forms:", error);
-      alert("Failed to fetch forms. Please try again.");
+      console.error("Error fetching patient data:", error);
+      swal({
+        title: "Warning",
+        text: "An error occurred while loading resident data.",
+        icon: "warning",
+        button: "OK",
+      });
     });
 }
 
-function fetchPrecheckupFormDetails(formID) {
-  if (!formID) {
-    alert("Form ID is missing. Cannot fetch details.");
+function fetchPatientBabysData() {
+  const patientId = document.getElementById("patientIdInputBabys").value;
+
+  if (patientId.trim() === "") {
+    swal({
+      title: "Warning",
+      text: "Please enter a valid Resident ID.",
+      icon: "warning",
+      button: "OK",
+    });
     return;
   }
 
-  const formRef = db.ref("6-GeneralCheckup/" + formID);
-
-  formRef
-    .get()
+  db.ref(`Residents/${patientId}`)
+    .once("value")
     .then((snapshot) => {
       if (snapshot.exists()) {
-        const formData = snapshot.val();
+        const resident = snapshot.val();
 
-        document.getElementById("height").value = formData.height || "N/A";
-        document.getElementById("weight").value = formData.weight || "N/A";
-        document.getElementById("bloodPressure").value =
-          formData.bloodPressure || "N/A";
-        document.getElementById("bloodPressureStatus").value =
-          formData.bloodPressureStatus || "N/A";
-        document.getElementById("temperature").value =
-          formData.temperature || "N/A";
-        document.getElementById("temperatureStatus").value =
-          formData.temperatureStatus || "N/A";
-        document.getElementById("pulseRate").value =
-          formData.pulseRate || "N/A";
-        document.getElementById("pulseRateStatus").value =
-          formData.pulseRateStatus || "N/A";
-        document.getElementById("respiratoryRate").value =
-          formData.respiratoryRate || "N/A";
-        document.getElementById("allergies").value =
-          formData.allergies || "N/A";
-        document.getElementById("currentMedications").value =
-          formData.currentMedications || "N/A";
-        document.getElementById("pastMedicalHistory").value =
-          formData.pastMedicalHistory || "N/A";
-        document.getElementById("familyHistory").value =
-          formData.familyHistory || "N/A";
-        document.getElementById("covidVaccinated").value =
-          formData.covidVaccinated ? "Yes" : "No";
-        document.getElementById("vaccineType").value =
-          formData.vaccineType || "N/A";
-        document.getElementById("boosterDose").value = formData.boosterDose
-          ? "Yes"
-          : "No";
-        document.getElementById("boosterDate").value =
-          formData.boosterDate || "N/A";
-        document.getElementById("BMI").value = formData.BMI || "N/A";
-        document.getElementById("BMIStatus").value =
-          formData.BMIStatus || "N/A";
+        const firstName = resident.firstName || "";
+        const middleName = resident.middleName || "";
+        const lastName = resident.lastName || "";
 
-        document.getElementById("precheckupDetailsSection").style.display =
-          "block";
+        const fullName = `${firstName} ${
+          middleName ? middleName + " " : ""
+        }${lastName}`;
 
-        document
-          .getElementById("precheckupDetailsSection")
-          .scrollIntoView({ behavior: "smooth" });
+        document.getElementById("patientIdBabys").textContent = patientId;
+        document.getElementById("patientNameBabys").textContent = fullName;
+        document.getElementById("patientAgeBabys").textContent =
+          resident.age || "N/A";
+        document.getElementById("patientSexBabys").textContent =
+          resident.sex || "N/A";
+        document.getElementById("patientAddressBabys").textContent =
+          resident.address || "N/A";
+
+        const patientDataSection = document.getElementById(
+          "patientDataSectionBabys"
+        );
+        if (patientDataSection) {
+          patientDataSection.style.display = "block";
+        } else {
+          console.error("Element with ID 'patientDataSectionBabys' not found.");
+        }
       } else {
-        alert("No details found for this Form ID.");
+        swal({
+          title: "Warning",
+          text: "Resident ID not found.",
+          icon: "warning",
+          button: "OK",
+        });
       }
     })
     .catch((error) => {
-      console.error("Error fetching form details:", error);
-      alert("Failed to fetch form details. Please try again.");
+      console.error("Error fetching patient data:", error);
+      swal({
+        title: "Warning",
+        text: "An error occurred while loading resident data.",
+        icon: "warning",
+        button: "OK",
+      });
     });
 }
 
-document.querySelectorAll(".fetch-details-btn").forEach((button) => {
-  button.addEventListener("click", () => {
-    const formID = button.getAttribute("data-form-id");
-    fetchPrecheckupFormDetails(formID);
+function toggleCheckboxAllergies(checkedId) {
+  const noAllergies = document.getElementById("noAllergies");
+  const hasAllergies = document.getElementById("hasAllergies");
+  const allergiesDetails = document.getElementById("allergiesDetails");
+
+  if (checkedId === "noAllergies" && noAllergies.checked) {
+    hasAllergies.disabled = true;
+    allergiesDetails.disabled = true;
+    allergiesDetails.value = "";
+  } else if (checkedId === "hasAllergies" && hasAllergies.checked) {
+    noAllergies.disabled = true;
+    allergiesDetails.disabled = false;
+  } else {
+    noAllergies.disabled = false;
+    hasAllergies.disabled = false;
+    allergiesDetails.disabled = true;
+    allergiesDetails.value = "";
+  }
+}
+
+function toggleCheckbox(checkedId) {
+  const noMedicationsCheckbox = document.getElementById("noMedications");
+  const hasMedicationsCheckbox = document.getElementById("hasMedications");
+  const medicationsDetailsInput = document.getElementById("medicationsDetails");
+
+  if (checkedId === "noMedications" && noMedicationsCheckbox.checked) {
+    hasMedicationsCheckbox.disabled = true;
+    medicationsDetailsInput.disabled = true;
+    medicationsDetailsInput.value = "";
+  } else if (checkedId === "hasMedications" && hasMedicationsCheckbox.checked) {
+    noMedicationsCheckbox.disabled = true;
+    medicationsDetailsInput.disabled = false;
+  } else {
+    noMedicationsCheckbox.disabled = false;
+    hasMedicationsCheckbox.disabled = false;
+    medicationsDetailsInput.disabled = true;
+    medicationsDetailsInput.value = "";
+  }
+}
+
+function toggleVaccinationCheckbox(checkedId) {
+  const vaccinatedYes = document.getElementById("vaccinatedYes");
+  const vaccinatedNo = document.getElementById("vaccinatedNo");
+
+  if (checkedId === "vaccinatedYes" && vaccinatedYes.checked) {
+    vaccinatedNo.disabled = true;
+  } else if (checkedId === "vaccinatedNo" && vaccinatedNo.checked) {
+    vaccinatedYes.disabled = true;
+  } else {
+    vaccinatedYes.disabled = false;
+    vaccinatedNo.disabled = false;
+  }
+}
+
+function toggleBoosterCheckbox(checkedId) {
+  const boosterYes = document.getElementById("boosterYes");
+  const boosterNo = document.getElementById("boosterNo");
+
+  if (checkedId === "boosterYes" && boosterYes.checked) {
+    boosterNo.disabled = true;
+  } else if (checkedId === "boosterNo" && boosterNo.checked) {
+    boosterYes.disabled = true;
+  } else {
+    boosterYes.disabled = false;
+    boosterNo.disabled = false;
+  }
+}
+
+function toggleVaccineCheckbox(checkedId) {
+  const pfizer = document.getElementById("pfizer");
+  const moderna = document.getElementById("moderna");
+  const astrazeneca = document.getElementById("astrazeneca");
+  const sinovac = document.getElementById("sinovac");
+
+  if (checkedId === "pfizer" && pfizer.checked) {
+    moderna.disabled = true;
+    astrazeneca.disabled = true;
+    sinovac.disabled = true;
+  } else if (checkedId === "moderna" && moderna.checked) {
+    pfizer.disabled = true;
+    astrazeneca.disabled = true;
+    sinovac.disabled = true;
+  } else if (checkedId === "astrazeneca" && astrazeneca.checked) {
+    pfizer.disabled = true;
+    moderna.disabled = true;
+    sinovac.disabled = true;
+  } else if (checkedId === "sinovac" && sinovac.checked) {
+    pfizer.disabled = true;
+    moderna.disabled = true;
+    astrazeneca.disabled = true;
+  } else {
+    pfizer.disabled = false;
+    moderna.disabled = false;
+    astrazeneca.disabled = false;
+    sinovac.disabled = false;
+  }
+}
+
+function updateStatus() {
+  const bloodPressure = document.getElementById("bloodPressure").value;
+  const bloodPressureStatus = document.getElementById("bloodPressureStatus");
+  if (bloodPressure) {
+    const [systolic, diastolic] = bloodPressure.split("/").map(Number);
+    if (systolic < 90 || diastolic < 60) {
+      bloodPressureStatus.textContent = "Low (hypotension)";
+    } else if (systolic >= 130 || diastolic >= 80) {
+      bloodPressureStatus.textContent = "High (hypertension)";
+    } else {
+      bloodPressureStatus.textContent = "Normal";
+    }
+  }
+
+  const temperature = document.getElementById("temperature").value;
+  const temperatureStatus = document.getElementById("temperatureStatus");
+  if (temperature) {
+    const tempValue = parseFloat(temperature);
+    if (tempValue < 36.5) {
+      temperatureStatus.textContent = "Low (hypothermia)";
+    } else if (tempValue > 38.2) {
+      temperatureStatus.textContent = "High (fever)";
+    } else {
+      temperatureStatus.textContent = "Normal";
+    }
+  }
+
+  const pulseRate = document.getElementById("pulseRate").value;
+  const pulseRateStatus = document.getElementById("pulseRateStatus");
+  if (pulseRate) {
+    const pulse = parseInt(pulseRate, 10);
+    if (pulse < 60) {
+      pulseRateStatus.textContent = "Low (slow heart rate)";
+    } else if (pulse > 100) {
+      pulseRateStatus.textContent = "High (fast heart rate)";
+    } else {
+      pulseRateStatus.textContent = "Normal";
+    }
+  }
+
+  const respiratoryRate = document.getElementById("respiratoryRate").value;
+  const respiratoryRateStatus = document.getElementById(
+    "respiratoryRateStatus"
+  );
+  if (respiratoryRate) {
+    const rate = parseInt(respiratoryRate, 10);
+    if (rate < 12) {
+      respiratoryRateStatus.textContent = "Low (slow breathing)";
+    } else if (rate > 20) {
+      respiratoryRateStatus.textContent = "High (fast breathing)";
+    } else {
+      respiratoryRateStatus.textContent = "Normal";
+    }
+  }
+}
+
+document.getElementById("height").addEventListener("input", updateStatus);
+document.getElementById("weight").addEventListener("input", updateStatus);
+document
+  .getElementById("bloodPressure")
+  .addEventListener("input", updateStatus);
+document.getElementById("temperature").addEventListener("input", updateStatus);
+document.getElementById("pulseRate").addEventListener("input", updateStatus);
+document
+  .getElementById("respiratoryRate")
+  .addEventListener("input", updateStatus);
+
+function computeBMI() {
+  const height = document.getElementById("height").value;
+  const weight = document.getElementById("weight").value;
+
+  if (height && weight) {
+    const bmi = (weight / (height * height)) * 10000;
+    document.getElementById("bmi").textContent = bmi.toFixed(2);
+
+    let status = "";
+    if (bmi < 18.5) {
+      status = "Underweight";
+    } else if (bmi >= 18.5 && bmi < 24.9) {
+      status = "Normal (Healthy Weight)";
+    } else if (bmi >= 30) {
+      status = "Obese";
+    } else {
+      status = "Overweight";
+    }
+
+    document.getElementById("bmiStatus").textContent = status;
+  } else {
+    document.getElementById("bmi").textContent = "N/A";
+    document.getElementById("bmiStatus").textContent = "N/A";
+  }
+}
+
+document.getElementById("height").addEventListener("input", computeBMI);
+document.getElementById("weight").addEventListener("input", computeBMI);
+
+function getCheckedConditions(category) {
+  const conditions = [];
+  document
+    .querySelectorAll(`#${category} input[type="checkbox"]:checked`)
+    .forEach((checkbox) => {
+      if (checkbox.id !== "n/a") {
+        conditions.push(checkbox.labels[0].textContent.trim());
+      }
+    });
+  return conditions.join(", ") || "None";
+}
+
+function getVaccineType() {
+  const vaccineTypes = [];
+  if (document.getElementById("pfizer").checked) vaccineTypes.push("Pfizer");
+  if (document.getElementById("moderna").checked) vaccineTypes.push("Moderna");
+  if (document.getElementById("astrazeneca").checked)
+    vaccineTypes.push("AstraZeneca");
+  if (document.getElementById("sinovac").checked) vaccineTypes.push("Sinovac");
+  return vaccineTypes.join(", ") || "None";
+}
+
+function validateForm() {
+  const height = document.getElementById("height").value;
+  const weight = document.getElementById("weight").value;
+  const bloodPressure = document.getElementById("bloodPressure").value;
+
+  if (!height || !weight || !bloodPressure) {
+    swal({
+      title: "Warning",
+      text: "Please fill out all required fields.",
+      icon: "warning",
+      button: "OK",
+    });
+    return false;
+  }
+  return true;
+}
+
+function submitGeneralCheckup() {
+  if (!validateForm()) return;
+
+  const patientId = document.getElementById("patientId").textContent;
+  const height = document.getElementById("height").value;
+  const weight = document.getElementById("weight").value;
+  const bloodPressure = document.getElementById("bloodPressure").value;
+  const temperature = document.getElementById("temperature").value;
+  const pulseRate = document.getElementById("pulseRate").value;
+  const respiratoryRate = document.getElementById("respiratoryRate").value;
+  const allergies = document.getElementById("hasAllergies").checked
+    ? document.getElementById("allergiesDetails").value || "None"
+    : "None";
+  const medications = document.getElementById("hasMedications").checked
+    ? document.getElementById("medicationsDetails").value || "None"
+    : "None";
+  const pastMedicalHistory = getCheckedConditions("pastMedicalHistory");
+  const familyHistory = getCheckedConditions("familyHistory");
+
+  const vaccinated = document.getElementById("vaccinatedYes").checked
+    ? "Yes"
+    : "No";
+  const vaccineType = getVaccineType();
+  const boosterDose = document.getElementById("boosterYes").checked
+    ? "Yes"
+    : "No";
+  const boosterDate = document.getElementById("boosterDate").value;
+
+  computeBMI();
+  const bmi = document.getElementById("bmi").textContent;
+  const bmiStatus = document.getElementById("bmiStatus").textContent;
+
+  const commonDiseases = [];
+  const diseases = [
+    { id: "hypertension", label: "Hypertension" },
+    { id: "animalBites", label: "Animal Bites" },
+    { id: "dengue", label: "Dengue" },
+    { id: "skinDiseases", label: "Skin Diseases" },
+    { id: "pneumonia", label: "Pneumonia" },
+    { id: "tb", label: "Tuberculosis" },
+    { id: "fever", label: "Fever of Unknown Origin" },
+    { id: "coughAndCold", label: "Cough and Cold" },
+  ];
+  diseases.forEach((disease) => {
+    if (document.getElementById(disease.id).checked) {
+      commonDiseases.push(disease.label);
+    }
   });
-});
 
-function fetchPrecheckupForms() {
-  const residentID = document.getElementById("residentIdInput").value;
+  const consultation = document.getElementById("consultation").value || "None";
+  const remarks = document.getElementById("remarks").value || "None";
 
-  if (!residentID) {
-    alert("Please enter a Resident ID.");
-    return;
-  }
+  const formId = `${patientId}-${Math.floor(100000 + Math.random() * 900000)}`;
 
-  const formsRef = db.ref("6-GeneralCheckup");
+  const formData = {
+    patientId,
+    height,
+    weight,
+    bloodPressure,
+    temperature,
+    pulseRate,
+    respiratoryRate,
+    allergies,
+    medications,
+    pastMedicalHistory,
+    familyHistory,
+    vaccinated,
+    vaccineType,
+    boosterDose,
+    boosterDate,
+    bmi,
+    bmiStatus,
+    commonDiseases,
+    consultation,
+    remarks,
+    formId,
+    timestamp: new Date().toISOString(),
+  };
 
-  formsRef
-    .orderByChild("residentID")
-    .equalTo(residentID)
-    .once("value")
-    .then((snapshot) => {
-      const tableBody = document.getElementById("precheckupListData");
-      tableBody.innerHTML = "";
-
-      if (snapshot.exists()) {
-        snapshot.forEach((childSnapshot) => {
-          const formID = childSnapshot.key;
-
-          const row = document.createElement("tr");
-          row.innerHTML = `<td><a href="#" onclick="showFormDetails('${formID}')">${formID}</a></td>`;
-          tableBody.appendChild(row);
-        });
-      } else {
-        alert("No forms found for this Resident ID.");
-      }
+  firebase
+    .database()
+    .ref(`6-GeneralCheckup/${formId}`)
+    .set(formData)
+    .then(() => {
+      swal(
+        "Success",
+        `Form submitted successfully! Appointment ID: ${formId}`,
+        "success"
+      );
+      clearForm();
     })
     .catch((error) => {
-      console.error("Error fetching forms:", error);
+      console.error("Error submitting form: ", error);
+      swal("Error", "Failed to submit the form. Please try again.", "error");
     });
 }
 
-// Initialize profile on page load
-// window.onload = function () {
-//   setDefaultDatePicker();
-//   displayLoggedInUserProfile();
-//   populateYearDropdown();
-//   updateMonthYearDisplay();
-//   generateCalendarDays();
-//   fetchHealthFormData();
-// };
+function clearForm() {
+  const textInputs = document.querySelectorAll("input[type='text'], textarea");
+  textInputs.forEach((input) => (input.value = ""));
 
-function fetchHealthFormData() {
-  const formDataTableBody = document.querySelector("#patientSection tbody");
+  const numberInputs = document.querySelectorAll("input[type='number']");
+  numberInputs.forEach((input) => (input.value = ""));
 
-  formDataTableBody.innerHTML = "";
+  const checkboxes = document.querySelectorAll("input[type='checkbox']");
+  checkboxes.forEach((checkbox) => {
+    checkbox.checked = false;
+    checkbox.disabled = false;
+  });
+
+  const selects = document.querySelectorAll("select");
+  selects.forEach((select) => (select.selectedIndex = 0));
+
+  document.getElementById("bmi").textContent = "N/A";
+  document.getElementById("bmiStatus").textContent = "N/A";
+  document.getElementById("bloodPressureStatus").textContent = "";
+  document.getElementById("temperatureStatus").textContent = "";
+  document.getElementById("pulseRateStatus").textContent = "";
+  document.getElementById("respiratoryRateStatus").textContent = "";
+
+  toggleCheckboxAllergies();
+  toggleCheckbox();
+
+  const vaccineCheckboxes = ["pfizer", "moderna", "astrazeneca", "sinovac"];
+  vaccineCheckboxes.forEach(
+    (id) => (document.getElementById(id).disabled = false)
+  );
+
+  document.getElementById("vaccinatedYes").disabled = false;
+  document.getElementById("vaccinatedNo").disabled = false;
+  document.getElementById("boosterYes").disabled = false;
+  document.getElementById("boosterNo").disabled = false;
+
+  console.log("Form cleared successfully.");
+}
+
+function BabiesSubmitForm() {
+  const patientId = document
+    .getElementById("patientIdInputBabys")
+    ?.value?.trim();
+  const babiesName = document.getElementById("babiesName")?.value?.trim();
+  const birthday = document.getElementById("birthday")?.value?.trim();
+  const height = document.getElementById("babysheight")?.value?.trim();
+  const weight = document.getElementById("babysweight")?.value?.trim();
+  const temperature = document
+    .getElementById("babystemperature")
+    ?.value?.trim();
+
+  const vaccines = {
+    BCG: document.getElementById("BCG")?.checked || false,
+    HepatitisB: document.getElementById("HepatitisB")?.checked || false,
+    Pentavalent: document.getElementById("Pentavalent")?.checked || false,
+    OPV: document.getElementById("OPV")?.checked || false,
+    Rotavirus: document.getElementById("Rotavirus")?.checked || false,
+    JE: document.getElementById("JE")?.checked || false,
+    Measles: document.getElementById("Measles")?.checked || false,
+  };
+
+  if (
+    !patientId ||
+    !babiesName ||
+    !birthday ||
+    !height ||
+    !weight ||
+    !temperature
+  ) {
+    swal("Error", "Please fill in all required fields.", "error");
+    highlightMissingFields({
+      patientId,
+      babiesName,
+      birthday,
+      height,
+      weight,
+      temperature,
+    });
+    return;
+  }
+
+  const formId = `${patientId}-${Math.floor(100000 + Math.random() * 900000)}`;
+
+  const babyData = {
+    formId: formId,
+    patientId: patientId,
+    name: babiesName,
+    birthday: birthday,
+    height: height,
+    weight: weight,
+    temperature: temperature,
+    vaccines: vaccines,
+    nextVisit: calculateNextVisit(vaccines),
+    timestamp: new Date().toISOString(),
+  };
+
+  const dbRef = db.ref("6-BabiesVaccine");
+
+  dbRef
+    .orderByChild("patientId")
+    .equalTo(patientId)
+    .once("value", (snapshot) => {
+      if (snapshot.exists()) {
+        swal(
+          "Warning",
+          "A record for this patient already exists. Please verify before submitting.",
+          "warning"
+        );
+      } else {
+        dbRef
+          .push(babyData)
+          .then(() => {
+            swal(
+              "Success",
+              `Baby's vaccination data submitted successfully.\nForm ID: ${formId}\nNext Visit: ${babyData.nextVisit}`,
+              "success"
+            );
+            clearBabysForm();
+          })
+          .catch((error) => {
+            console.error("Error submitting data:", error);
+            swal(
+              "Error",
+              `Error submitting data. Please try again.\nForm ID: ${formId}`,
+              "error"
+            );
+          });
+      }
+    });
+}
+
+function highlightMissingFields(fields) {
+  for (const [key, value] of Object.entries(fields)) {
+    const input = document.getElementById(key);
+    if (!value && input) {
+      input.style.borderColor = "red";
+    } else if (input) {
+      input.style.borderColor = "";
+    }
+  }
+}
+
+function clearBabysForm() {
+  swal({
+    title: "Are you sure?",
+    text: "This will clear all the entered data.",
+    icon: "warning",
+    buttons: true,
+    dangerMode: true,
+  }).then((willClear) => {
+    if (willClear) {
+      document.getElementById("babiesName").value = "";
+      document.getElementById("birthday").value = "";
+      document.getElementById("babysheight").value = "";
+      document.getElementById("babysweight").value = "";
+      document.getElementById("babystemperature").value = "";
+
+      const vaccineIds = [
+        "BCG",
+        "HepatitisB",
+        "Pentavalent",
+        "OPV",
+        "Rotavirus",
+        "JE",
+        "Measles",
+      ];
+
+      vaccineIds.forEach((id) => {
+        const checkbox = document.getElementById(id);
+        if (checkbox) {
+          checkbox.checked = false;
+        }
+      });
+
+      swal("Success", "Form has been reset.", "success");
+    }
+  });
+}
+
+function calculateNextVisit(vaccines) {
+  const nextVisitDates = [];
+  const today = new Date();
+
+  if (vaccines.BCG && !vaccines.HepatitisB) {
+    nextVisitDates.push(addDays(today, 28));
+  }
+  if (vaccines.Pentavalent && !vaccines.OPV) {
+    nextVisitDates.push(addDays(today, 30));
+  }
+
+  if (nextVisitDates.length > 0) {
+    return formatDate(new Date(Math.min(...nextVisitDates)));
+  }
+  return "No upcoming schedule.";
+}
+
+function addDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function formatDate(date) {
+  return date.toISOString().split("T")[0];
+}
+
+function populateBabiesVaccineRecords(data) {
+  const tableBody = document.getElementById("babiesRecordTableBody");
+  tableBody.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    tableBody.innerHTML = "<tr><td colspan='9'>No records found.</td></tr>";
+    return;
+  }
+
+  data.forEach((record) => {
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+          <td>${record.formId}</td>
+          <td>${record.patientId}</td>
+          <td>${record.name}</td>
+          <td>${record.birthday}</td>
+          <td>${record.height}</td>
+          <td>${record.weight}</td>
+          <td>${record.temperature}</td>
+          <td>${Object.keys(record.vaccines)
+            .filter((vaccine) => record.vaccines[vaccine])
+            .join(", ")}</td>
+          <td>${record.timestamp}</td>
+      `;
+
+    tableBody.appendChild(row);
+  });
+}
+
+function filterBabiesRecord() {
+  const searchInput = document
+    .getElementById("searchBabiesRecord")
+    .value.toLowerCase();
+  const tableRows = document
+    .getElementById("babiesRecordTableBody")
+    .querySelectorAll("tr");
+
+  tableRows.forEach((row) => {
+    const cells = row.querySelectorAll("td");
+    const rowText = Array.from(cells)
+      .map((cell) => cell.textContent.toLowerCase())
+      .join(" ");
+    row.style.display = rowText.includes(searchInput) ? "" : "none";
+  });
+}
+
+const dbRef = db.ref("6-BabiesVaccine");
+
+dbRef
+  .once("value")
+  .then((snapshot) => {
+    const records = [];
+    snapshot.forEach((childSnapshot) => {
+      records.push(childSnapshot.val());
+    });
+    populateBabiesVaccineRecords(records);
+  })
+  .catch((error) => {
+    console.error("Error fetching vaccine records:", error);
+  });
+
+document
+  .getElementById("babiesRecordTableBody")
+  .addEventListener("click", (event) => {
+    const row = event.target.closest("tr");
+    if (!row) return;
+
+    const cells = row.querySelectorAll("td");
+    const formId = cells[0].textContent.trim();
+    const patientId = cells[1].textContent.trim();
+    const name = cells[2].textContent.trim();
+
+    document.getElementById("modalBabyName").textContent = name;
+    document.getElementById("modalResidentId").textContent = patientId;
+
+    const vaccineCheckboxIds = [
+      "modalBCG",
+      "modalHepatitisB",
+      "modalPentavalent",
+      "modalOPV",
+      "modalRotavirus",
+      "modalJE",
+      "modalMeasles",
+    ];
+    vaccineCheckboxIds.forEach((id) => {
+      document.getElementById(id).checked = false;
+    });
+
+    $("#vaccineUpdateModal").modal("show");
+  });
+
+let allCheckups = [];
+let filteredCheckups = [];
+let currentPage = 1;
+const rowsPerPage = 10;
+
+function fetchCheckupData() {
+  const checkupListBody = document.getElementById("generalCheckupListData");
+  checkupListBody.innerHTML = "";
 
   db.ref("6-GeneralCheckup")
     .once("value")
     .then((snapshot) => {
       if (snapshot.exists()) {
+        allCheckups = [];
         snapshot.forEach((childSnapshot) => {
-          const data = childSnapshot.val();
-
-          const row = `
-            <tr>
-             <td>${data.patientId || "N/A"}</td>
-             <td>${data.allergies || "N/A"}</td>
-             <td>${data.appointmentType || "N/A"}</td>
-             <td>${data.bloodPressure || "N/A"}</td>
-             <td>${data.bmi || "N/A"}</td>
-             <td>${data.chiefComplaint || "N/A"}</td>
-             <td>${data.height || "N/A"}</td>
-             <td>${data.weight || "N/A"}</td>
-             <td>${data.medications || "N/A"}</td>
-             <td>${data.pulseRate || "N/A"}</td>
-             <td>${data.respiratoryRate || "N/A"}</td>
-             <td>${data.respiratoryRateStatus || "N/A"}</td>
-             <td>${data.specialty || "N/A"}</td>
-             <td>${data.temperature || "N/A"}</td>
-            </tr>
-          `;
-
-          formDataTableBody.insertAdjacentHTML("beforeend", row);
+          const checkup = childSnapshot.val();
+          const checkupData = {
+            formId: childSnapshot.key,
+            patientName: checkup.patientName,
+            height: checkup.height,
+            weight: checkup.weight,
+            bloodPressure: checkup.bloodPressure,
+            temperature: checkup.temperature,
+            vaccinated: checkup.vaccinated,
+            consultation: checkup.consultation,
+          };
+          allCheckups.push(checkupData);
         });
+
+        filteredCheckups = [...allCheckups];
+        displayCheckups();
       } else {
-        formDataTableBody.innerHTML =
-          "<tr><td colspan='15'>No data available</td></tr>";
+        const row = document.createElement("tr");
+        row.innerHTML = `<td colspan="8">No checkup records found.</td>`;
+        checkupListBody.appendChild(row);
       }
     })
     .catch((error) => {
-      console.error("Error fetching data:", error);
-      formDataTableBody.innerHTML =
-        "<tr><td colspan='15'>Error fetching data</td></tr>";
+      console.error("Error fetching checkup data:", error);
     });
 }
 
-function fetchPrecheckupForms() {
-  const residentID = document.getElementById("patientIdInput").value;
+function displayCheckups() {
+  const checkupListBody = document.getElementById("generalCheckupListData");
+  checkupListBody.innerHTML = "";
 
-  if (!residentID) {
-    alert("Please enter a Resident ID.");
+  const start = (currentPage - 1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  const paginatedCheckups = filteredCheckups.slice(start, end);
+
+  if (paginatedCheckups.length > 0) {
+    paginatedCheckups.forEach((checkup) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${checkup.formId}</td>
+        <td>${checkup.patientName}</td>
+        <td>${checkup.height}</td>
+        <td>${checkup.weight}</td>
+        <td>${checkup.bloodPressure}</td>
+        <td>${checkup.temperature}</td>
+        <td>${checkup.vaccinated}</td>
+        <td>${checkup.consultation}</td>
+      `;
+
+      row.addEventListener("click", () => openCheckupModal(checkup));
+
+      checkupListBody.appendChild(row);
+    });
+  } else {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td colspan="8">No checkups found for this page.</td>`;
+    checkupListBody.appendChild(row);
+  }
+
+  updatePagination();
+}
+
+function openCheckupModal(checkup) {
+  const modal = document.getElementById("checkupModal");
+  const modalContent = document.getElementById("modalContent");
+
+  const formId = checkup.formId;
+
+  firebase
+    .database()
+    .ref(`6-GeneralCheckup/${formId}`)
+    .once("value")
+    .then((snapshot) => {
+      const checkupDetails = snapshot.val();
+
+      if (checkupDetails) {
+        const pastMedicalHistory = Array.isArray(
+          checkupDetails.pastMedicalHistory
+        )
+          ? checkupDetails.pastMedicalHistory
+          : [checkupDetails.pastMedicalHistory || "None"];
+
+        const familyHistory = Array.isArray(checkupDetails.familyHistory)
+          ? checkupDetails.familyHistory
+          : [checkupDetails.familyHistory || "None"];
+
+        const commonDiseases = Array.isArray(checkupDetails.commonDiseases)
+          ? checkupDetails.commonDiseases
+          : [checkupDetails.commonDiseases || "None"];
+
+        modalContent.innerHTML = `
+          <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+            <div style="flex: 1; min-width: 250px;">
+              <p><strong>Form ID:</strong> ${checkupDetails.formId}</p>
+              <p><strong>Patient ID:</strong> ${checkupDetails.patientId}</p>
+              <p><strong>Height:</strong> ${checkupDetails.height} cm</p>
+              <p><strong>Weight:</strong> ${checkupDetails.weight} kg</p>
+              <p><strong>Blood Pressure:</strong> ${
+                checkupDetails.bloodPressure
+              }</p>
+              <p><strong>Temperature:</strong> ${
+                checkupDetails.temperature
+              } °C</p>
+              <p><strong>Pulse Rate:</strong> ${
+                checkupDetails.pulseRate
+              } bpm</p>
+              <p><strong>Respiratory Rate:</strong> ${
+                checkupDetails.respiratoryRate
+              } breaths/min</p>
+              <p><strong>Allergies:</strong> ${checkupDetails.allergies}</p>
+              <p><strong>Medications:</strong> ${checkupDetails.medications}</p>
+            </div>
+            <div style="flex: 1; min-width: 250px;">
+              <p><strong>Past Medical History:</strong> ${pastMedicalHistory.join(
+                ", "
+              )}</p>
+              <p><strong>Family History:</strong> ${familyHistory.join(
+                ", "
+              )}</p>
+              <p><strong>Vaccinated:</strong> ${checkupDetails.vaccinated}</p>
+              <p><strong>Vaccine Type:</strong> ${
+                checkupDetails.vaccineType
+              }</p>
+              <p><strong>Booster Dose:</strong> ${
+                checkupDetails.boosterDose
+              }</p>
+              <p><strong>Booster Date:</strong> ${
+                checkupDetails.boosterDate
+              }</p>
+              <p><strong>BMI:</strong> ${checkupDetails.bmi} (${
+          checkupDetails.bmiStatus
+        })</p>
+              <p><strong>Common Diseases:</strong> ${commonDiseases.join(
+                ", "
+              )}</p>
+              <p><strong>Consultation:</strong> ${
+                checkupDetails.consultation
+              }</p>
+              <p><strong>Remarks:</strong> ${checkupDetails.remarks}</p>
+            </div>
+          </div>
+        `;
+      } else {
+        modalContent.innerHTML =
+          "<p>No details available for this checkup form.</p>";
+      }
+
+      modal.style.display = "flex";
+    })
+    .catch((error) => {
+      console.error("Error fetching checkup details:", error);
+    });
+}
+
+// function downloadPDF() {
+//   const modalContent = document.getElementById("modalContent");
+//   const doc = new jsPDF();
+
+//   doc.setFontSize(16);
+//   doc.text("Patient Record", 14, 10);
+
+//   doc.setFontSize(12);
+//   const content = modalContent.innerText;
+
+//   doc.text(content, 14, 20);
+
+//   doc.save("patient_record.pdf");
+// }
+
+function closeModal() {
+  const modal = document.getElementById("checkupModal");
+  modal.style.display = "none";
+}
+
+function updatePagination() {
+  const totalPages = Math.ceil(filteredCheckups.length / rowsPerPage);
+  const pageInfo = document.getElementById("pageInfo");
+  pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+
+  document.getElementById("prevPage").disabled = currentPage === 1;
+  document.getElementById("nextPage").disabled = currentPage === totalPages;
+}
+
+function nextPage() {
+  const totalPages = Math.ceil(filteredCheckups.length / rowsPerPage);
+  if (currentPage < totalPages) {
+    currentPage++;
+    displayCheckups();
+  }
+}
+
+function prevPage() {
+  if (currentPage > 1) {
+    currentPage--;
+    displayCheckups();
+  }
+}
+
+function searchCheckups() {
+  const searchInput = document
+    .getElementById("searchCheckup")
+    .value.trim()
+    .toLowerCase();
+
+  filteredCheckups = allCheckups.filter((checkup) => {
+    const checkupData = `${checkup.formId} ${checkup.patientName} ${checkup.consultation}`;
+    return checkupData.toLowerCase().includes(searchInput);
+  });
+
+  currentPage = 1;
+  displayCheckups();
+}
+
+function timeIn() {
+  const username = getLoggedInUsername();
+  if (!username) {
+    swal("Error", "You must be logged in to clock in.", "error");
     return;
   }
 
-  const formsRef = db.ref("6-GeneralCheckup");
+  const todayDate = getCurrentDate();
+  const timeRecordsRef = db.ref(`6-timeRecords/${username}/${todayDate}`);
 
-  formsRef
-    .orderByChild("residentID")
-    .equalTo(residentID)
-    .once("value")
-    .then((snapshot) => {
-      const patientDataSection = document.getElementById("patientDataSection");
-      const bhcmsForm = document.getElementById("bhcmsForm");
-
-      patientDataSection.style.display = "none"; // Hide patient data section initially
-      bhcmsForm.style.display = "none"; // Hide form until data is fetched
-
-      if (snapshot.exists()) {
-        snapshot.forEach((childSnapshot) => {
-          const data = childSnapshot.val();
-
-          // Populate Patient Data Section
-          document.getElementById("patientId").innerText =
-            data.residentID || "N/A";
-          document.getElementById("patientName").innerText = data.name || "N/A";
-          document.getElementById("patientAge").innerText = data.age || "N/A";
-          document.getElementById("patientSex").innerText = data.sex || "N/A";
-          document.getElementById("patientAddress").innerText =
-            data.address || "N/A";
-
-          // Populate Baby's Information Section (assuming data for baby is present)
-          document.getElementById("babiesName").value =
-            data.babiesName || "N/A";
-          document.getElementById("birthday").value = data.birthday || "N/A";
-          document.getElementById("Babysheight").value = data.height || "N/A";
-          document.getElementById("Babysweight").value = data.weight || "N/A";
-          document.getElementById("babystemperature").value =
-            data.temperature || "N/A";
-
-          // Check and update vaccine checkboxes based on data
-          document.getElementById("BCG").checked = data.vaccineBCG || false;
-          document.getElementById("HepatitisB").checked =
-            data.vaccineHepatitisB || false;
-          document.getElementById("Pentavalent").checked =
-            data.vaccinePentavalent || false;
-
-          // Show the patient data section and form
-          patientDataSection.style.display = "block";
-          bhcmsForm.style.display = "block";
-        });
-      } else {
-        alert("No forms found for this Resident ID.");
-      }
-    })
-    .catch((error) => {
-      console.error("Error fetching forms:", error);
-      alert("An error occurred while fetching the precheckup data.");
-    });
-}
-
-// let lastFetchedData = [];
-
-// function fetchHealthFormData() {
-//   const formDataTableBody = document.querySelector("#patientSection tbody");
-//   const selectedDate = document.getElementById("patientDatePicker").value;
-//   const searchQuery = document
-//     .getElementById("patientSearchBar")
-//     .value.toLowerCase();
-
-//   formDataTableBody.innerHTML = "";
-
-//   if (lastFetchedData.length === 0) {
-//     db.ref("6-GeneralCheckup")
-//       .once("value")
-//       .then((snapshot) => {
-//         if (snapshot.exists()) {
-//           let dataArray = [];
-//           snapshot.forEach((childSnapshot) => {
-//             const data = childSnapshot.val();
-//             dataArray.push(data);
-//           });
-
-//           lastFetchedData = dataArray;
-//           applyFilters();
-//         } else {
-//           alert("No data available.");
-//         }
-//       })
-//       .catch((error) => {
-//         console.error("Error fetching health form data:", error);
-//       });
-//   } else {
-//     applyFilters();
-//   }
-
-//   function applyFilters() {
-//     const displayedPatientIds = new Set();
-
-//     const filteredData = lastFetchedData.filter((data) => {
-//       let recordDate = null;
-//       if (data.timestamp) {
-//         const date = new Date(data.timestamp);
-//         recordDate = `${date.getFullYear()}-${String(
-//           date.getMonth() + 1
-//         ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-//       }
-
-//       const dateMatch = !selectedDate || recordDate === selectedDate;
-//       const specialtyMatch = data.specialty === "GeneralDoctor";
-//       const searchMatch =
-//         !searchQuery || data.patientId.toLowerCase().includes(searchQuery);
-
-//       return dateMatch && specialtyMatch && searchMatch;
-//     });
-
-//     filteredData.forEach((data) => {
-//       if (displayedPatientIds.has(data.patientId)) return;
-
-//       displayedPatientIds.add(data.patientId);
-
-//       const row = `
-//         <tr>
-//           <td>${data.patientId || "N/A"}</td>
-//           <td>${data.allergies || "N/A"}</td>
-//           <td>${data.appointmentType || "N/A"}</td>
-//           <td>${data.bloodPressure || "N/A"}</td>
-//           <td>${data.bmi || "N/A"}</td>
-//           <td>${data.chiefComplaint || "N/A"}</td>
-//           <td>${data.height || "N/A"}</td>
-//           <td>${data.weight || "N/A"}</td>
-//           <td>${data.medications || "N/A"}</td>
-//           <td>${data.pulseRate || "N/A"}</td>
-//           <td>${data.respiratoryRate || "N/A"}</td>
-//           <td>${data.respiratoryRateStatus || "N/A"}</td>
-//           <td>${data.specialty || "N/A"}</td>
-//           <td>${data.temperature || "N/A"}</td>
-//         </tr>`;
-//       formDataTableBody.innerHTML += row;
-//     });
-
-//     if (filteredData.length === 0) {
-//       const row = `<tr><td colspan="15">No matching records found.</td></tr>`;
-//       formDataTableBody.innerHTML += row;
-//     }
-//   }
-// }
-
-document
-  .getElementById("patientDatePicker")
-  .addEventListener("change", fetchHealthFormData);
-document
-  .getElementById("patientSearchBar")
-  .addEventListener("input", fetchHealthFormData);
-
-//Date Setter
-function setDefaultDatePicker() {
-  const datePicker = document.getElementById("patientDatePicker");
-  const today = new Date();
-  const formattedDate = `${today.getFullYear()}-${String(
-    today.getMonth() + 1
-  ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  datePicker.value = formattedDate;
-}
-
-// Modal Popup
-async function getResidentData(patientId) {
-  try {
-    const snapshot = await db.ref(`Residents/${patientId}`).once("value");
-    const residentData = snapshot.val();
-
-    const firstName = residentData.firstName;
-    const lastName = residentData.lastName;
-
-    return {
-      ...residentData,
-      firstName,
-      lastName,
-    };
-  } catch (error) {
-    console.error("Error fetching resident data:", error);
-    return {};
-  }
-}
-
-async function showModal(patientData) {
-  const modal = document.getElementById("patientModal");
-  const modalContent = document.getElementById("modalContent");
-  const downloadBtn = document.getElementById("downloadBtn");
-
-  const residentData = await getResidentData(patientData.patientId);
-
-  let content = `
-    <div id="patientDetails">
-      <strong>First Name:</strong> ${residentData.firstName || "N/A"}<br>
-      <strong>Last Name:</strong> ${residentData.lastName || "N/A"}<br>
-      <strong>Age:</strong> ${residentData.age || "N/A"}<br>
-      <strong>Sex:</strong> ${residentData.sex || "N/A"}<br>
-      <strong>Patient ID:</strong> ${patientData.patientId || "N/A"}<br>
-      <strong>Allergies:</strong> ${patientData.allergies || "N/A"}<br>
-      <strong>Appointment Type:</strong> ${
-        patientData.appointmentType || "N/A"
-      }<br>
-      <strong>Blood Pressure:</strong> ${patientData.bloodPressure || "N/A"}<br>
-      <strong>Blood Pressure Status:</strong> ${
-        patientData.bloodPressureStatus || "N/A"
-      }<br>
-      <strong>BMI:</strong> ${patientData.bmi || "N/A"}<br>
-      <strong>BMI Status:</strong> ${patientData.bmiStatus || "N/A"}<br>
-      <strong>Booster Date:</strong> ${patientData.boosterDate || "N/A"}<br>
-      <strong>Booster Dose:</strong> ${patientData.boosterDose || "N/A"}<br>
-      <strong>Chief Complaint:</strong> ${
-        patientData.chiefComplaint || "N/A"
-      }<br>
-      <strong>Family History:</strong> ${patientData.familyHistory || "N/A"}<br>
-      <strong>Form ID:</strong> ${patientData.formId || "N/A"}<br>
-      <strong>Height:</strong> ${patientData.height || "N/A"}cm<br>
-      <strong>Weight:</strong> ${patientData.weight || "N/A"}kilos <br>
-      <strong>Medications:</strong> ${patientData.medications || "N/A"}<br>
-      <strong>Past Medical History:</strong> ${
-        patientData.pastMedicalHistory || "N/A"
-      }<br>
-      <strong>Pulse Rate:</strong> ${patientData.pulseRate || "N/A"}<br>
-      <strong>Pulse Rate Status:</strong> ${
-        patientData.pulseRateStatus || "N/A"
-      }<br>
-      <strong>Respiratory Rate:</strong> ${
-        patientData.respiratoryRate || "N/A"
-      }<br>
-      <strong>Respiratory Rate Status:</strong> ${
-        patientData.respiratoryRateStatus || "N/A"
-      }<br>
-      <strong>Specialty:</strong> ${patientData.specialty || "N/A"}<br>
-      <strong>Temperature:</strong> ${patientData.temperature || "N/A"}<br>
-      <strong>Temperature Status:</strong> ${
-        patientData.temperatureStatus || "N/A"
-      }<br>
-      <strong>TimeStamp:</strong> ${
-        patientData.timestamp
-          ? new Date(
-              new Date(patientData.timestamp).setDate(
-                new Date(patientData.timestamp).getDate() + 1
-              )
-            ).toLocaleDateString("en-US", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            }) +
-            ", " +
-            new Date(
-              new Date(patientData.timestamp).setDate(
-                new Date(patientData.timestamp).getDate() + 1
-              )
-            ).toLocaleTimeString()
-          : "N/A"
-      }<br>
-      <strong>Vaccinated:</strong> ${patientData.vaccinated || "N/A"}<br>
-      <strong>Vaccine Type:</strong> ${patientData.vaccineType || "N/A"}<br>
-    </div>
-  `;
-
-  modalContent.innerHTML = content;
-  modal.style.display = "block";
-
-  downloadBtn.style.display = "inline-block";
-
-  downloadBtn.onclick = () => {
-    const plainTextContent = content
-      .replace(/<br>/g, "\n")
-      .replace(/<[^>]+>/g, "");
-    const blob = new Blob([plainTextContent], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `patient_${patientData.patientId}_details.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-}
-
-document.querySelector(".close-btn").addEventListener("click", function () {
-  const modal = document.getElementById("patientModal");
-  modal.style.display = "none";
-  document.getElementById("downloadBtn").style.display = "none";
-});
-
-document.querySelector("tbody").addEventListener("click", function (event) {
-  if (event.target && event.target.nodeName === "TD") {
-    const row = event.target.closest("tr");
-    const patientId = row.querySelector("td:first-child").textContent;
-
-    const patientData = lastFetchedData.find(
-      (data) => data.patientId === patientId
-    );
-
-    if (patientData) {
-      showModal(patientData);
+  timeRecordsRef.once("value", (snapshot) => {
+    const data = snapshot.val();
+    if (data && data.timeIn) {
+      swal("Error", "You have already clocked in today.", "error");
+      return;
     }
+
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const timeInData = { timeIn: formattedTime, timestamp: now.toISOString() };
+
+    timeRecordsRef
+      .set(timeInData)
+      .then(() => {
+        swal("Success", "Time In recorded successfully!", "success");
+        fetchTimeRecords();
+      })
+      .catch((error) => {
+        console.error("Error recording Time In:", error);
+        swal("Error", "Failed to record Time In.", "error");
+      });
+  });
+}
+
+function timeOut() {
+  const username = getLoggedInUsername();
+  if (!username) {
+    swal("Error", "You must be logged in to clock out.", "error");
+    return;
   }
-});
+
+  const todayDate = getCurrentDate();
+  const timeRecordsRef = db.ref(`6-timeRecords/${username}/${todayDate}`);
+
+  timeRecordsRef.once("value", (snapshot) => {
+    const data = snapshot.val();
+    if (!data || !data.timeIn) {
+      swal("Error", "You must clock in first before clocking out.", "error");
+      return;
+    }
+
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const timeOutData = {
+      timeOut: formattedTime,
+      timestamp: now.toISOString(),
+    };
+
+    timeRecordsRef
+      .update(timeOutData)
+      .then(() => {
+        swal("Success", "Time Out recorded successfully!", "success");
+        fetchTimeRecords();
+      })
+      .catch((error) => {
+        console.error("Error recording Time Out:", error);
+        swal("Error", "Failed to record Time Out.", "error");
+      });
+  });
+}
+
+function fetchTimeRecords() {
+  const username = getLoggedInUsername();
+  if (!username) {
+    swal("Error", "You must be logged in to view time records.", "error");
+    return;
+  }
+
+  const timeRecordsRef = db.ref(`6-timeRecords/${username}`);
+
+  timeRecordsRef.once("value", (snapshot) => {
+    const data = snapshot.val();
+    const timeRecordsTable = document.getElementById("timeRecordsTable");
+
+    if (data) {
+      let tableHTML = `
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time In</th>
+            <th>Time Out</th>
+            <th>Total Hours</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      for (const dateKey in data) {
+        const record = data[dateKey];
+        const timeIn = record.timeIn;
+        const timeOut = record.timeOut;
+
+        if (timeIn && timeOut) {
+          const totalHours = calculateTotalHours(timeIn, timeOut);
+          tableHTML += `
+            <tr>
+              <td>${dateKey}</td>
+              <td>${timeIn}</td>
+              <td>${timeOut}</td>
+              <td>${totalHours}</td>
+            </tr>
+          `;
+        }
+      }
+
+      tableHTML += `</tbody>`;
+      timeRecordsTable.innerHTML = tableHTML;
+    } else {
+      timeRecordsTable.innerHTML =
+        "<tr><td colspan='4'>No records found.</td></tr>";
+    }
+  });
+}
+
+function calculateTotalHours(timeIn, timeOut) {
+  const timeIn24 = convertTo24HourFormat(timeIn);
+  const timeOut24 = convertTo24HourFormat(timeOut);
+
+  const timeInDate = new Date(`1970-01-01T${timeIn24}:00`);
+  const timeOutDate = new Date(`1970-01-01T${timeOut24}:00`);
+  let diffInMilliseconds = timeOutDate - timeInDate;
+
+  if (diffInMilliseconds < 0) {
+    const nextDay = new Date(timeOutDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    diffInMilliseconds = nextDay - timeInDate;
+  }
+
+  const diffInHours = diffInMilliseconds / (1000 * 60 * 60);
+  return diffInHours.toFixed(2);
+}
+
+function convertTo24HourFormat(time) {
+  const [timePart, modifier] = time.split(" ");
+  let [hours, minutes] = timePart.split(":").map((num) => parseInt(num));
+
+  if (modifier === "PM" && hours !== 12) {
+    hours += 12;
+  } else if (modifier === "AM" && hours === 12) {
+    hours = 0;
+  }
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+    2,
+    "0"
+  )}`;
+}
+
+function getLoggedInUsername() {
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  return loggedInUser ? loggedInUser.username : null;
+}
+
+function getCurrentDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}

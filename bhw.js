@@ -1,4 +1,3 @@
-// Firebase configuration object
 var firebaseConfig = {
   apiKey: "AIzaSyDiOsr6bY5BDKdiBPRzDgSpurHdkkUlc3k",
   authDomain: "sia101-d60a1.firebaseapp.com",
@@ -9,7 +8,6 @@ var firebaseConfig = {
   appId: "1:258109532727:web:73d735dc749d2cb4ebedb2",
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 var db = firebase.database();
@@ -45,15 +43,12 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
       fetchResidentData();
     } else if (sectionName === "Appointment") {
       document.getElementById("appointmentSection").style.display = "block";
-    } else if (sectionName === "Form") {
-      document.getElementById("formSection").style.display = "block";
     } else if (sectionName === "Medicine") {
       document.getElementById("medicineSection").style.display = "block";
       fetchInventory();
-    } else if (sectionName === "Reports") {
-      document.getElementById("reportSection").style.display = "block";
-    } else if (sectionName === "Change Account") {
-      document.getElementById("changeAccountSection").style.display = "block";
+    } else if (sectionName === "Time In/Time Out") {
+      document.getElementById("timeInOutSection").style.display = "block";
+      fetchTimeRecords();
     }
   });
 });
@@ -329,7 +324,7 @@ function displayAppointments(date) {
 
           const listItem = document.createElement("li");
           listItem.classList.add("appointment-item");
-          listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${healthcareProvider} (${appointment.status}) - ${appointment.remarks}`;
+          listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${healthcareProvider} (${appointment.status}) - ${appointment.healthService}`;
           appointmentList.appendChild(listItem);
         });
 
@@ -757,758 +752,182 @@ document
       });
   });
 
-function fetchPatientData() {
-  const patientId = document.getElementById("patientIdInput").value;
-
-  if (patientId.trim() === "") {
-    alert("Please enter a valid Patient ID.");
+function timeIn() {
+  const username = getLoggedInUsername();
+  if (!username) {
+    swal("Error", "You must be logged in to clock in.", "error");
     return;
   }
 
-  db.ref(`Residents/${patientId}`)
-    .once("value")
-    .then((snapshot) => {
-      if (snapshot.exists()) {
-        const resident = snapshot.val();
+  const todayDate = getCurrentDate();
+  const timeRecordsRef = db.ref(`6-timeRecords/${username}/${todayDate}`);
 
-        const firstName = resident.firstName || "";
-        const middleName = resident.middleName || "";
-        const lastName = resident.lastName || "";
+  timeRecordsRef.once("value", (snapshot) => {
+    const data = snapshot.val();
+    if (data && data.timeIn) {
+      swal("Error", "You have already clocked in today.", "error");
+      return;
+    }
 
-        const fullName = `${firstName} ${
-          middleName ? middleName + " " : ""
-        }${lastName}`;
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
-        document.getElementById("patientId").textContent = patientId;
-        document.getElementById("patientName").textContent = fullName;
-        document.getElementById("patientAge").textContent = resident.age;
-        document.getElementById("patientSex").textContent = resident.sex;
-        document.getElementById("patientAddress").textContent =
-          resident.address;
+    const timeInData = { timeIn: formattedTime, timestamp: now.toISOString() };
 
-        document.getElementById("patientDataSection").style.display = "block";
-        document.getElementById("bhcmsForm").style.display = "block";
-      } else {
-        alert("Patient ID not found.");
+    timeRecordsRef
+      .set(timeInData)
+      .then(() => {
+        swal("Success", "Time In recorded successfully!", "success");
+        fetchTimeRecords();
+      })
+      .catch((error) => {
+        console.error("Error recording Time In:", error);
+        swal("Error", "Failed to record Time In.", "error");
+      });
+  });
+}
+
+function timeOut() {
+  const username = getLoggedInUsername();
+  if (!username) {
+    swal("Error", "You must be logged in to clock out.", "error");
+    return;
+  }
+
+  const todayDate = getCurrentDate();
+  const timeRecordsRef = db.ref(`6-timeRecords/${username}/${todayDate}`);
+
+  timeRecordsRef.once("value", (snapshot) => {
+    const data = snapshot.val();
+    if (!data || !data.timeIn) {
+      swal("Error", "You must clock in first before clocking out.", "error");
+      return;
+    }
+
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const timeOutData = {
+      timeOut: formattedTime,
+      timestamp: now.toISOString(),
+    };
+
+    timeRecordsRef
+      .update(timeOutData)
+      .then(() => {
+        swal("Success", "Time Out recorded successfully!", "success");
+        fetchTimeRecords();
+      })
+      .catch((error) => {
+        console.error("Error recording Time Out:", error);
+        swal("Error", "Failed to record Time Out.", "error");
+      });
+  });
+}
+
+function fetchTimeRecords() {
+  const username = getLoggedInUsername();
+  if (!username) {
+    swal("Error", "You must be logged in to view time records.", "error");
+    return;
+  }
+
+  const timeRecordsRef = db.ref(`6-timeRecords/${username}`);
+
+  timeRecordsRef.once("value", (snapshot) => {
+    const data = snapshot.val();
+    const timeRecordsTable = document.getElementById("timeRecordsTable");
+
+    if (data) {
+      let tableHTML = `
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time In</th>
+            <th>Time Out</th>
+            <th>Total Hours</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      for (const dateKey in data) {
+        const record = data[dateKey];
+        const timeIn = record.timeIn;
+        const timeOut = record.timeOut;
+
+        if (timeIn && timeOut) {
+          const totalHours = calculateTotalHours(timeIn, timeOut);
+          tableHTML += `
+            <tr>
+              <td>${dateKey}</td>
+              <td>${timeIn}</td>
+              <td>${timeOut}</td>
+              <td>${totalHours}</td>
+            </tr>
+          `;
+        }
       }
-    })
-    .catch((error) => {
-      console.error("Error fetching patient data:", error);
-      alert("Error loading patient data.");
-    });
-}
 
-function updateStatus() {
-  const bloodPressure = document.getElementById("bloodPressure").value;
-  const bloodPressureStatus = document.getElementById("bloodPressureStatus");
-  if (bloodPressure) {
-    const [systolic, diastolic] = bloodPressure.split("/").map(Number);
-    if (systolic < 90 || diastolic < 60) {
-      bloodPressureStatus.textContent = "Low (hypotension)";
-    } else if (systolic >= 130 || diastolic >= 80) {
-      bloodPressureStatus.textContent = "High (hypertension)";
+      tableHTML += `</tbody>`;
+      timeRecordsTable.innerHTML = tableHTML;
     } else {
-      bloodPressureStatus.textContent = "Normal";
-    }
-  }
-
-  const temperature = document.getElementById("temperature").value;
-  const temperatureStatus = document.getElementById("temperatureStatus");
-  if (temperature) {
-    const tempValue = parseFloat(temperature);
-    if (tempValue < 36.5) {
-      temperatureStatus.textContent = "Low (hypothermia)";
-    } else if (tempValue > 38.2) {
-      temperatureStatus.textContent = "High (fever)";
-    } else {
-      temperatureStatus.textContent = "Normal";
-    }
-  }
-
-  const pulseRate = document.getElementById("pulseRate").value;
-  const pulseRateStatus = document.getElementById("pulseRateStatus");
-  if (pulseRate) {
-    const pulse = parseInt(pulseRate, 10);
-    if (pulse < 60) {
-      pulseRateStatus.textContent = "Low (slow heart rate)";
-    } else if (pulse > 100) {
-      pulseRateStatus.textContent = "High (fast heart rate)";
-    } else {
-      pulseRateStatus.textContent = "Normal";
-    }
-  }
-
-  const respiratoryRate = document.getElementById("respiratoryRate").value;
-  const respiratoryRateStatus = document.getElementById(
-    "respiratoryRateStatus"
-  );
-  if (respiratoryRate) {
-    const rate = parseInt(respiratoryRate, 10);
-    if (rate < 12) {
-      respiratoryRateStatus.textContent = "Low (slow breathing)";
-    } else if (rate > 20) {
-      respiratoryRateStatus.textContent = "High (fast breathing)";
-    } else {
-      respiratoryRateStatus.textContent = "Normal";
-    }
-  }
-}
-
-document.getElementById("height").addEventListener("input", updateStatus);
-document.getElementById("weight").addEventListener("input", updateStatus);
-document
-  .getElementById("bloodPressure")
-  .addEventListener("input", updateStatus);
-document.getElementById("temperature").addEventListener("input", updateStatus);
-document.getElementById("pulseRate").addEventListener("input", updateStatus);
-document
-  .getElementById("respiratoryRate")
-  .addEventListener("input", updateStatus);
-
-function computeBMI() {
-  const height = document.getElementById("height").value;
-  const weight = document.getElementById("weight").value;
-
-  if (height && weight) {
-    const bmi = (weight / (height * height)) * 10000;
-    document.getElementById("bmi").textContent = bmi.toFixed(2);
-
-    let status = "";
-    if (bmi < 18.5) {
-      status = "Underweight";
-    } else if (bmi >= 18.5 && bmi < 24.9) {
-      status = "Normal (Healthy Weight)";
-    } else if (bmi >= 30) {
-      status = "Obese";
-    } else {
-      status = "Overweight";
-    }
-
-    document.getElementById("bmiStatus").textContent = status;
-  } else {
-    document.getElementById("bmi").textContent = "N/A";
-    document.getElementById("bmiStatus").textContent = "N/A";
-  }
-}
-
-document.getElementById("height").addEventListener("input", computeBMI);
-document.getElementById("weight").addEventListener("input", computeBMI);
-
-function getCheckedConditions(category) {
-  const conditions = [];
-  document
-    .querySelectorAll(`#${category} input[type="checkbox"]:checked`)
-    .forEach((checkbox) => {
-      if (checkbox.id !== "n/a") {
-        conditions.push(checkbox.labels[0].textContent.trim());
-      }
-    });
-  return conditions.join(", ") || "None";
-}
-
-function getVaccineType() {
-  const vaccineTypes = [];
-  if (document.getElementById("pfizer").checked) vaccineTypes.push("Pfizer");
-  if (document.getElementById("moderna").checked) vaccineTypes.push("Moderna");
-  if (document.getElementById("astrazeneca").checked)
-    vaccineTypes.push("AstraZeneca");
-  if (document.getElementById("sinovac").checked) vaccineTypes.push("Sinovac");
-  return vaccineTypes.join(", ") || "None";
-}
-
-function validateForm() {
-  const height = document.getElementById("height").value;
-  const weight = document.getElementById("weight").value;
-  const bloodPressure = document.getElementById("bloodPressure").value;
-
-  if (!height || !weight || !bloodPressure) {
-    alert("Please fill out all required fields.");
-    return false;
-  }
-  return true;
-}
-
-function submitGeneralCheckup() {
-  if (!validateForm()) return;
-
-  const patientId = document.getElementById("patientId").textContent;
-  const height = document.getElementById("height").value;
-  const weight = document.getElementById("weight").value;
-  const bloodPressure = document.getElementById("bloodPressure").value;
-  const temperature = document.getElementById("temperature").value;
-  const pulseRate = document.getElementById("pulseRate").value;
-  const respiratoryRate = document.getElementById("respiratoryRate").value;
-  const allergies = document.getElementById("hasAllergies").checked
-    ? document.getElementById("allergiesDetails").value || "None"
-    : "None";
-  const medications = document.getElementById("hasMedications").checked
-    ? document.getElementById("medicationsDetails").value || "None"
-    : "None";
-  const pastMedicalHistory = getCheckedConditions("pastMedicalHistory");
-  const familyHistory = getCheckedConditions("familyHistory");
-
-  const vaccinated = document.getElementById("vaccinatedYes").checked
-    ? "Yes"
-    : "No";
-  const vaccineType = getVaccineType();
-  const boosterDose = document.getElementById("boosterYes").checked
-    ? "Yes"
-    : "No";
-  const boosterDate = document.getElementById("boosterDate").value;
-
-  computeBMI();
-  const bmi = document.getElementById("bmi").textContent;
-  const bmiStatus = document.getElementById("bmiStatus").textContent;
-
-  const formId = `${patientId}-${Math.floor(100000 + Math.random() * 900000)}`;
-
-  const formData = {
-    patientId,
-    height,
-    weight,
-    bloodPressure,
-    temperature,
-    pulseRate,
-    respiratoryRate,
-    allergies,
-    medications,
-    pastMedicalHistory,
-    familyHistory,
-    vaccinated,
-    vaccineType,
-    boosterDose,
-    boosterDate,
-    bmi,
-    bmiStatus,
-    formId,
-    timestamp: new Date().toISOString(),
-  };
-
-  firebase
-    .database()
-    .ref(`6-GeneralCheckup/${formId}`)
-    .set(formData)
-    .then(() => {
-      swal(
-        "Success",
-        `Form submitted successfully! Appointment ID: ${formId}`,
-        "success"
-      );
-      clearForm();
-    })
-    .catch((error) => {
-      console.error("Error submitting form: ", error);
-      swal("Error", "Failed to submit the form. Please try again.", "error");
-    });
-}
-
-function clearForm() {
-  const formFields = document.querySelectorAll(
-    ".appointmentFields input, .appointmentFields select, .appointmentFields textarea"
-  );
-
-  formFields.forEach((field) => {
-    if (field.type === "checkbox" || field.type === "radio") {
-      field.checked = false;
-    } else if (
-      field.type === "date" ||
-      field.type === "number" ||
-      field.type === "text"
-    ) {
-      field.value = "";
-    }
-  });
-
-  const selects = document.querySelectorAll(".appointmentFields select");
-  selects.forEach((select) => {
-    select.selectedIndex = 0;
-  });
-
-  document.getElementById("bmi").textContent = "";
-  document.getElementById("bmiStatus").textContent = "";
-  document.getElementById("temperatureStatus").textContent = "";
-}
-
-function getVaccineTypes() {
-  const vaccineTypes = [];
-  if (document.getElementById("BCG").checked)
-    vaccineTypes.push("BCG (Bacillus Calmette-Guerin)");
-  if (document.getElementById("HepatitisB").checked)
-    vaccineTypes.push("Hepatitis B");
-  if (document.getElementById("Pentavalent").checked)
-    vaccineTypes.push("Pentavalent (DPT-HepB-Hib)");
-  return vaccineTypes.join(", ") || "None";
-}
-
-function updateTemperatureStatus() {
-  const temperature = document.getElementById("temperature").value;
-  const temperatureStatus = document.getElementById("temperatureStatus");
-  if (temperature) {
-    const tempValue = parseFloat(temperature);
-    if (tempValue < 36.5) {
-      temperatureStatus.textContent = "Low (hypothermia)";
-    } else if (tempValue > 38.2) {
-      temperatureStatus.textContent = "High (fever)";
-    } else {
-      temperatureStatus.textContent = "Normal";
-    }
-  }
-}
-
-document
-  .getElementById("temperature")
-  .addEventListener("input", updateTemperatureStatus);
-
-function BabiesSubmitForm() {
-  const babyNameElement = document.getElementById("babiesName");
-  const birthdayElement = document.getElementById("birthday");
-  const heightElement = document.getElementById("babysheight");
-  const weightElement = document.getElementById("babysweight");
-  const temperatureElement = document.getElementById("babystemperature");
-
-  if (
-    !babyNameElement ||
-    !birthdayElement ||
-    !heightElement ||
-    !weightElement ||
-    !temperatureElement
-  ) {
-    alert("Please make sure all form fields are filled out correctly.");
-    return;
-  }
-
-  const babyName = babyNameElement.value.trim().replace(/\s+/g, "_"); // Replace spaces with underscores
-  const birthday = birthdayElement.value.trim();
-  const height = heightElement.value.trim();
-  const weight = weightElement.value.trim();
-  const temperature = temperatureElement.value.trim();
-
-  if (!babyName || !birthday || !height || !weight || !temperature) {
-    alert("Please make sure all form fields are filled out correctly.");
-    return;
-  }
-
-  const vaccineTypes = getVaccineTypes();
-
-  const formId = `${babyName}-${Math.floor(100000 + Math.random() * 900000)}`;
-
-  const formData = {
-    babyName,
-    birthday,
-    height,
-    weight,
-    temperature,
-    vaccineTypes,
-    formId,
-    timestamp: new Date().toISOString(),
-  };
-
-  firebase
-    .database()
-    .ref(`6-BabyVaccines/${formId}`)
-    .set(formData)
-    .then(() => {
-      swal(
-        "Success",
-        `Form submitted successfully! Appointment ID: ${formId}`,
-        "success"
-      );
-      clearFormBVaccine();
-    })
-    .catch((error) => {
-      console.error("Error submitting form: ", error);
-      swal("Error", "Failed to submit the form. Please try again.", "error");
-    });
-}
-
-function clearFormBVaccine() {
-  document.getElementById("babiesName").value = "";
-  document.getElementById("birthday").value = "";
-  document.getElementById("babysheight").value = "";
-  document.getElementById("babysweight").value = "";
-  document.getElementById("babystemperature").value = "";
-  document.getElementById("babystemperatureStatus").textContent = "";
-  document.getElementById("BCG").checked = false;
-  document.getElementById("HepatitisB").checked = false;
-  document.getElementById("Pentavalent").checked = false;
-}
-
-function submitFamilyPlan() {
-  const patientId = document.getElementById("patientId").textContent;
-  const numChildren = document.getElementById("numChildren").value;
-  const bloodPressure = document.getElementById("bloodPressure").value;
-  const weight = document.getElementById("weight").value;
-  const gravida = document.getElementById("gravida").value;
-  const para = document.getElementById("para").value;
-  const lmp = document.getElementById("lmp").value;
-  const menstrualCycle = document.querySelector(
-    'input[name="menstrualCycle"]:checked'
-  )
-    ? document.querySelector('input[name="menstrualCycle"]:checked').value
-    : "Not specified";
-
-  const hypertension = document.getElementById("hypertension").checked
-    ? "Yes"
-    : "No";
-  const diabetes = document.getElementById("diabetes").checked ? "Yes" : "No";
-  const heartDisease = document.getElementById("heartDisease").checked
-    ? "Yes"
-    : "No";
-
-  const allergies = document.getElementById("allergies").value || "None";
-  const otherMedical = document.getElementById("otherMedical").value || "None";
-
-  const contraceptiveUse = document.querySelector(
-    'input[name="contraceptiveUse"]:checked'
-  )
-    ? document.querySelector('input[name="contraceptiveUse"]:checked').value
-    : "Not specified";
-  const contraceptiveMethod =
-    document.getElementById("contraceptiveMethod").value || "None";
-
-  const consultationReason = getCheckedConditions("consultationReason");
-  const preferredMethods = getCheckedConditions("preferredMethods");
-  const counselingProvided = getCheckedConditions("methodAdvantages");
-
-  const formId = `${patientId}-${Math.floor(100000 + Math.random() * 900000)}`;
-
-  const formData = {
-    patientId,
-    numChildren,
-    bloodPressure,
-    weight,
-    gravida,
-    para,
-    lmp,
-    menstrualCycle,
-    hypertension,
-    diabetes,
-    heartDisease,
-    allergies,
-    otherMedical,
-    contraceptiveUse,
-    contraceptiveMethod,
-    consultationReason,
-    preferredMethods,
-    counselingProvided,
-    formId,
-    timestamp: new Date().toISOString(),
-  };
-
-  firebase
-    .database()
-    .ref(`6-FamilyPlan/${formId}`)
-    .set(formData)
-    .then(() => {
-      swal(
-        "Success",
-        `Form submitted successfully! Appointment ID: ${formId}`,
-        "success"
-      );
-      clearFamilyPlanForm();
-    })
-    .catch((error) => {
-      console.error("Error submitting form: ", error);
-      swal("Error", "Failed to submit the form. Please try again.", "error");
-    });
-}
-
-function getCheckedConditions(prefix) {
-  const checkedConditions = [];
-  const checkboxes = document.querySelectorAll(
-    `input[name^="${prefix}"]:checked`
-  );
-  checkboxes.forEach((checkbox) => {
-    checkedConditions.push(checkbox.value);
-  });
-  return checkedConditions.join(", ");
-}
-
-function clearFamilyPlanForm() {
-  const formFields = document.querySelectorAll(
-    "#FamilyPlanFields input, #FamilyPlanFields textarea"
-  );
-
-  formFields.forEach((field) => {
-    if (field.type === "checkbox" || field.type === "radio") {
-      field.checked = false;
-    } else {
-      field.value = "";
+      timeRecordsTable.innerHTML =
+        "<tr><td colspan='4'>No records found.</td></tr>";
     }
   });
 }
 
-function submitPrenatalDetails() {
-  const patientId = document.getElementById("patientId").textContent; // Assuming patientId is displayed somewhere
-  const bloodPressure = document.getElementById("bloodPressure").value;
-  const weight = document.getElementById("weight").value;
-  const height = document.getElementById("height").value;
-  const fundalHeight = document.getElementById("fundalHeight").value;
-  const fetalHeartTone = document.getElementById("fetalHeartTone").value;
+function calculateTotalHours(timeIn, timeOut) {
+  const timeIn24 = convertTo24HourFormat(timeIn);
+  const timeOut24 = convertTo24HourFormat(timeOut);
 
-  const diagnosedConditions = getCheckedConditions("diagnosedCondition");
-  const medications = document.querySelector(
-    'input[name="medications"]:checked'
-  )
-    ? document.getElementById("medicationsList").value || "None"
-    : "None";
+  const timeInDate = new Date(`1970-01-01T${timeIn24}:00`);
+  const timeOutDate = new Date(`1970-01-01T${timeOut24}:00`);
+  let diffInMilliseconds = timeOutDate - timeInDate;
 
-  const firstPregnancy = document.querySelector(
-    'input[name="firstPregnancy"]:checked'
-  )
-    ? document.querySelector('input[name="firstPregnancy"]:checked').value
-    : "Not specified";
-
-  const previousPregnancies =
-    firstPregnancy === "No"
-      ? document.getElementById("previousPregnancies").value || "0"
-      : "N/A";
-
-  const miscarriages = document.querySelector(
-    'input[name="miscarriages"]:checked'
-  )
-    ? document.getElementById("miscarriageDetails").value || "None"
-    : "No";
-
-  const symptoms = getCheckedConditions("symptom");
-  const smoking = document.querySelector('input[name="smoking"]:checked')
-    ? document.getElementById("smokingFrequency").value || "None"
-    : "No";
-  const alcohol = document.querySelector('input[name="alcohol"]:checked')
-    ? document.getElementById("alcoholFrequency").value || "None"
-    : "No";
-  const caffeine = document.querySelector('input[name="caffeine"]:checked')
-    ? document.getElementById("caffeineAmount").value || "None"
-    : "No";
-  const exercise = document.querySelector('input[name="exercise"]:checked')
-    ? document.getElementById("exerciseDetails").value || "None"
-    : "No";
-
-  const pregnancyWeeks = document.getElementById("pregnancyWeeks").value;
-  const dueDate = document.getElementById("dueDate").value;
-
-  const formId = `${patientId}-${Math.floor(100000 + Math.random() * 900000)}`;
-
-  const prenatalData = {
-    patientId,
-    bloodPressure,
-    weight,
-    height,
-    fundalHeight,
-    fetalHeartTone,
-    diagnosedConditions,
-    medications,
-    firstPregnancy,
-    previousPregnancies,
-    miscarriages,
-    symptoms,
-    smoking,
-    alcohol,
-    caffeine,
-    exercise,
-    pregnancyWeeks,
-    dueDate,
-    formId,
-    timestamp: new Date().toISOString(),
-  };
-
-  // Save data to Firebase
-  firebase
-    .database()
-    .ref(`6-Prenatal/${formId}`)
-    .set(prenatalData)
-    .then(() => {
-      swal(
-        "Success",
-        `Prenatal form submitted successfully! Form ID: ${formId}`,
-        "success"
-      );
-      clearPrenatalForm();
-    })
-    .catch((error) => {
-      console.error("Error submitting form: ", error);
-      swal("Error", "Failed to submit the form. Please try again.", "error");
-    });
-}
-
-function getCheckedConditions(prefix) {
-  const checkedConditions = [];
-  const checkboxes = document.querySelectorAll(
-    `input[id^="${prefix}"]:checked`
-  );
-  checkboxes.forEach((checkbox) => {
-    const relatedInput = checkbox.nextElementSibling;
-    const conditionDetail =
-      relatedInput && relatedInput.tagName === "INPUT"
-        ? `${checkbox.value} (${relatedInput.value})`
-        : checkbox.value;
-    checkedConditions.push(conditionDetail);
-  });
-  return checkedConditions.join(", ");
-}
-
-function clearPrenatalForm() {
-  const formFields = document.querySelectorAll(
-    "#PrenatalFields input, #PrenatalFields textarea"
-  );
-
-  formFields.forEach((field) => {
-    if (field.type === "checkbox" || field.type === "radio") {
-      field.checked = false;
-    } else {
-      field.value = "";
-    }
-  });
-}
-
-function getBloodPressureStatus(bloodPressure) {
-  if (!bloodPressure) return "Unknown";
-  const [systolic, diastolic] = bloodPressure.split("/").map(Number);
-  if (systolic && diastolic) {
-    if (systolic < 90 || diastolic < 60) return "Low";
-    if (systolic < 120 && diastolic < 80) return "Normal";
-    if (systolic < 130 && diastolic < 80) return "Elevated";
-    if (systolic >= 130 || diastolic >= 80) return "High";
+  if (diffInMilliseconds < 0) {
+    const nextDay = new Date(timeOutDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    diffInMilliseconds = nextDay - timeInDate;
   }
-  return "Unknown";
+
+  const diffInHours = diffInMilliseconds / (1000 * 60 * 60);
+  return diffInHours.toFixed(2);
 }
 
-function getTemperatureStatus(temperature) {
-  if (!temperature) return "Unknown";
-  if (parseFloat(temperature) < 36.5) return "Low";
-  if (parseFloat(temperature) >= 36.5 && parseFloat(temperature) <= 37.5)
-    return "Normal";
-  return "High";
-}
+function convertTo24HourFormat(time) {
+  const [timePart, modifier] = time.split(" ");
+  let [hours, minutes] = timePart.split(":").map((num) => parseInt(num));
 
-function getPulseRateStatus(pulseRate) {
-  if (!pulseRate) return "Unknown";
-  if (pulseRate < 60) return "Low";
-  if (pulseRate >= 60 && pulseRate <= 100) return "Normal";
-  return "High";
-}
-
-function getRespiratoryRateStatus(respiratoryRate) {
-  if (!respiratoryRate) return "Unknown";
-  if (respiratoryRate < 12) return "Low";
-  if (respiratoryRate >= 12 && respiratoryRate <= 20) return "Normal";
-  return "High";
-}
-
-function toggleCheckboxAllergies(checkedId) {
-  const noAllergies = document.getElementById("noAllergies");
-  const hasAllergies = document.getElementById("hasAllergies");
-  const allergiesDetails = document.getElementById("allergiesDetails");
-
-  if (checkedId === "noAllergies" && noAllergies.checked) {
-    hasAllergies.disabled = true;
-    allergiesDetails.disabled = true;
-    allergiesDetails.value = "";
-  } else if (checkedId === "hasAllergies" && hasAllergies.checked) {
-    noAllergies.disabled = true;
-    allergiesDetails.disabled = false;
-  } else {
-    noAllergies.disabled = false;
-    hasAllergies.disabled = false;
-    allergiesDetails.disabled = true;
-    allergiesDetails.value = "";
+  if (modifier === "PM" && hours !== 12) {
+    hours += 12;
+  } else if (modifier === "AM" && hours === 12) {
+    hours = 0;
   }
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+    2,
+    "0"
+  )}`;
 }
 
-function toggleCheckbox(checkedId) {
-  const noMedicationsCheckbox = document.getElementById("noMedications");
-  const hasMedicationsCheckbox = document.getElementById("hasMedications");
-  const medicationsDetailsInput = document.getElementById("medicationsDetails");
-
-  if (checkedId === "noMedications" && noMedicationsCheckbox.checked) {
-    hasMedicationsCheckbox.disabled = true;
-    medicationsDetailsInput.disabled = true;
-    medicationsDetailsInput.value = "";
-  } else if (checkedId === "hasMedications" && hasMedicationsCheckbox.checked) {
-    noMedicationsCheckbox.disabled = true;
-    medicationsDetailsInput.disabled = false;
-  } else {
-    noMedicationsCheckbox.disabled = false;
-    hasMedicationsCheckbox.disabled = false;
-    medicationsDetailsInput.disabled = true;
-    medicationsDetailsInput.value = "";
-  }
+function getLoggedInUsername() {
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  return loggedInUser ? loggedInUser.username : null;
 }
 
-function toggleVaccinationCheckbox(checkedId) {
-  const vaccinatedYes = document.getElementById("vaccinatedYes");
-  const vaccinatedNo = document.getElementById("vaccinatedNo");
+function getCurrentDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
 
-  if (checkedId === "vaccinatedYes" && vaccinatedYes.checked) {
-    vaccinatedNo.disabled = true;
-  } else if (checkedId === "vaccinatedNo" && vaccinatedNo.checked) {
-    vaccinatedYes.disabled = true;
-  } else {
-    vaccinatedYes.disabled = false;
-    vaccinatedNo.disabled = false;
-  }
-}
-
-function toggleBoosterCheckbox(checkedId) {
-  const boosterYes = document.getElementById("boosterYes");
-  const boosterNo = document.getElementById("boosterNo");
-
-  if (checkedId === "boosterYes" && boosterYes.checked) {
-    boosterNo.disabled = true;
-  } else if (checkedId === "boosterNo" && boosterNo.checked) {
-    boosterYes.disabled = true;
-  } else {
-    boosterYes.disabled = false;
-    boosterNo.disabled = false;
-  }
-}
-
-function toggleVaccineCheckbox(checkedId) {
-  const pfizer = document.getElementById("pfizer");
-  const moderna = document.getElementById("moderna");
-  const astrazeneca = document.getElementById("astrazeneca");
-  const sinovac = document.getElementById("sinovac");
-
-  if (checkedId === "pfizer" && pfizer.checked) {
-    moderna.disabled = true;
-    astrazeneca.disabled = true;
-    sinovac.disabled = true;
-  } else if (checkedId === "moderna" && moderna.checked) {
-    pfizer.disabled = true;
-    astrazeneca.disabled = true;
-    sinovac.disabled = true;
-  } else if (checkedId === "astrazeneca" && astrazeneca.checked) {
-    pfizer.disabled = true;
-    moderna.disabled = true;
-    sinovac.disabled = true;
-  } else if (checkedId === "sinovac" && sinovac.checked) {
-    pfizer.disabled = true;
-    moderna.disabled = true;
-    astrazeneca.disabled = true;
-  } else {
-    pfizer.disabled = false;
-    moderna.disabled = false;
-    astrazeneca.disabled = false;
-    sinovac.disabled = false;
-  }
-}
-
-function showFormFields() {
-  const selectedComplaint = document.getElementById("chiefComplaintType").value;
-
-  document.querySelectorAll(".appointmentFields").forEach(function (form) {
-    form.style.display = "none";
-  });
-
-  if (selectedComplaint === "GC") {
-    document.getElementById("GCFields").style.display = "block";
-  } else if (selectedComplaint === "BVaccine") {
-    document.getElementById("BVaccineFields").style.display = "block";
-  } else if (selectedComplaint === "FamilyPlan") {
-    document.getElementById("FamilyPlanFields").style.display = "block";
-  } else if (selectedComplaint === "Prenatal") {
-    document.getElementById("PrenatalFields").style.display = "block";
-  } else if (selectedComplaint === "Dental") {
-    document.getElementById("DentalFields").style.display = "block";
-  }
+  return `${year}-${month}-${day}`;
 }

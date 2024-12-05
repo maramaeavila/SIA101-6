@@ -80,12 +80,10 @@
     <div id="dashboardSection" class="content-section">
         <h1 class="mt-5">Appointment Dashboard</h1>
         
-        <div class="row mb-4 right">
+        <div class="row mb-4 right flexend">
             <div class="col-md-3 offset-md-4">
+                <label>Select Date: </label>
                 <input type="date" id="appointmentDatePicker" class="form-control">
-            </div>
-            <div class="col-md-1">
-                <button class="btn-primary" onclick="fetchAppointmentsByDate()">Update</button>
             </div>
         </div>
 
@@ -397,31 +395,34 @@
     
         <div class="tab-content" id="medicineTabContent">
             <div class="tab-pane fade show active" id="medicineTabPane" role="tabpanel">
-                <h1 class="fonts">Add New Stock</h1>
+                <h1 class="fonts mt-5">Add New Stock</h1>
                 <form id="addStockForm" class="mt-4">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="productCategory">Category:</label>
-                                <select class="form-control" id="productCategory" required onchange="handleCategoryChange()">
+                                <select class="form-control mt-2" id="productCategory" required onchange="handleCategoryChange()">
+                                    <option value="" disabled selected>--Select Category--</option>
                                     <option value="Medicine">Medicine</option>
                                     <option value="Contraceptives">Contraceptives</option>
                                     <option value="Vaccine">Vaccine</option>
                                 </select>
                             </div>
         
-                            <div class="form-group" id="contraceptivesType" style="display: none;">
+                            <div class="form-group mt-2" id="contraceptivesType" style="display: none;">
                                 <label for="productType">Select Contraceptive Product:</label>
-                                <select class="form-control" id="productType" required>
+                                <select class="form-control mt-2" id="productType" required>
+                                    <option value="" disabled selected>--Select Contraceptive--</option>
                                     <option value="Pills">Pills (Oral Contraceptives)</option>
                                     <option value="Condoms">Condoms</option>
                                     <option value="Injectables">Injectables (Depo-Provera)</option>
                                 </select>
                             </div>
         
-                            <div class="form-group" id="medicineType" style="display: none;">
+                            <div class="form-group mt-2" id="medicineType" style="display: none;">
                                 <label for="productType">Select Medicine:</label>
-                                <select class="form-control" id="productType" required>
+                                <select class="form-control mt-2" id="productType" required>
+                                    <option value="" disabled selected>--Select Medicine--</option>
                                     <option value="Paracetamol">Paracetamol</option>
                                     <option value="Amoxicillin">Amoxicillin</option>
                                     <option value="Cough Syrup">Cough Syrup</option>
@@ -429,16 +430,21 @@
                             </div>
         
 
-                            <div class="form-group" id="vaccineType" style="display: none;">
+                            <div class="form-group mt-2" id="vaccineType" style="display: none;">
                                 <label for="productType">Select Vaccine:</label>
-                                <select class="form-control" id="productType" required>
+                                <select class="form-control mt-2" id="productType" required>
+                                    <option value="" disabled selected>--Select Vaccine--</option>
                                     <option value="BCG">BCG (Bacillus Calmette-Guerin)</option>
                                     <option value="HepatitisB">Hepatitis B</option>
                                     <option value="Pentavalent">Pentavalent (DPT-HepB-Hib)</option>
+                                    <option value="OralPolio">Oral Polio Vaccine (OPV)</option>
+                                    <option value="Rotavirus">Rotavirus Vaccine</option>
+                                    <option value="JE">Japanese Encephalitis (JE) Vaccine</option>
+                                    <option value="Tigdas">Tigdas (Measles) Vaccine</option>
                                 </select>
                             </div>
         
-                            <div class="form-group">
+                            <div class="form-group mt-2">
                                 <label for="productName">Product Name:</label>
                                 <input type="text" class="form-control" id="productName" placeholder="Enter product name" required>
                             </div>
@@ -503,7 +509,7 @@
           
             <!-- Guidelines Tab Pane -->
             <div class="tab-pane fade" id="guidelinesTabPane" role="tabpanel">
-                <h1 class="fonts">Family Planning Services</h1>
+                <h1 class="fonts mt-5">Family Planning Services</h1>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -533,7 +539,7 @@
                     </table>
                 </div>
             
-                <h1 class="fonts">Common Medications</h1>
+                <h1 class="fonts mt-5">Common Medications</h1>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -563,7 +569,7 @@
                     </table>
                 </div>
             
-                <h1 class="fonts">Vaccines for Children</h1>
+                <h1 class="fonts mt-5">Vaccines for Children</h1>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -589,11 +595,32 @@
                                 <td>For diphtheria, pertussis, tetanus, hepatitis B, and Hib.</td>
                                 <td>3 doses (at 6, 10, and 14 weeks).</td>
                             </tr>
+                            <tr>
+                                <td>Oral Polio Vaccine (OPV)</td>
+                                <td>For Polio, given at 6 weeks, 10 weeks, and 14 weeks.</td>
+                                <td>3 doses.</td>
+                            </tr>
+                            <tr>
+                                <td>Rotavirus Vaccine</td>
+                                <td>For Diarrhea, given at 6 weeks, 10 weeks, and 14 weeks (if 3 doses).</td>
+                                <td>2–3 doses.</td>
+                            </tr>
+                            <tr>
+                                <td>Japanese Encephalitis (JE) Vaccine</td>
+                                <td>For Japanese Encephalitis, given at 9 months and above.</td>
+                                <td>Single dose.</td>
+                            </tr>
+                            <tr>
+                                <td>Tigdas (Measles) Vaccine</td>
+                                <td>For Measles, given at 9 months, with a booster at 12–15 months.</td>
+                                <td>2 doses.</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
+                
             
-                <h1 class="fonts">Medications for Pregnant Women</h1>
+                <h1 class="fonts mt-5">Medications for Pregnant Women</h1>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -625,6 +652,33 @@
             </div>
         </div>
     </div>    
+
+    <div id="timeInOutSection" class="content-section" style="display: none;">
+        <h5 class="mt-3">Time In/Time Out</h5>
+
+        <div class="d-flex mt-2">
+          <button id="timeInButton" style="margin: 10px;" onclick="timeIn()">Time In</button>
+          <button id="timeOutButton" style="margin: 10px;" onclick="timeOut()">Time Out</button>
+        </div>
+
+        <div id="timeRecordsDisplay" class="mt-3 text-center" style="font-size: 0.9rem;"></div>
+
+        <div class="table-container">
+            <table id="timeRecordsTable">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time In</th>
+                    <th>Time Out</th>
+                    <th>Total Hours</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
 
 
 </div>

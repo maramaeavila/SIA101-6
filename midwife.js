@@ -171,7 +171,7 @@ function displayAppointments(date) {
           const appointment = childSnapshot.val();
           const listItem = document.createElement("li");
           listItem.classList.add("appointment-item");
-          listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${appointment.healthcareProvider} (${appointment.status}) - ${appointment.remarks}`;
+          listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${appointment.healthcareProvider} (${appointment.status}) - ${appointment.healthService}`;
           appointmentList.appendChild(listItem);
         });
       } else {
@@ -228,7 +228,12 @@ function fetchAppointmentsByDate() {
   let selectedDate = document.getElementById("appointmentDatePicker").value;
 
   if (!selectedDate) {
-    alert("Please select a date.");
+    swal({
+      title: "Warning",
+      text: "Please select a date.",
+      icon: "warning",
+      button: "OK",
+    });
     return;
   }
 
@@ -270,6 +275,133 @@ function updateAppointmentDashboard(appointments) {
   document.getElementById("pendingAppointments").textContent = pending;
   document.getElementById("completedAppointments").textContent = completed;
   document.getElementById("canceledAppointments").textContent = canceled;
+}
+
+function fetchPrenatal() {
+  const patientId = document.getElementById("patientIdInput").value;
+
+  if (patientId.trim() === "") {
+    swal({
+      title: "Warning",
+      text: "Please enter a valid Resident ID.",
+      icon: "warning",
+      button: "OK",
+    });
+    return;
+  }
+
+  db.ref(`Residents/${patientId}`)
+    .once("value")
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        const resident = snapshot.val();
+
+        const firstName = resident.firstName || "";
+        const middleName = resident.middleName || "";
+        const lastName = resident.lastName || "";
+
+        const fullName = `${firstName} ${
+          middleName ? middleName + " " : ""
+        }${lastName}`;
+
+        document.getElementById("patientId").textContent = patientId;
+        document.getElementById("patientName").textContent = fullName;
+        document.getElementById("patientAge").textContent =
+          resident.age || "N/A";
+        document.getElementById("patientSex").textContent =
+          resident.sex || "N/A";
+        document.getElementById("patientAddress").textContent =
+          resident.address || "N/A";
+
+        const patientDataSection =
+          document.getElementById("patientDataSection");
+        if (patientDataSection) {
+          patientDataSection.style.display = "block";
+        } else {
+          console.error("Element with ID 'patientDataSection' not found.");
+        }
+      } else {
+        swal({
+          title: "Warning",
+          text: "Resident ID not found.",
+          icon: "warning",
+          button: "OK",
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching patient data:", error);
+      swal({
+        title: "Warning",
+        text: "An error occurred while loading resident data.",
+        icon: "warning",
+        button: "OK",
+      });
+    });
+}
+
+function fetchFamilyplan() {
+  const patientId = document.getElementById("patientIdInputFamilyPlan").value;
+
+  if (patientId.trim() === "") {
+    swal({
+      title: "Warning",
+      text: "Please enter a valid Resident ID.",
+      icon: "warning",
+      button: "OK",
+    });
+    return;
+  }
+
+  db.ref(`Residents/${patientId}`)
+    .once("value")
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        const resident = snapshot.val();
+
+        const firstName = resident.firstName || "";
+        const middleName = resident.middleName || "";
+        const lastName = resident.lastName || "";
+
+        const fullName = `${firstName} ${
+          middleName ? middleName + " " : ""
+        }${lastName}`;
+
+        document.getElementById("patientIdFamilyPlan").textContent = patientId;
+        document.getElementById("patientNameFamilyPlan").textContent = fullName;
+        document.getElementById("patientAgeFamilyPlan").textContent =
+          resident.age || "N/A";
+        document.getElementById("patientSexFamilyPlan").textContent =
+          resident.sex || "N/A";
+        document.getElementById("patientAddressFamilyPlan").textContent =
+          resident.address || "N/A";
+
+        const patientDataSection = document.getElementById(
+          "patientDataFamilyPlan"
+        );
+        if (patientDataSection) {
+          patientDataSection.style.display = "block";
+        } else {
+          console.error("Element with ID 'patientDataFamilyPlan' not found.");
+        }
+      } else {
+        swal({
+          title: "Warning",
+          text: "Resident ID not found.",
+          icon: "warning",
+          button: "OK",
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching patient data:", error);
+      swal({
+        title: "Warning",
+        text: "An error occurred while loading resident data.",
+        icon: "warning",
+        button: "OK",
+      });
+    });
 }
 
 function fetchHealthFormData() {

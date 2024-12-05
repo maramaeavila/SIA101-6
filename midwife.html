@@ -80,8 +80,9 @@
     <div id="dashboardSection" class="content-section">
         <h1 class="mt-5">Appointment Dashboard</h1>
         
-        <div class="row mb-4 right">
+        <div class="row mb-4 right flexend">
             <div class="col-md-3 offset-md-4">
+                <label>Select Date: </label>
                 <input type="date" id="appointmentDatePicker" class="form-control">
             </div>
         </div>
@@ -229,18 +230,235 @@
             <label for="patientIdInput">Enter Resident ID:</label>
             <input type="text" style="width: 20%;" id="patientIdInput" placeholder="Resident ID" />
             <button class="btn-primary" onclick="fetchPrenatal()">Fetch Patient Data</button>
-    
         </div>
+
+        <div id="patientDataSection" style="display: none;">
+            <h1 class="mt-5">Patient Information</h1>
+            <p><strong>Resident ID:</strong> <span id="patientId"></span></p>
+            <p><strong>Name:</strong> <span id="patientName"></span></p>
+            <p><strong>Age:</strong> <span id="patientAge"></span></p>
+            <p><strong>Sex:</strong> <span id="patientSex"></span></p>
+            <p><strong>Address:</strong> <span id="patientAddress"></span></p>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label for="bloodPressure">Blood Pressure:</label>
+                <input type="text" id="bloodPressure" placeholder="Enter Blood Pressure" required />
+                <br />
+            
+                <label for="weight">Weight:</label>
+                <input type="number" id="weight" placeholder="Enter Weight" required />
+                <br />
+            
+                <label for="height">Height:</label>
+                <input type="number" id="height" placeholder="Enter Height" required />
+                <br />
+            
+                <label for="fundalHeight">Fundal Height:</label>
+                <input type="number" id="fundalHeight" placeholder="Enter Fundal Height" required />
+                <br />
+            
+                <label for="fetalHeartTone">Fetal Heart Tone (FHT):</label>
+                <input type="text" id="fetalHeartTone" placeholder="Enter Fetal Heart Tone" required />
+                <br />
+
+                <label>Have you been diagnosed with any of the following? (Check all that apply)</label><br />
+                <input type="checkbox" id="highBloodPressure" /> High Blood Pressure<br />
+                <input type="checkbox" id="diabetes" /> Diabetes<br />
+                <input type="checkbox" id="thyroidDisorder" /> Thyroid Disorder<br />
+                <input type="checkbox" id="heartDisease" /> Heart Disease<br />
+                <input type="checkbox" id="kidneyIssues" /> Kidney Issues<br />
+                <input type="checkbox" id="asthma" /> Asthma/Respiratory Disorders<br />
+                <input type="checkbox" id="arthritis" /> Arthritis<br />
+                <input type="checkbox" id="cancer" /> Cancer Type: <input type="text" id="cancerType" placeholder="Specify Type" /><br />
+                <input type="checkbox" id="otherConditions" /> Other (Specify): <input type="text" id="otherConditionsDetails" placeholder="Specify Other Conditions" /><br />
+                <br />
+            </div>   
+                     
+            <div class="col">
+                <label>Are you currently taking any medications?</label><br />
+                <input type="radio" id="medicationsYes" name="medications" value="Yes" /> Yes
+                <input type="radio" id="medicationsNo" name="medications" value="No" /> No<br />
+                <label>If yes, list them:</label>
+                <input type="text" id="medicationsList" placeholder="List Medications" /><br />
+                <br />
+
+                <label>Is this your first pregnancy?</label><br />
+                <input type="radio" id="firstPregnancyYes" name="firstPregnancy" value="Yes" /> Yes
+                <input type="radio" id="firstPregnancyNo" name="firstPregnancy" value="No" /> No<br />
+                <label>If no, number of previous pregnancies:</label>
+                <input type="number" id="previousPregnancies" placeholder="Enter Number of Previous Pregnancies" /><br />
+                <br />
+            
+                <label>Any history of miscarriages or complications?</label><br />
+                <input type="radio" id="miscarriagesYes" name="miscarriages" value="Yes" /> Yes
+                <input type="radio" id="miscarriagesNo" name="miscarriages" value="No" /> No<br />
+                <label>If yes, details:</label>
+                <input type="text" id="miscarriageDetails" placeholder="Details of Miscarriages or Complications" /><br />
+                <br />
+            
+                <label for="currentGestation">Current gestation (weeks):</label>
+                <input type="number" id="currentGestation" placeholder="Enter Current Gestation Weeks" required />
+                <br />
+                <br />
+            
+                <label>Are you experiencing any of the following? (Check all that apply)</label><br />
+                <input type="checkbox" id="nausea" /> Nausea/Vomiting<br />
+                <input type="checkbox" id="backPain" /> Back Pain<br />
+                <input type="checkbox" id="fatigue" /> Fatigue<br />
+                <input type="checkbox" id="swelling" /> Swelling<br />
+                <input type="checkbox" id="headaches" /> Headaches<br />
+                <input type="checkbox" id="otherSymptoms" /> Other (Specify): <input type="text" id="otherSymptomsDetails" placeholder="Specify Other Symptoms" /><br />
+                <br />
+            </div>
+            
+            <div class="col">
+                <label>Smoking:</label>
+                <input type="radio" id="smokingYes" name="smoking" value="Yes" /> Yes
+                <input type="radio" id="smokingNo" name="smoking" value="No" /> No | Frequency: <input type="text" id="smokingFrequency" placeholder="Frequency" /><br />
+            
+                <label>Alcohol:</label>
+                <input type="radio" id="alcoholYes" name="alcohol" value="Yes" /> Yes
+                <input type="radio" id="alcoholNo" name="alcohol" value="No" /> No | Frequency: <input type="text" id="alcoholFrequency" placeholder="Frequency" /><br />
+            
+                <label>Caffeine:</label>
+                <input type="radio" id="caffeineYes" name="caffeine" value="Yes" /> Yes
+                <input type="radio" id="caffeineNo" name="caffeine" value="No" /> No | Daily Amount: <input type="text" id="caffeineAmount" placeholder="Daily Amount" /><br />
+            
+                <label>Exercise:</label>
+                <input type="radio" id="exerciseYes" name="exercise" value="Yes" /> Yes
+                <input type="radio" id="exerciseNo" name="exercise" value="No" /> No | Type/Frequency: <input type="text" id="exerciseDetails" placeholder="Type/Frequency" /><br />
+                <br />
+            
+                <label for="pregnancyWeeks">Weeks of Pregnancy:</label>
+                <input type="number" id="pregnancyWeeks" placeholder="Enter weeks of pregnancy" required />
+                <br />
+        
+                <label for="dueDate">Expected Due Date:</label>
+                <input type="date" id="dueDate" required />
+                <br />  
+            </div>         
+        <div>
+            <button class="btn-primary" onclick="submitPrenatalDetails()">Submit</button>
+        </div>
+    </div>
     
     </div>
 
     <div id="FamilyPlanSection" class="content-section" style="display: none;">
+        <h1 class="mt-5">Family Planning</h1>
         <div>
             <label for="patientIdInput">Enter Resident ID:</label>
-            <input type="text" style="width: 20%;" id="patientIdInput" placeholder="Resident ID" />
+            <input type="text" style="width: 20%;" id="patientIdInputFamilyPlan" placeholder="Resident ID" />
             <button class="btn-primary" onclick="fetchFamilyplan()">Fetch Patient Data</button>
-    
         </div>
+
+        <div id="patientDataFamilyPlan" style="display: none;">
+            <h1 class="mt-5">Patient Information</h1>
+            <p><strong>Resident ID:</strong> <span id="patientIdFamilyPlan"></span></p>
+            <p><strong>Name:</strong> <span id="patientNameFamilyPlan"></span></p>
+            <p><strong>Age:</strong> <span id="patientAgeFamilyPlan"></span></p>
+            <p><strong>Sex:</strong> <span id="patientSexFamilyPlan"></span></p>
+            <p><strong>Address:</strong> <span id="patientAddressFamilyPlan"></span></p>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label for="numChildren">Number of Children:</label>
+                <input type="number" id="numChildren" placeholder="Enter Number of Children" required /><br />
+                
+                <label for="bloodPressure">Blood Pressure:</label>
+                <input type="text" id="bloodPressure" placeholder="Enter Blood Pressure" required /><br />
+                
+                <label for="weight">Weight:</label>
+                <input type="number" id="weight" placeholder="Enter Weight" required /><br />
+                
+                <label for="gravida">Gravida (No. of Pregnancies):</label>
+                <input type="number" id="gravida" placeholder="Enter Number of Pregnancies" /><br />
+            
+                <label for="para">Para (No. of Deliveries):</label>
+                <input type="number" id="para" placeholder="Enter Number of Deliveries" /><br />
+            
+                <label for="lmp">Last Menstrual Period (LMP):</label>
+                <input type="date" id="lmp" placeholder="Enter LMP Date" /><br />
+            
+                <label for="menstrualCycle">Menstrual Cycle:</label><br />
+                <input type="radio" id="regular" name="menstrualCycle" value="Regular" />
+                <label for="regular">Regular</label>
+                <input type="radio" id="irregular" name="menstrualCycle" value="Irregular" />
+                <label for="irregular">Irregular</label><br />
+
+
+                <input type="checkbox" id="hypertension" />
+                <label for="hypertension">Hypertension:</label><br />
+
+                <input type="checkbox" id="diabetes" />                       
+                <label for="diabetes">Diabetes:</label><br /> 
+
+                <input type="checkbox" id="heartDisease" />                        
+                <label for="heartDisease">Heart Disease:</label><br />
+
+                <label for="allergies">Allergies:</label>
+                <input type="text" id="allergies" placeholder="Specify any allergies" /><br />
+            
+                <label for="otherMedical">Others (Specify):</label>
+                <input type="text" id="otherMedical" placeholder="Specify other medical history" /><br />
+            </div>
+
+            <div class="col">    
+                <label for="contraceptiveUse">Are you currently using a contraceptive method?</label><br />
+                <input type="radio" id="contraceptiveYes" name="contraceptiveUse" value="Yes" />
+                <label for="contraceptiveYes">Yes</label>
+                <input type="radio" id="contraceptiveNo" name="contraceptiveUse" value="No" />
+                <label for="contraceptiveNo">No</label><br />
+
+                
+                <label for="contraceptiveMethod">If yes, specify:</label>
+                <input type="text" id="contraceptiveMethod" placeholder="Specify contraceptive method" /><br />
+            
+                <label for="consultationReason">Reason for Consultation:</label><br />
+                <input type="checkbox" id="firstTimeUser" />
+                <label for="firstTimeUser">First-time user</label><br />
+
+                <input type="checkbox" id="switchingMethods" />                        
+                <label for="switchingMethods">Switching methods</label><br />
+
+                <input type="checkbox" id="counseling" />                     
+                <label for="counseling">Counseling</label><br />
+
+                <label for="preferredMethods">Preferred Method(s):</label><br />
+                <input type="checkbox" id="naturalFamilyPlanning" />
+                <label for="naturalFamilyPlanning">Natural Family Planning (e.g., Calendar/Rhythm Method)</label><br />
+
+                <input type="checkbox" id="barrierMethods" />                     
+                <label for="barrierMethods">Barrier Methods (e.g., Condoms)</label><br /> 
+
+                <input type="checkbox" id="hormonalMethods" />
+                <label for="hormonalMethods">Hormonal Methods (e.g., Pills, Injectables)</label><br />
+
+                <input type="checkbox" id="IUD" />                      
+                <label for="IUD">Intrauterine Device (IUD)</label><br />
+
+                <input type="checkbox" id="permanentMethods" />                    
+                <label for="permanentMethods">Permanent Methods (e.g., Tubal Ligation, Vasectomy)</label><br />  
+
+            
+                <label for="othersMethod">Others (Specify):</label>
+                <input type="text" id="othersMethod" /><br />
+
+                <input type="checkbox" id="methodAdvantages" />
+                <label>Counseling and Education Provided:</label><br />
+
+                <input type="checkbox" id="properUse" />                   
+                <label for="properUse">Proper Use of Chosen Method</label><br />   
+
+                <input type="checkbox" id="sideEffects" />                     
+                <label for="sideEffects">Side Effects and Management</label><br /> 
+
+                <input type="checkbox" id="importanceFollowUp" />                    
+                <label for="importanceFollowUp">Importance of Follow-Up</label><br />  
+            </div>    
     
     </div>
 

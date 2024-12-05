@@ -8,6 +8,7 @@ h1{
     font-size: 25px !important;
     font-weight: bold !important;
 }
+
 .navbar {
     position: fixed !important;
     top: 0;
@@ -272,7 +273,9 @@ tbody tr:nth-child(even) {
 
 input[type="text"],
 input[type="number"],
-input[type="password"] {
+input[type="password"],
+input[type="date"],
+select {
     width: 100%;
     padding: 12px;
     margin: 10px 0;
@@ -418,5 +421,48 @@ button:disabled {
     display: flex;
     justify-content: flex-end;
 }
+
+#patientDataSection {
+    display: none;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  #patientDataSection h1 {
+    font-size: 25px;
+    color: #333;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #3b82f6;
+    padding-bottom: 5px;
+  }
+
+  #patientDataSection p {
+    font-size: 16px;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    display: flex; 
+    justify-content: space-between; 
+  }
+
+  #patientDataSection p strong {
+    color: #3b82f6;
+    font-weight: bold;
+    min-width: 150px; 
+    display: inline-block; 
+  }
+
+  #patientDataSection span {
+    color: #000;
+    font-weight: normal;
+    text-align: left; 
+    flex: 1; 
+    padding-left: 10px; 
+  }
+
 
 
