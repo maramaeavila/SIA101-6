@@ -62,6 +62,12 @@
         </li>
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
+                <i class="fa-solid fa-person-walking mr-2"></i>
+                <span>Walk-In</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-pills mr-2"></i> 
                 <span>Medicine</span>
             </a>
@@ -194,15 +200,58 @@
 
             <div class="schedule">
                 <div class="schedule-header">Appointments</div>
-                <ul class="appointment-list" id="appointmentList">
-                    <li>Select a date to view appointments.</li>
-                </ul>
+                <table class="appointment-table">
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>Service</th>
+                      <th>Provider</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="appointmentTableBody">
+                    <tr>
+                      <td colspan="5">Select a date to view appointments.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+        </div>
+    </div>
+
+    <div id="walkinSection" class="content-section" style="display: none;">
+        <h1 class="mt-5">Walk-In Registration</h1>
+        <div class="walkin-form">
+            <label for="residentIdInput">Resident ID:</label>
+            <input type="text" id="residentIdInput" placeholder="Enter Resident ID" style="width: 20%;" required />
+    
+            <label for="healthcareProviderInput">Healthcare Provider:</label>
+            <input type="text" id="healthcareProviderInput" placeholder="Enter Healthcare Provider" style="width: 20%;" required />
+    
+            <div class="flexend">
+                <button class="btn btn-primary" onclick="submitWalkinData()">Submit Walk-in</button>
             </div>
+        </div>
+    
+        <div id="walkinDetailsSection" style="display: none;">
+            <h1 class="mt-5">Walk-ins for Today: <span id="todayWalkinCount">0</span></h1>
+            <table class="walkin-table">
+                <thead>
+                    <tr>
+                        <th>Resident ID</th>
+                        <th>Healthcare Provider</th>
+                    </tr>
+                </thead>
+                <tbody id="walkinTableBody">
+                    
+                </tbody>
+            </table>
         </div>
     </div>
 
         <div id="medicineSection" class="content-section" style="display: none;">
-            <h1 class="mt-5">Medicine Management</h1>
+            <h1 class="mt-5">Medicine Stocks</h1>
             <ul class="nav nav-tabs" id="medicineTab" role="tablist" style="margin: 8px;">
                 <li class="nav-item">
                     <button class="nav-link active" data-tab="medicineTabPane" onclick="showMedicineTab('medicineTabPane')">Medicine & Stocks</button>
@@ -301,7 +350,7 @@
                       
                             <div id="batchDetails"></div> 
                       
-                            <button type="submit" class="btn btn-primary">Release</button>
+                            <button type="button" class="btn btn-primary" onclick="handleMedicineRelease()">Release</button>
                           </form>
                         </div>
                       </div>

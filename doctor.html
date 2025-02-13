@@ -61,18 +61,18 @@
                 Consultation
             </a>
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-syringe mr-2"></i>
                 Babies Vaccination
             </a>
-        </li>
-        <li class="nav-item">
+        </li> -->
+        <!-- <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-baby mr-2"></i> 
                 Babies Vaccination Records
             </a>
-        </li>
+        </li> -->
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="#">
                 <i class="fa-solid fa-file-medical mr-2"></i>
@@ -184,7 +184,7 @@
         <div>
             <label for="patientIdInput">Enter Resident ID:</label>
             <input type="text" style="width: 20%;" id="patientIdInput" placeholder="Resident ID" />
-            <button class="btn-primary" onclick="fetchPatientData()">Fetch Patient Data</button>
+            <button class="btn-primary" onclick="fetchPatientData()">Show Patient Data</button>
         </div>
     
         <div id="patientDataSection" style="display: none;">
@@ -193,8 +193,9 @@
             <p><strong>Name:</strong> <span id="patientName"></span></p>
             <p><strong>Age:</strong> <span id="patientAge"></span></p>
             <p><strong>Sex:</strong> <span id="patientSex"></span></p>
-            <p><strong>Address:</strong> <span id="patientAddress"></span></p>
+            <p><strong>Address:</strong> <span id="patientAddress"></span></p> 
         </div>
+
 
         <h1 class="mt-5">Consultation</h1>
         <div class="row">
@@ -212,22 +213,22 @@
                 <span id="bloodPressureStatus"></span>
                 <br />
 
-                <label for="temperature">Temperature (°C):</label>
+                <label for="temperature" class="mt-3">Temperature (°C):</label>
                 <input type="text" id="temperature" placeholder="Enter temperature" required />
                 <span id="temperatureStatus"></span>
                 <br />
 
-                <label for="pulseRate">Pulse Rate (bpm):</label>
+                <label for="pulseRate" class="mt-3">Pulse Rate (bpm):</label>
                 <input type="text" id="pulseRate" placeholder="Enter pulse rate" required />
                 <span id="pulseRateStatus"></span>
                 <br />
 
-                <label for="respiratoryRate">Respiratory Rate (bpm):</label>
+                <label for="respiratoryRate" class="mt-3">Respiratory Rate (bpm):</label>
                 <input type="text" id="respiratoryRate" placeholder="Enter respiratory rate" required />
                 <span id="respiratoryRateStatus"></span>
                 <br />
 
-                <label for="allergies">Allergies (If any):</label>
+                <label for="allergies" class="mt-3">Allergies (If any):</label>
                 <div>
                     <input type="checkbox" id="noAllergies" onclick="toggleCheckboxAllergies('noAllergies')" />
                     <label for="noAllergies">None</label>
@@ -363,110 +364,77 @@
             </div>
             <div class="mb-5 flexend">
                 <button  onclick="submitGeneralCheckup()">Submit General Checkup</button>
-            </div>
+            </div>  
     </div>
 
 
-<div id="VaccineSection" class="content-section" style="display: none;">
-    <h1 class="mt-5">Babies Vaccine</h1>
-    <div>
-        <label for="patientIdInput">Enter Resident ID:</label>
-        <input type="text" style="width: 20%;" id="patientIdInputBabys" placeholder="Resident ID" />
-        <button class="btn-primary" onclick="fetchPatientBabysData()">Fetch Patient Data</button>
-    </div>
+    <!-- <div id="VaccineSection" class="content-section" style="display: none;">
+        <h1 class="mt-5">Babies Vaccine</h1>
+        <div>
+            <label for="patientIdInput">Enter Resident ID:</label>
+            <input type="text" style="width: 20%;" id="patientIdInputBabys" placeholder="Resident ID" />
+            <button class="btn-primary" onclick="fetchPatientBabysData()">Show Parent's Data</button>
 
-    <div id="patientDataSectionBabys" style="display: none;">
-        <h1 class="mt-5">Patient Information</h1>
-        <p><strong>Resident ID:</strong> <span id="patientIdBabys"></span></p>
-        <p><strong>Name:</strong> <span id="patientNameBabys"></span></p>
-        <p><strong>Age:</strong> <span id="patientAgeBabys"></span></p>
-        <p><strong>Sex:</strong> <span id="patientSexBabys"></span></p>
-        <p><strong>Address:</strong> <span id="patientAddressBabys"></span></p>
-    </div>
-
-
-    <h1 class="mt-5">Child Information</h1>
-        <div class="row">
-            <div class="col">
-              <label for="babiesName">Baby's Name:</label>
-              <input type="text" id="babiesName" placeholder="Enter Baby's Name" required />
-              <br />
-              <label for="birthday">Birthday:</label>
-              <input type="date" id="birthday" required />
-              <br />
-              <label for="height">Height (cm):</label>
-              <input type="number" id="babysheight" placeholder="Enter height" required />
-              <br />
-              <label for="weight">Weight (kg):</label>
-              <input type="number" id="babysweight" placeholder="Enter weight" required />
-              <br />
-            </div>
-        
-            <div class="col">
-              <label for="temperature">Temperature (°C):</label>
-              <input type="text" id="babystemperature" placeholder="Enter temperature" required />
-              <span id="babystemperatureStatus"></span>
-              <br />
-              <label for="BvaccineType">Vaccine Taken:</label>
-              <div>
-                <input type="checkbox" id="BCG" />
-                <label for="BCG">BCG (Bacillus Calmette-Guerin)</label><br />
-                <input type="checkbox" id="HepatitisB" />
-                <label for="HepatitisB">Hepatitis B</label><br />
-                <input type="checkbox" id="Pentavalent" />
-                <label for="Pentavalent">Pentavalent (DPT-HepB-Hib)</label><br />
-                <input type="checkbox" id="OPV" />
-                <label for="OPV">Oral Polio Vaccine (OPV)</label><br />
-                <input type="checkbox" id="Rotavirus" />
-                <label for="Rotavirus">Rotavirus Vaccine</label><br />
-                <input type="checkbox" id="JE" />
-                <label for="JE">Japanese Encephalitis (JE) Vaccine</label><br />
-                <input type="checkbox" id="Measles" />
-                <label for="Measles">Tigdas (Measles) Vaccine</label><br />
-              </div>        
-            </div>
-            <br />
-          </div>
-          <div>
-            <button class="flexend" onclick="BabiesSubmitForm()">Submit</button>
-          </div>
-    </div>
-
-    <div id="babiesVaccineRecord" class="content-section" style="display: none;">
-        <h1 class="mt-5">Babies Vaccine Records</h1>
-    
-        <!-- Search Feature -->
-        <div class="search-bar mt-3">
-            <input 
-                type="text" 
-                id="searchBabiesRecord" 
-                placeholder="Search by Baby's Name or Resident ID" 
-                oninput="filterBabiesRecord()"
-                style="width: 50%; padding: 10px; margin-bottom: 20px;"
-            />
+            <label for="fetchPatientId">Enter Resident ID-Form:</label>
+            <input type="text" style="width: 20%;" id="fetchPatientId" placeholder="Enter Resident ID-Form" required />
+            <button onclick="fetchPatientBabysForm()">Fetch Baby's Data</button>
         </div>
     
-        <!-- Babies Vaccine Table -->
-        <table>
-            <thead>
-                <tr>
-                    <th>Form ID</th>
-                    <th>Resident ID</th>
-                    <th>Baby's Name</th>
-                    <th>Birthday</th>
-                    <th>Height (cm)</th>
-                    <th>Weight (kg)</th>
-                    <th>Temperature (°C)</th>
-                    <th>Vaccines Taken</th>
-                    <th>Timestamp</th>
-                </tr>
-            </thead>
-            <tbody id="babiesRecordTableBody">
-                <!-- Dynamic Rows Added Here via JavaScript -->
-            </tbody>
-        </table>
-    </div>
+        <div id="patientDataSectionBabys" style="display: none;">
+            <h1 class="mt-5">Parents Information</h1>
+            <p><strong>Resident ID:</strong> <span id="patientIdBabys"></span></p>
+            <p><strong>Name:</strong> <span id="patientNameBabys"></span></p>
+            <p><strong>Age:</strong> <span id="patientAgeBabys"></span></p>
+            <p><strong>Sex:</strong> <span id="patientSexBabys"></span></p>
+            <p><strong>Address:</strong> <span id="patientAddressBabys"></span></p>
+        </div>
     
+        <h1 class="mt-5">Child Information</h1>
+        <div class="row">
+            <div class="col">
+                <label for="babiesName">Baby's Name:</label>
+                <input type="text" id="babiesName" placeholder="Enter Baby's Name" required />
+                <br />
+                <label for="birthday">Birthday:</label>
+                <input type="date" id="birthday" required />
+                <br />
+                <label for="height">Height (cm):</label>
+                <input type="number" id="babysheight" placeholder="Enter height" required />
+                <br />
+            </div>
+    
+            <div class="col">    
+                <label for="weight">Weight (kg):</label>
+                <input type="number" id="babysweight" placeholder="Enter weight" required />
+                <br />
+
+                <label for="temperature">Temperature (°C):</label>
+                <input type="text" id="babystemperature" placeholder="Enter temperature" required />
+                <span id="babystemperatureStatus"></span>
+                <br />
+            </div>
+        </div>
+        <div class="mb-5 flexend">
+            <button onclick="BabiesSubmitForm()">Submit Record</button>
+        </div>
+
+        <div>
+            <h1 class="mt-5">Vaccine Table</h1>
+            <table>
+              <thead>
+                <tr>
+                  <th>Vaccine Name</th>
+                  <th>Taken</th>
+                  <th>Next Visit Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="vaccineTableBody">
+                
+              </tbody>
+            </table>
+          </div> -->
+
 
     <div id="generalCheckupRecords" class="content-section" style="display: none;">
         <h1 class="mt-5">General Checkup Records</h1>
@@ -477,7 +445,6 @@
           <thead>
             <tr>
               <th>Form ID</th>
-              <th>Patient Name</th>
               <th>Height (cm)</th>
               <th>Weight (kg)</th>
               <th>Blood Pressure</th>
@@ -506,15 +473,6 @@
             </div>
         </div>
     </div>
-    <!-- <div id="checkupModal" class="modal" style="display: none;">
-        <div class="modal-content">
-          <span class="close" onclick="closeModal()">&times;</span>
-          <h2>Patient Record</h2>
-          <div id="modalContent">
-          </div>
-          <button id="downloadBtn" onclick="downloadPDF()" style="display: none;">Download Patient Record</button>
-        </div>
-      </div> -->
 
       <div id="timeInOutSection" class="content-section" style="display: none;">
         <h5 class="mt-3">Time In/Time Out</h5>

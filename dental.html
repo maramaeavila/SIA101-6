@@ -173,10 +173,6 @@
             <label for="patientIdInput">Enter Resident ID:</label>
             <input type="text" style="width: 20%;" id="patientIdInput" placeholder="Resident ID" />
             <button class="btn-primary me-3" onclick="fetchPatientData()">Show Patient Data</button>
-
-            <label for="appointmentDatepicker">Select Appointment Date:</label>
-            <input type="date" id="appointmentDatepicker" style="width: 20%;" />
-            <button class="btn-primary" onclick="fetchAppointmentsByDate()">Show Appointments</button>
           </div>
           
           <div id="patientDataSection" style="display: none;">
@@ -186,24 +182,7 @@
             <p><strong>Age:</strong> <span id="patientAge"></span></p>
             <p><strong>Sex:</strong> <span id="patientSex"></span></p>
             <p><strong>Address:</strong> <span id="patientAddress"></span></p>
-          </div>
-          
-          <table>
-            <thead>
-              <tr>
-                <th>Resident ID</th>
-                <th>Appointment Date</th>
-                <th>Appointment Time</th>
-                <th>Health Service</th>
-                <th>Healthcare Provider</th>
-                <th>Remarks</th>
-                <th>Status</th>
-                <th>Actions</th> 
-              </tr>
-            </thead>
-            <tbody id="patientList"></tbody>
-          </table>          
-          
+          </div>         
 
         <h1 class="mt-5">Dental Record Form</h1>
             <div class="row">

@@ -49,11 +49,10 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
       document.getElementById("formSection").style.display = "block";
     } else if (sectionName === "Medicine") {
       document.getElementById("medicineSection").style.display = "block";
-      fetchInventory();
-    } else if (sectionName === "Reports") {
-      document.getElementById("reportSection").style.display = "block";
-    } else if (sectionName === "Change Account") {
-      document.getElementById("changeAccountSection").style.display = "block";
+    } else if (sectionName === "Medicine Release") {
+      document.getElementById("medicineReleaseSection").style.display = "block";
+    } else if (sectionName === "Time In/Time Out") {
+      document.getElementById("timeInOutSection").style.display = "block";
     }
   });
 });
@@ -513,6 +512,7 @@ function fetchInventory() {
   const inventoryList = document
     .getElementById("inventoryList")
     .getElementsByTagName("tbody")[0];
+
   inventoryList.innerHTML = "";
 
   db.ref("6-Inventory")
@@ -526,29 +526,25 @@ function fetchInventory() {
           const key = `${item.category}-${item.name}`;
 
           if (!inventoryData[key]) {
-            inventoryData[key] = [];
-          }
+            inventoryData[key] = item;
 
-          inventoryData[key].push(item);
-        });
-
-        for (const key in inventoryData) {
-          const items = inventoryData[key];
-          items.forEach((item) => {
             const row = document.createElement("tr");
             row.innerHTML = `
-              <td>${item.category}</td>
-              <td>${item.name}</td>
-              <td>${item.quantity}</td>
-              <td>${new Date(item.timestamp).toLocaleDateString()}</td>
-              <td>${item.expirationDate}</td>
-              <td><button class="btn btn-primary" onclick="openReleaseModal('${
-                item.name
-              }')">Release</button></td>
-            `;
+                <td>${item.category}</td>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>${new Date(item.timestamp).toLocaleDateString()}</td>
+                <td>${item.expirationDate}</td>
+                <td>
+                  <button class="btn btn-primary" onclick="openReleaseModal('${
+                    item.name
+                  }')">Release</button>
+                </td>
+              `;
+
             inventoryList.appendChild(row);
-          });
-        }
+          }
+        });
       } else {
         const row = document.createElement("tr");
         row.innerHTML = "<td colspan='6'>No inventory found.</td>";
@@ -581,8 +577,12 @@ function openReleaseModal(itemName) {
           const row = document.createElement("div");
           row.classList.add("stock-row");
           row.innerHTML = `
-            <p>Batch Date: ${new Date(item.dateAdded).toLocaleDateString()}</p>
-            <p>Quantity Available: ${item.quantity}</p>
+            <p style="font-weight: bold;">Batch Date: ${new Date(
+              item.dateAdded
+            ).toLocaleDateString()}</p>
+            <p style="font-weight: bold;">Quantity Available: ${
+              item.quantity
+            }</p>
             <input type="number" id="releaseQuantity_${
               childSnapshot.key
             }" max="${
@@ -614,86 +614,82 @@ function openReleaseModal(itemName) {
     });
 }
 
-document
-  .getElementById("releaseForm")
-  .addEventListener("submit", function (event) {
-    event.preventDefault();
+function handleMedicineRelease() {
+  const residentId = document.getElementById("residentId").value;
+  let releaseSuccess = true;
 
-    const residentId = document.getElementById("residentId").value;
-    let releaseSuccess = true;
+  const batchDetails = document.getElementById("batchDetails");
+  const releaseRequests = [];
 
-    const batchDetails = document.getElementById("batchDetails");
-    const releaseRequests = [];
+  batchDetails.querySelectorAll(".stock-row").forEach((row) => {
+    const batchId = row.querySelector("input").id.split("_")[1];
+    const releaseQuantity = parseInt(row.querySelector("input").value);
 
-    batchDetails.querySelectorAll(".stock-row").forEach((row) => {
-      const batchId = row.querySelector("input").id.split("_")[1];
-      const releaseQuantity = parseInt(row.querySelector("input").value);
-
-      if (releaseQuantity && releaseQuantity > 0) {
-        releaseRequests.push({
-          batchId,
-          quantity: releaseQuantity,
-        });
-      }
-    });
-
-    if (!residentId || releaseRequests.length === 0) {
-      swal(
-        "Error",
-        "Please fill in all required fields and select quantities to release.",
-        "error"
-      );
-      return;
-    }
-
-    releaseRequests.forEach((request) => {
-      db.ref(`6-Inventory/${request.batchId}`)
-        .once("value")
-        .then((snapshot) => {
-          const item = snapshot.val();
-
-          if (item.quantity >= request.quantity) {
-            const newQuantity = item.quantity - request.quantity;
-
-            db.ref(`6-Inventory/${request.batchId}`).update({
-              quantity: newQuantity,
-            });
-
-            const releaseData = {
-              residentId,
-              itemName: item.name,
-              quantity: request.quantity,
-              releaseDate: new Date().toISOString(),
-            };
-
-            db.ref("6-MedicineReleases")
-              .push(releaseData)
-              .catch((error) => {
-                console.error("Error recording release:", error);
-                swal("Error", "Failed to record release transaction.", "error");
-              });
-          } else {
-            swal(
-              "Error",
-              `Insufficient stock in the batch for ${item.name}.`,
-              "error"
-            );
-            releaseSuccess = false;
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching item:", error);
-          swal("Error", "Failed to fetch item data.", "error");
-          releaseSuccess = false;
-        });
-    });
-
-    if (releaseSuccess) {
-      swal("Success", "Medicine released successfully!", "success");
-      fetchInventory();
-      closeReleaseModal();
+    if (releaseQuantity && releaseQuantity > 0) {
+      releaseRequests.push({
+        batchId,
+        quantity: releaseQuantity,
+      });
     }
   });
+
+  if (!residentId || releaseRequests.length === 0) {
+    swal(
+      "Error",
+      "Please fill in all required fields and select quantities to release.",
+      "error"
+    );
+    return;
+  }
+
+  releaseRequests.forEach((request) => {
+    db.ref(`6-Inventory/${request.batchId}`)
+      .once("value")
+      .then((snapshot) => {
+        const item = snapshot.val();
+
+        if (item.quantity >= request.quantity) {
+          const newQuantity = item.quantity - request.quantity;
+
+          db.ref(`6-Inventory/${request.batchId}`).update({
+            quantity: newQuantity,
+          });
+
+          const releaseData = {
+            residentId,
+            itemName: item.name,
+            quantity: request.quantity,
+            releaseDate: new Date().toISOString(),
+          };
+
+          db.ref("6-MedicineReleases")
+            .push(releaseData)
+            .catch((error) => {
+              console.error("Error recording release:", error);
+              swal("Error", "Failed to record release transaction.", "error");
+            });
+        } else {
+          swal(
+            "Error",
+            `Insufficient stock in the batch for ${item.name}.`,
+            "error"
+          );
+          releaseSuccess = false;
+        }
+      });
+    // .catch((error) => {
+    //   console.error("Error fetching item:", error);
+    //   swal("Error", "Failed to fetch item data.", "error");
+    //   releaseSuccess = false;
+    // });
+  });
+
+  if (releaseSuccess) {
+    swal("Success", "Medicine released successfully!", "success");
+    fetchInventory();
+    closeReleaseModal();
+  }
+}
 
 function closeReleaseModal() {
   document.getElementById("medicineReleaseModal").style.display = "none";
@@ -757,298 +753,275 @@ document
       });
   });
 
-function fetchPatientData() {
-  const patientId = document.getElementById("patientIdInput").value;
+let currentPages = 1;
+const rowsPerPages = 10;
+let medicineReleases = [];
+let filteredMedicineReleases = [];
 
-  if (patientId.trim() === "") {
-    alert("Please enter a valid Patient ID.");
-    return;
-  }
-
-  db.ref(`Residents/${patientId}`)
-    .once("value")
-    .then((snapshot) => {
-      if (snapshot.exists()) {
-        const resident = snapshot.val();
-
-        const firstName = resident.firstName || "";
-        const middleName = resident.middleName || "";
-        const lastName = resident.lastName || "";
-
-        const fullName = `${firstName} ${
-          middleName ? middleName + " " : ""
-        }${lastName}`;
-
-        document.getElementById("patientId").textContent = patientId;
-        document.getElementById("patientName").textContent = fullName;
-        document.getElementById("patientAge").textContent = resident.age;
-        document.getElementById("patientSex").textContent = resident.sex;
-        document.getElementById("patientAddress").textContent =
-          resident.address;
-
-        document.getElementById("patientDataSection").style.display = "block";
-        document.getElementById("bhcmsForm").style.display = "block";
-      } else {
-        alert("Patient ID not found.");
-      }
-    })
-    .catch((error) => {
-      console.error("Error fetching patient data:", error);
-      alert("Error loading patient data.");
+// Fetch and Populate Medicine Release Records
+function fetchMedicineReleases() {
+  db.ref("6-MedicineReleases").once("value", (snapshot) => {
+    medicineReleases = [];
+    snapshot.forEach((childSnapshot) => {
+      medicineReleases.push(childSnapshot.val());
     });
+    filteredMedicineReleases = [...medicineReleases]; // Default filter is all records
+    displayMedicineReleases();
+  });
 }
 
-function updateStatus() {
-  const bloodPressure = document.getElementById("bloodPressure").value;
-  const bloodPressureStatus = document.getElementById("bloodPressureStatus");
-  if (bloodPressure) {
-    const [systolic, diastolic] = bloodPressure.split("/").map(Number);
-    if (systolic < 90 || diastolic < 60) {
-      bloodPressureStatus.textContent = "Below normal (low blood pressure)";
-    } else if (systolic >= 130 || diastolic >= 80) {
-      bloodPressureStatus.textContent = "Above normal (high blood pressure)";
-    } else {
-      bloodPressureStatus.textContent = "Normal blood pressure";
-    }
-  }
-
-  const temperature = document.getElementById("temperature").value;
-  const temperatureStatus = document.getElementById("temperatureStatus");
-  if (temperature) {
-    const tempValue = parseFloat(temperature);
-    if (tempValue < 36.5) {
-      temperatureStatus.textContent = "Below normal (hypothermia)";
-    } else if (tempValue > 38.2) {
-      temperatureStatus.textContent = "Above normal (fever)";
-    } else {
-      temperatureStatus.textContent = "Normal temperature";
-    }
-  }
-
-  const pulseRate = document.getElementById("pulseRate").value;
-  const pulseRateStatus = document.getElementById("pulseRateStatus");
-  if (pulseRate) {
-    const pulse = parseInt(pulseRate, 10);
-    if (pulse < 60) {
-      pulseRateStatus.textContent = "Below normal (slow heart rate)";
-    } else if (pulse > 100) {
-      pulseRateStatus.textContent = "Above normal (fast heart rate)";
-    } else {
-      pulseRateStatus.textContent = "Normal pulse rate";
-    }
-  }
-
-  const respiratoryRate = document.getElementById("respiratoryRate").value;
-  const respiratoryRateStatus = document.getElementById(
-    "respiratoryRateStatus"
+// Search Medicine Releases
+function searchMedicineReleases() {
+  const searchTerm = document
+    .getElementById("searchMedicineRelease")
+    .value.toLowerCase();
+  filteredMedicineReleases = medicineReleases.filter(
+    (release) =>
+      release.residentId.toLowerCase().includes(searchTerm) ||
+      release.itemName.toLowerCase().includes(searchTerm) ||
+      new Date(release.releaseDate)
+        .toLocaleDateString()
+        .toLowerCase()
+        .includes(searchTerm)
   );
-  if (respiratoryRate) {
-    const rate = parseInt(respiratoryRate, 10);
-    if (rate < 12) {
-      respiratoryRateStatus.textContent = "Below normal (slow breathing)";
-    } else if (rate > 20) {
-      respiratoryRateStatus.textContent = "Above normal (fast breathing)";
-    } else {
-      respiratoryRateStatus.textContent = "Normal respiratory rate";
-    }
-  }
+  currentPage = 1; // Reset to first page
+  displayMedicineReleases();
 }
 
-document.getElementById("height").addEventListener("input", updateStatus);
-document.getElementById("weight").addEventListener("input", updateStatus);
-document
-  .getElementById("bloodPressure")
-  .addEventListener("input", updateStatus);
-document.getElementById("temperature").addEventListener("input", updateStatus);
-document.getElementById("pulseRate").addEventListener("input", updateStatus);
-document
-  .getElementById("respiratoryRate")
-  .addEventListener("input", updateStatus);
+// Display Medicine Release Records
+function displayMedicineReleases() {
+  const tableBody = document.getElementById("medicineReleaseListData");
+  tableBody.innerHTML = "";
 
-function computeBMI() {
-  const height = document.getElementById("height").value;
-  const weight = document.getElementById("weight").value;
+  const start = (currentPages - 1) * rowsPerPages;
+  const end = start + rowsPerPages;
+  const paginatedRecords = filteredMedicineReleases.slice(start, end);
 
-  if (height && weight) {
-    const bmi = (weight / (height * height)) * 10000; // BMI formula in kg/m²
-    document.getElementById("bmi").textContent = bmi.toFixed(2);
-
-    let status = "";
-    if (bmi < 18.5) {
-      status = "Malnourished (Underweight)";
-    } else if (bmi >= 18.5 && bmi < 24.9) {
-      status = "Normal (Healthy Weight)";
-    } else if (bmi >= 30) {
-      status = "Obese";
-    } else {
-      status = "Overweight";
-    }
-
-    document.getElementById("bmiStatus").textContent = status;
-  } else {
-    document.getElementById("bmi").textContent = "N/A";
-    document.getElementById("bmiStatus").textContent = "N/A";
-  }
-}
-
-document.getElementById("height").addEventListener("input", computeBMI);
-document.getElementById("weight").addEventListener("input", computeBMI);
-
-function getCheckedConditions(category) {
-  const conditions = [];
-  document
-    .querySelectorAll(`#${category} input[type="checkbox"]:checked`)
-    .forEach((checkbox) => {
-      if (checkbox.id !== "n/a") {
-        conditions.push(checkbox.labels[0].textContent.trim());
-      }
+  if (paginatedRecords.length > 0) {
+    paginatedRecords.forEach((record, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+          <td>${start + index + 1}</td>
+          <td>${record.residentId}</td>
+          <td>${record.itemName}</td>
+          <td>${record.quantity}</td>
+          <td>${new Date(record.releaseDate).toLocaleDateString()}</td>
+        `;
+      tableBody.appendChild(row);
     });
-  return conditions.join(", ") || "None";
+  } else {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td colspan="5">No records found.</td>`;
+    tableBody.appendChild(row);
+  }
+
+  updatePagination();
 }
 
-function getVaccineType() {
-  const vaccineTypes = [];
-  if (document.getElementById("pfizer").checked) vaccineTypes.push("Pfizer");
-  if (document.getElementById("moderna").checked) vaccineTypes.push("Moderna");
-  if (document.getElementById("astrazeneca").checked)
-    vaccineTypes.push("AstraZeneca");
-  if (document.getElementById("sinovac").checked) vaccineTypes.push("Sinovac");
-  return vaccineTypes.join(", ") || "None";
+// Update Pagination Controls
+function updatePagination() {
+  const totalPages = Math.ceil(filteredMedicineReleases.length / rowsPerPages);
+  const pageInfo = document.getElementById("pageInfo");
+  pageInfo.innerText = `Page ${currentPages} of ${totalPages}`;
+
+  document.getElementById("prevPage").disabled = currentPages === 1;
+  document.getElementById("nextPage").disabled = currentPages === totalPages;
 }
 
-function submitForm() {
-  const patientId = document.getElementById("patientId").textContent;
-  const height = document.getElementById("height").value;
-  const weight = document.getElementById("weight").value;
-  const bloodPressure = document.getElementById("bloodPressure").value;
-  const temperature = document.getElementById("temperature").value;
-  const pulseRate = document.getElementById("pulseRate").value;
-  const respiratoryRate = document.getElementById("respiratoryRate").value;
-  const chiefComplaint = document.getElementById("chiefComplaint").value;
-  const specialty = document.getElementById("specialty").value;
+function nextPage() {
+  const totalPages = Math.ceil(filteredMedicineReleases.length / rowsPerPages);
+  if (currentPages < totalPages) {
+    currentPages++;
+    displayMedicineReleases();
+  }
+}
 
-  const allergies = document.getElementById("hasAllergies").checked
-    ? document.getElementById("allergiesDetails").value || "None"
-    : "None";
+function prevPage() {
+  if (currentPages > 1) {
+    currentPages--;
+    displayMedicineReleases();
+  }
+}
 
-  const medications = document.getElementById("hasMedications").checked
-    ? document.getElementById("medicationsDetails").value || "None"
-    : "None";
+// Initialize Medicine Releases Display
+document.addEventListener("DOMContentLoaded", fetchMedicineReleases);
 
-  const pastMedicalHistory = getCheckedConditions("pastMedicalHistory");
-  const familyHistory = getCheckedConditions("familyHistory");
-
-  const vaccinated = document.getElementById("vaccinatedYes").checked
-    ? "Yes"
-    : "No";
-  const vaccineType = getVaccineType();
-  const boosterDose = document.getElementById("boosterYes").checked
-    ? "Yes"
-    : "No";
-  const boosterDate = document.getElementById("boosterDate").value;
-
-  if (!height || !weight || !bloodPressure) {
-    alert("Please fill out all required fields.");
+function timeIn() {
+  const username = getLoggedInUsername();
+  if (!username) {
+    swal("Error", "You must be logged in to clock in.", "error");
     return;
   }
 
-  computeBMI();
+  const todayDate = getCurrentDate();
+  const timeRecordsRef = db.ref(`6-timeRecords/${username}/${todayDate}`);
 
-  const bmi = document.getElementById("bmi").textContent;
-  const bmiStatus = document.getElementById("bmiStatus").textContent;
+  timeRecordsRef.once("value", (snapshot) => {
+    const data = snapshot.val();
+    if (data && data.timeIn) {
+      swal("Error", "You have already clocked in today.", "error");
+      return;
+    }
 
-  const bloodPressureStatus = getBloodPressureStatus(bloodPressure);
-  const temperatureStatus = getTemperatureStatus(temperature);
-  const pulseRateStatus = getPulseRateStatus(pulseRate);
-  const respiratoryRateStatus = getRespiratoryRateStatus(respiratoryRate);
-
-  document.getElementById(
-    "bloodPressureStatus"
-  ).textContent = `Blood Pressure Status: ${bloodPressureStatus}`;
-  document.getElementById(
-    "temperatureStatus"
-  ).textContent = `Temperature Status: ${temperatureStatus}`;
-  document.getElementById(
-    "pulseRateStatus"
-  ).textContent = `Pulse Rate Status: ${pulseRateStatus}`;
-  document.getElementById(
-    "respiratoryRateStatus"
-  ).textContent = `Respiratory Rate Status: ${respiratoryRateStatus}`;
-  document.getElementById("bmiStatus").textContent = `BMI Status: ${bmiStatus}`;
-
-  const formId = `${patientId}-${new Date().getTime()}`;
-
-  const formData = {
-    patientId,
-    height,
-    weight,
-    bloodPressure,
-    temperature,
-    pulseRate,
-    respiratoryRate,
-    chiefComplaint,
-    allergies,
-    medications,
-    pastMedicalHistory,
-    familyHistory,
-    vaccinated,
-    vaccineType,
-    boosterDose,
-    boosterDate,
-    bmi,
-    bmiStatus,
-    bloodPressureStatus,
-    temperatureStatus,
-    pulseRateStatus,
-    respiratoryRateStatus,
-    specialty,
-    formId,
-    timestamp: new Date().toISOString(),
-  };
-
-  db.ref("6-Health-FormData")
-    .child(formId)
-    .set(formData)
-    .then(() => {
-      alert("Form submitted successfully!");
-      console.log("Form Data saved:", formData);
-    })
-    .catch((error) => {
-      console.error("Error saving form data:", error);
-      alert("Error submitting form.");
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
     });
+
+    const timeInData = { timeIn: formattedTime, timestamp: now.toISOString() };
+
+    timeRecordsRef
+      .set(timeInData)
+      .then(() => {
+        swal("Success", "Time In recorded successfully!", "success");
+        fetchTimeRecords();
+      })
+      .catch((error) => {
+        console.error("Error recording Time In:", error);
+        swal("Error", "Failed to record Time In.", "error");
+      });
+  });
 }
 
-function getBloodPressureStatus(bloodPressure) {
-  if (!bloodPressure) return "Unknown";
-  const [systolic, diastolic] = bloodPressure.split("/").map(Number);
-  if (systolic && diastolic) {
-    if (systolic < 90 || diastolic < 60) return "Low";
-    if (systolic < 120 && diastolic < 80) return "Normal";
-    if (systolic < 130 && diastolic < 80) return "Elevated";
-    if (systolic >= 130 || diastolic >= 80) return "High";
+function timeOut() {
+  const username = getLoggedInUsername();
+  if (!username) {
+    swal("Error", "You must be logged in to clock out.", "error");
+    return;
   }
-  return "Unknown";
+
+  const todayDate = getCurrentDate();
+  const timeRecordsRef = db.ref(`6-timeRecords/${username}/${todayDate}`);
+
+  timeRecordsRef.once("value", (snapshot) => {
+    const data = snapshot.val();
+    if (!data || !data.timeIn) {
+      swal("Error", "You must clock in first before clocking out.", "error");
+      return;
+    }
+
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const timeOutData = {
+      timeOut: formattedTime,
+      timestamp: now.toISOString(),
+    };
+
+    timeRecordsRef
+      .update(timeOutData)
+      .then(() => {
+        swal("Success", "Time Out recorded successfully!", "success");
+        fetchTimeRecords();
+      })
+      .catch((error) => {
+        console.error("Error recording Time Out:", error);
+        swal("Error", "Failed to record Time Out.", "error");
+      });
+  });
 }
 
-function getTemperatureStatus(temperature) {
-  if (!temperature) return "Unknown";
-  if (parseFloat(temperature) < 36.5) return "Low";
-  if (parseFloat(temperature) >= 36.5 && parseFloat(temperature) <= 37.5)
-    return "Normal";
-  return "High";
+function fetchTimeRecords() {
+  const username = getLoggedInUsername();
+  if (!username) {
+    swal("Error", "You must be logged in to view time records.", "error");
+    return;
+  }
+
+  const timeRecordsRef = db.ref(`6-timeRecords/${username}`);
+
+  timeRecordsRef.once("value", (snapshot) => {
+    const data = snapshot.val();
+    const timeRecordsTable = document.getElementById("timeRecordsTable");
+
+    if (data) {
+      let tableHTML = `
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time In</th>
+              <th>Time Out</th>
+              <th>Total Hours</th>
+            </tr>
+          </thead>
+          <tbody>
+        `;
+
+      for (const dateKey in data) {
+        const record = data[dateKey];
+        const timeIn = record.timeIn;
+        const timeOut = record.timeOut;
+
+        if (timeIn && timeOut) {
+          const totalHours = calculateTotalHours(timeIn, timeOut);
+          tableHTML += `
+              <tr>
+                <td>${dateKey}</td>
+                <td>${timeIn}</td>
+                <td>${timeOut}</td>
+                <td>${totalHours}</td>
+              </tr>
+            `;
+        }
+      }
+
+      tableHTML += `</tbody>`;
+      timeRecordsTable.innerHTML = tableHTML;
+    } else {
+      timeRecordsTable.innerHTML =
+        "<tr><td colspan='4'>No records found.</td></tr>";
+    }
+  });
 }
 
-function getPulseRateStatus(pulseRate) {
-  if (!pulseRate) return "Unknown";
-  if (pulseRate < 60) return "Low";
-  if (pulseRate >= 60 && pulseRate <= 100) return "Normal";
-  return "High";
+function calculateTotalHours(timeIn, timeOut) {
+  const timeIn24 = convertTo24HourFormat(timeIn);
+  const timeOut24 = convertTo24HourFormat(timeOut);
+
+  const timeInDate = new Date(`1970-01-01T${timeIn24}:00`);
+  const timeOutDate = new Date(`1970-01-01T${timeOut24}:00`);
+  let diffInMilliseconds = timeOutDate - timeInDate;
+
+  if (diffInMilliseconds < 0) {
+    const nextDay = new Date(timeOutDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    diffInMilliseconds = nextDay - timeInDate;
+  }
+
+  const diffInHours = diffInMilliseconds / (1000 * 60 * 60);
+  return diffInHours.toFixed(2);
 }
 
-function getRespiratoryRateStatus(respiratoryRate) {
-  if (!respiratoryRate) return "Unknown";
-  if (respiratoryRate < 12) return "Low";
-  if (respiratoryRate >= 12 && respiratoryRate <= 20) return "Normal";
-  return "High";
+function convertTo24HourFormat(time) {
+  const [timePart, modifier] = time.split(" ");
+  let [hours, minutes] = timePart.split(":").map((num) => parseInt(num));
+
+  if (modifier === "PM" && hours !== 12) {
+    hours += 12;
+  } else if (modifier === "AM" && hours === 12) {
+    hours = 0;
+  }
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+    2,
+    "0"
+  )}`;
+}
+
+function getLoggedInUsername() {
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  return loggedInUser ? loggedInUser.username : null;
+}
+
+function getCurrentDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }

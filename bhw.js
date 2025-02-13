@@ -43,6 +43,9 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
       fetchResidentData();
     } else if (sectionName === "Appointment") {
       document.getElementById("appointmentSection").style.display = "block";
+    } else if (sectionName === "Walk-In") {
+      document.getElementById("walkinSection").style.display = "block";
+      displayWalkinsForToday(date);
     } else if (sectionName === "Medicine") {
       document.getElementById("medicineSection").style.display = "block";
       fetchInventory();
@@ -305,53 +308,73 @@ function generateCalendarDays() {
 }
 
 function displayAppointments(date) {
-  const appointmentList = document.getElementById("appointmentList");
-  appointmentList.innerHTML = "";
-
-  const providerCounts = {};
+  const tableBody = document.getElementById("appointmentTableBody");
+  tableBody.innerHTML = "";
 
   db.ref("6-Health-Appointments")
     .orderByChild("appointmentDate")
     .equalTo(date)
-    .once("value", (snapshot) => {
+    .once("value")
+    .then((snapshot) => {
       if (snapshot.exists()) {
         snapshot.forEach((childSnapshot) => {
           const appointment = childSnapshot.val();
-          const { healthcareProvider } = appointment;
+          const appointmentId = childSnapshot.key;
 
-          providerCounts[healthcareProvider] =
-            (providerCounts[healthcareProvider] || 0) + 1;
+          const row = document.createElement("tr");
 
-          const listItem = document.createElement("li");
-          listItem.classList.add("appointment-item");
-          listItem.innerText = `${appointment.appointmentTime} - ${appointment.healthService} with ${healthcareProvider} (${appointment.status}) - ${appointment.healthService}`;
-          appointmentList.appendChild(listItem);
+          row.innerHTML = `
+            <td>${appointment.appointmentTime}</td>
+            <td>${appointment.healthService}</td>
+            <td>${appointment.healthcareProvider}</td>
+            <td>${appointment.status}</td>
+            <td>
+              <button class="btn btn-success btn-sm" onclick="updateAppointmentStatus('${appointmentId}', 'COMPLETED')">Complete</button>
+              <button class="btn btn-danger btn-sm" onclick="updateAppointmentStatus('${appointmentId}', 'CANCELED')">Cancel</button>
+            </td>
+          `;
+
+          tableBody.appendChild(row);
         });
-
-        const totalsList = document.createElement("ul");
-        totalsList.classList.add("totals-list");
-        totalsList.innerHTML =
-          "<strong>Total Appointments Per Healthcare Provider:</strong>";
-        for (const provider in providerCounts) {
-          const totalItem = document.createElement("li");
-          totalItem.innerText = `${provider}: ${providerCounts[provider]} appointments`;
-          totalsList.appendChild(totalItem);
-        }
-        appointmentList.appendChild(totalsList);
       } else {
-        const listItem = document.createElement("li");
-        listItem.classList.add("appointment-item");
-        listItem.innerText = "No appointments scheduled for this date.";
-        appointmentList.appendChild(listItem);
+        const noDataRow = document.createElement("tr");
+        noDataRow.innerHTML =
+          "<td colspan='5'>No appointments scheduled for this date.</td>";
+        tableBody.appendChild(noDataRow);
       }
     })
     .catch((error) => {
       console.error("Error fetching appointments:", error);
 
-      const listItem = document.createElement("li");
-      listItem.classList.add("appointment-item");
-      listItem.innerText = "Error loading appointments.";
-      appointmentList.appendChild(listItem);
+      const errorRow = document.createElement("tr");
+      errorRow.innerHTML = "<td colspan='5'>Error loading appointments.</td>";
+      tableBody.appendChild(errorRow);
+    });
+}
+
+function updateAppointmentStatus(appointmentId, newStatus) {
+  const appointmentRef = db.ref(`6-Health-Appointments/${appointmentId}`);
+
+  appointmentRef
+    .update({ status: newStatus })
+    .then(() => {
+      console.log(`Appointment ${appointmentId} updated to ${newStatus}.`);
+      swal("Success", `Appointment marked as ${newStatus}.`, "success");
+
+      const selectedDateElement = document.querySelector(
+        ".calendar-day.selected"
+      );
+      if (selectedDateElement) {
+        displayAppointments(selectedDateElement.dataset.date);
+      }
+    })
+    .catch((error) => {
+      console.error("Error updating appointment status:", error);
+      swal(
+        "Error",
+        "Failed to update appointment status. Please try again.",
+        "error"
+      );
     });
 }
 
@@ -609,87 +632,88 @@ function openReleaseModal(itemName) {
     });
 }
 
-document
-  .getElementById("releaseForm")
-  .addEventListener("submit", function (event) {
-    event.preventDefault();
+function handleMedicineRelease() {
+  const residentId = document.getElementById("residentId").value;
+  let releaseSuccess = true;
 
-    const residentId = document.getElementById("residentId").value;
-    let releaseSuccess = true;
+  const batchDetails = document.getElementById("batchDetails");
+  const releaseRequests = [];
 
-    const batchDetails = document.getElementById("batchDetails");
-    const releaseRequests = [];
+  // Gather release details
+  batchDetails.querySelectorAll(".stock-row").forEach((row) => {
+    const batchId = row.querySelector("input").id.split("_")[1];
+    const releaseQuantity = parseInt(row.querySelector("input").value);
 
-    batchDetails.querySelectorAll(".stock-row").forEach((row) => {
-      const batchId = row.querySelector("input").id.split("_")[1];
-      const releaseQuantity = parseInt(row.querySelector("input").value);
-
-      if (releaseQuantity && releaseQuantity > 0) {
-        releaseRequests.push({
-          batchId,
-          quantity: releaseQuantity,
-        });
-      }
-    });
-
-    if (!residentId || releaseRequests.length === 0) {
-      swal(
-        "Error",
-        "Please fill in all required fields and select quantities to release.",
-        "error"
-      );
-      return;
-    }
-
-    releaseRequests.forEach((request) => {
-      db.ref(`6-Inventory/${request.batchId}`)
-        .once("value")
-        .then((snapshot) => {
-          const item = snapshot.val();
-
-          if (item.quantity >= request.quantity) {
-            const newQuantity = item.quantity - request.quantity;
-
-            db.ref(`6-Inventory/${request.batchId}`).update({
-              quantity: newQuantity,
-            });
-
-            const releaseData = {
-              residentId,
-              itemName: item.name,
-              quantity: request.quantity,
-              releaseDate: new Date().toISOString(),
-            };
-
-            db.ref("6-MedicineReleases")
-              .push(releaseData)
-              .catch((error) => {
-                console.error("Error recording release:", error);
-                swal("Error", "Failed to record release transaction.", "error");
-              });
-          } else {
-            swal(
-              "Error",
-              `Insufficient stock in the batch for ${item.name}.`,
-              "error"
-            );
-            releaseSuccess = false;
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching item:", error);
-          swal("Error", "Failed to fetch item data.", "error");
-          releaseSuccess = false;
-        });
-    });
-
-    if (releaseSuccess) {
-      swal("Success", "Medicine released successfully!", "success");
-      fetchInventory();
-      closeReleaseModal();
+    if (releaseQuantity && releaseQuantity > 0) {
+      releaseRequests.push({
+        batchId,
+        quantity: releaseQuantity,
+      });
     }
   });
 
+  // Validation
+  if (!residentId || releaseRequests.length === 0) {
+    swal(
+      "Error",
+      "Please fill in all required fields and select quantities to release.",
+      "error"
+    );
+    return;
+  }
+
+  // Process each release request
+  releaseRequests.forEach((request) => {
+    db.ref(`6-Inventory/${request.batchId}`)
+      .once("value")
+      .then((snapshot) => {
+        const item = snapshot.val();
+
+        if (item.quantity >= request.quantity) {
+          const newQuantity = item.quantity - request.quantity;
+
+          db.ref(`6-Inventory/${request.batchId}`).update({
+            quantity: newQuantity,
+          });
+
+          const releaseData = {
+            residentId,
+            itemName: item.name,
+            quantity: request.quantity,
+            releaseDate: new Date().toISOString(),
+          };
+
+          db.ref("6-MedicineReleases")
+            .push(releaseData)
+            .catch((error) => {
+              console.error("Error recording release:", error);
+              swal("Error", "Failed to record release transaction.", "error");
+            });
+        } else {
+          swal(
+            "Error",
+            `Insufficient stock in the batch for ${item.name}.`,
+            "error"
+          );
+          releaseSuccess = false;
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching item:", error);
+        swal("Error", "Failed to fetch item data.", "error");
+        releaseSuccess = false;
+      });
+  });
+
+  // Finalize success state
+  if (releaseSuccess) {
+    swal("Success", "Medicine released successfully!", "success");
+    fetchInventory();
+    closeReleaseModal();
+  }
+}
+
+// Close modal function
 function closeReleaseModal() {
   document.getElementById("medicineReleaseModal").style.display = "none";
 }
@@ -930,4 +954,144 @@ function getCurrentDate() {
   const day = String(now.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+function submitWalkinData() {
+  const patientIdInput = document
+    .getElementById("residentIdInput")
+    .value.trim();
+  const healthcareProviderInput = document
+    .getElementById("healthcareProviderInput")
+    .value.trim();
+
+  if (!patientIdInput || !healthcareProviderInput) {
+    swal({
+      title: "Error",
+      text: "Please enter a valid Resident ID and Healthcare Provider before submitting.",
+      icon: "error",
+      button: "OK",
+    });
+    return;
+  }
+
+  const patientId = patientIdInput;
+  const healthcareProvider = healthcareProviderInput;
+  const todayDate = new Date().toISOString().split("T")[0];
+
+  const uniqueNumber = Math.floor(100000 + Math.random() * 900000);
+
+  const walkinId = `${uniqueNumber}-${todayDate}-${Math.floor(
+    100000 + Math.random() * 900000
+  )}`;
+
+  const walkinData = {
+    patientId,
+    healthcareProvider,
+    walkinId,
+    timestamp: new Date().toISOString(),
+  };
+
+  firebase
+    .database()
+    .ref(`6-walkins/${todayDate}`)
+    .push(walkinData)
+    .then(() => {
+      swal(
+        "Success",
+        `Walk-in registered successfully! Walk-in ID: ${walkinId}`,
+        "success"
+      );
+      clearWalkinForm();
+      updateWalkinTable(todayDate);
+    })
+    .catch((error) => {
+      console.error("Error submitting walk-in data: ", error);
+      swal(
+        "Error",
+        "Failed to register the walk-in. Please try again.",
+        "error"
+      );
+    });
+}
+
+function updateWalkinTable(date) {
+  const walkinTableBody = document.getElementById("walkinTableBody");
+
+  firebase
+    .database()
+    .ref(`6-walkins/${date}`)
+    .once("value", (snapshot) => {
+      const walkins = snapshot.val();
+      let totalWalkins = 0;
+      walkinTableBody.innerHTML = "";
+
+      if (walkins) {
+        const walkinEntries = Object.values(walkins);
+        walkinEntries.forEach((entry) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${entry.patientId}</td>
+            <td>${entry.healthcareProvider}</td>
+          `;
+          walkinTableBody.appendChild(row);
+        });
+        totalWalkins = walkinEntries.length;
+      }
+
+      document.getElementById("todayWalkinCount").textContent = totalWalkins;
+    });
+}
+
+function clearWalkinForm() {
+  document.getElementById("residentIdInput").value = "";
+  document.getElementById("healthcareProviderInput").value = "";
+}
+
+window.onload = function () {
+  const todayDate = new Date().toISOString().split("T")[0];
+  updateWalkinTable(todayDate);
+};
+
+function formatDateToMMDDYYYY(date) {
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${month}/${day}/${year}`;
+}
+
+function displayWalkinsForToday(date) {
+  const walkinTableBody = document.getElementById("walkinTableBody");
+  const walkinCount = document.getElementById("todayWalkinCount");
+
+  firebase
+    .database()
+    .ref(`6-walkins/${date}`)
+    .once("value")
+    .then((snapshot) => {
+      const walkins = snapshot.val();
+      let totalWalkins = 0;
+
+      walkinTableBody.innerHTML = "";
+
+      if (walkins) {
+        const walkinEntries = Object.values(walkins);
+        walkinEntries.forEach((entry) => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td>${entry.patientId}</td>
+            <td>${entry.healthcareProvider}</td>
+          `;
+          walkinTableBody.appendChild(row);
+
+          totalWalkins++;
+        });
+      }
+
+      walkinCount.textContent = totalWalkins;
+    })
+    .catch((error) => {
+      console.error("Error fetching walk-ins: ", error);
+      swal("Error", "Failed to load walk-in data. Please try again.", "error");
+    });
 }

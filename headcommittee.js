@@ -1,4 +1,3 @@
-// Firebase configuration object
 var firebaseConfig = {
   apiKey: "AIzaSyDiOsr6bY5BDKdiBPRzDgSpurHdkkUlc3k",
   authDomain: "sia101-d60a1.firebaseapp.com",
@@ -186,6 +185,59 @@ window.onload = displayLoggedInUserProfile;
 //     swal("Error", "An error occurred. Please try again later.", "error");
 //   }
 // }
+
+let allResidents = [];
+let filteredResidents = [];
+let currentPage = 1;
+const rowsPerPage = 10;
+
+function fetchResidentData() {
+  const residentListBody = document.getElementById("residentListData");
+  residentListBody.innerHTML = "";
+
+  db.ref("Residents")
+    .once("value")
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        allResidents = [];
+        snapshot.forEach((childSnapshot) => {
+          const resident = childSnapshot.val();
+
+          const residentData = {
+            id: childSnapshot.key,
+            name: `${resident.firstName || ""} ${resident.middleName || ""} ${
+              resident.lastName || ""
+            }`,
+            mobileNumber: resident.mobileNumber || "",
+            address: resident.address || "",
+            age: resident.age || "",
+            sex: resident.sex || "",
+            birthdate: resident.birthdate || "",
+            bloodType: resident.bloodType || "",
+            email: resident.email || "",
+            emergencyName: resident.emergencyFirstName || "",
+            emergencyMobile: resident.emergencyMobileNumber || "",
+            emergencyRelationship: resident.emergencyRelationship || "",
+          };
+
+          allResidents.push(residentData);
+        });
+
+        filteredResidents = [...allResidents];
+        displayResidents();
+      } else {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td colspan="16">No residents found.</td>`;
+        residentListBody.appendChild(row);
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching resident data:", error);
+      const row = document.createElement("tr");
+      row.innerHTML = `<td colspan="16">Error loading resident data.</td>`;
+      residentListBody.appendChild(row);
+    });
+}
 
 function displayResidents() {
   const residentListBody = document.getElementById("residentListData");
@@ -638,6 +690,7 @@ function fetchInventory() {
   const inventoryList = document
     .getElementById("inventoryList")
     .getElementsByTagName("tbody")[0];
+
   inventoryList.innerHTML = "";
 
   db.ref("6-Inventory")
@@ -651,29 +704,25 @@ function fetchInventory() {
           const key = `${item.category}-${item.name}`;
 
           if (!inventoryData[key]) {
-            inventoryData[key] = [];
-          }
+            inventoryData[key] = item;
 
-          inventoryData[key].push(item);
-        });
-
-        for (const key in inventoryData) {
-          const items = inventoryData[key];
-          items.forEach((item) => {
             const row = document.createElement("tr");
             row.innerHTML = `
-              <td>${item.category}</td>
-              <td>${item.name}</td>
-              <td>${item.quantity}</td>
-              <td>${new Date(item.timestamp).toLocaleDateString()}</td>
-              <td>${item.expirationDate}</td>
-              <td><button class="btn btn-primary" onclick="openReleaseModal('${
-                item.name
-              }')">Release</button></td>
-            `;
+                <td>${item.category}</td>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>${new Date(item.timestamp).toLocaleDateString()}</td>
+                <td>${item.expirationDate}</td>
+                <td>
+                  <button class="btn btn-primary" onclick="openReleaseModal('${
+                    item.name
+                  }')">Release</button>
+                </td>
+              `;
+
             inventoryList.appendChild(row);
-          });
-        }
+          }
+        });
       } else {
         const row = document.createElement("tr");
         row.innerHTML = "<td colspan='6'>No inventory found.</td>";
@@ -743,86 +792,82 @@ function openReleaseModal(itemName) {
     });
 }
 
-document
-  .getElementById("releaseForm")
-  .addEventListener("submit", function (event) {
-    event.preventDefault();
+function handleMedicineRelease() {
+  const residentId = document.getElementById("residentId").value;
+  let releaseSuccess = true;
 
-    const residentId = document.getElementById("residentId").value;
-    let releaseSuccess = true;
+  const batchDetails = document.getElementById("batchDetails");
+  const releaseRequests = [];
 
-    const batchDetails = document.getElementById("batchDetails");
-    const releaseRequests = [];
+  batchDetails.querySelectorAll(".stock-row").forEach((row) => {
+    const batchId = row.querySelector("input").id.split("_")[1];
+    const releaseQuantity = parseInt(row.querySelector("input").value);
 
-    batchDetails.querySelectorAll(".stock-row").forEach((row) => {
-      const batchId = row.querySelector("input").id.split("_")[1];
-      const releaseQuantity = parseInt(row.querySelector("input").value);
-
-      if (releaseQuantity && releaseQuantity > 0) {
-        releaseRequests.push({
-          batchId,
-          quantity: releaseQuantity,
-        });
-      }
-    });
-
-    if (!residentId || releaseRequests.length === 0) {
-      swal(
-        "Error",
-        "Please fill in all required fields and select quantities to release.",
-        "error"
-      );
-      return;
-    }
-
-    releaseRequests.forEach((request) => {
-      db.ref(`6-Inventory/${request.batchId}`)
-        .once("value")
-        .then((snapshot) => {
-          const item = snapshot.val();
-
-          if (item.quantity >= request.quantity) {
-            const newQuantity = item.quantity - request.quantity;
-
-            db.ref(`6-Inventory/${request.batchId}`).update({
-              quantity: newQuantity,
-            });
-
-            const releaseData = {
-              residentId,
-              itemName: item.name,
-              quantity: request.quantity,
-              releaseDate: new Date().toISOString(),
-            };
-
-            db.ref("6-MedicineReleases")
-              .push(releaseData)
-              .catch((error) => {
-                console.error("Error recording release:", error);
-                swal("Error", "Failed to record release transaction.", "error");
-              });
-          } else {
-            swal(
-              "Error",
-              `Insufficient stock in the batch for ${item.name}.`,
-              "error"
-            );
-            releaseSuccess = false;
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching item:", error);
-          swal("Error", "Failed to fetch item data.", "error");
-          releaseSuccess = false;
-        });
-    });
-
-    if (releaseSuccess) {
-      swal("Success", "Medicine released successfully!", "success");
-      fetchInventory();
-      closeReleaseModal();
+    if (releaseQuantity && releaseQuantity > 0) {
+      releaseRequests.push({
+        batchId,
+        quantity: releaseQuantity,
+      });
     }
   });
+
+  if (!residentId || releaseRequests.length === 0) {
+    swal(
+      "Error",
+      "Please fill in all required fields and select quantities to release.",
+      "error"
+    );
+    return;
+  }
+
+  releaseRequests.forEach((request) => {
+    db.ref(`6-Inventory/${request.batchId}`)
+      .once("value")
+      .then((snapshot) => {
+        const item = snapshot.val();
+
+        if (item.quantity >= request.quantity) {
+          const newQuantity = item.quantity - request.quantity;
+
+          db.ref(`6-Inventory/${request.batchId}`).update({
+            quantity: newQuantity,
+          });
+
+          const releaseData = {
+            residentId,
+            itemName: item.name,
+            quantity: request.quantity,
+            releaseDate: new Date().toISOString(),
+          };
+
+          db.ref("6-MedicineReleases")
+            .push(releaseData)
+            .catch((error) => {
+              console.error("Error recording release:", error);
+              swal("Error", "Failed to record release transaction.", "error");
+            });
+        } else {
+          swal(
+            "Error",
+            `Insufficient stock in the batch for ${item.name}.`,
+            "error"
+          );
+          releaseSuccess = false;
+        }
+      });
+    // .catch((error) => {
+    //   console.error("Error fetching item:", error);
+    //   swal("Error", "Failed to fetch item data.", "error");
+    //   releaseSuccess = false;
+    // });
+  });
+
+  if (releaseSuccess) {
+    swal("Success", "Medicine released successfully!", "success");
+    fetchInventory();
+    closeReleaseModal();
+  }
+}
 
 function closeReleaseModal() {
   document.getElementById("medicineReleaseModal").style.display = "none";
@@ -909,71 +954,70 @@ function showRequestTab(tabId) {
   }
 }
 
-document
-  .getElementById("requestForm")
-  .addEventListener("submit", function (event) {
-    event.preventDefault();
+function handleSubmitRequest() {
+  const requesterName = document.getElementById("requesterName").value.trim();
+  const requesterEmail = document.getElementById("requesterEmail").value.trim();
+  const requestType = document.getElementById("requestType").value.trim();
+  const requestDescription = document
+    .getElementById("requestDescription")
+    .value.trim();
+  const additionalComments = document
+    .getElementById("additionalComments")
+    .value.trim();
+  const file = document.getElementById("fileUpload").files[0];
 
-    const requesterName = document.getElementById("requesterName").value.trim();
-    const requesterEmail = document
-      .getElementById("requesterEmail")
-      .value.trim();
-    const requestType = document.getElementById("requestType").value.trim();
-    const requestDescription = document
-      .getElementById("requestDescription")
-      .value.trim();
-    const additionalComments = document
-      .getElementById("additionalComments")
-      .value.trim();
-    const file = document.getElementById("fileUpload").files[0];
+  if (
+    !requesterName ||
+    !requesterEmail ||
+    !requestType ||
+    !requestDescription
+  ) {
+    swal("Error", "Please fill in all required fields.", "error");
+    return;
+  }
 
-    if (
-      !requesterName ||
-      !requesterEmail ||
-      !requestType ||
-      !requestDescription
-    ) {
-      swal("Error", "Please fill in all required fields.", "error");
-      return;
-    }
+  if (!file) {
+    swal("Error", "Please upload a file.", "error");
+    return;
+  }
 
-    if (!file) {
-      swal("Error", "Please upload a file.", "error");
-      return;
-    }
+  const uniqueKey = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const requestData = {
-      name: requesterName,
-      email: requesterEmail,
-      type: requestType,
-      description: requestDescription,
-      comments: additionalComments,
-      status: "Pending",
-      timestamp: Date.now(),
-    };
+  const requestData = {
+    name: requesterName,
+    email: requesterEmail,
+    type: requestType,
+    description: requestDescription,
+    comments: additionalComments,
+    status: "Pending",
+    timestamp: Date.now(),
+  };
 
-    const storageRef = storage.ref("6-requestfiles/" + file.name);
-    console.log("Uploading file...");
+  const storageRef = storage.ref("6-requestfiles/" + file.name);
+  console.log("Uploading file...");
 
-    storageRef
-      .put(file)
-      .then((snapshot) => {
-        console.log("File upload snapshot:", snapshot);
-        return snapshot.ref.getDownloadURL();
-      })
-      .then((downloadURL) => {
-        console.log("Download URL retrieved:", downloadURL);
-        requestData.fileURL = downloadURL;
-        return db.ref("6-SupplyRequests").push(requestData);
-      })
-      .then(() => {
-        console.log("Data successfully pushed to Firebase.");
-        swal("Success", "Request submitted successfully!", "success");
-        document.getElementById("requestForm").reset();
-        document.getElementById("fileUpload").value = "";
-        showRequestTab("submittedRequestsContent");
-      });
-  });
+  storageRef
+    .put(file)
+    .then((snapshot) => {
+      console.log("File upload snapshot:", snapshot);
+      return snapshot.ref.getDownloadURL();
+    })
+    .then((downloadURL) => {
+      console.log("Download URL retrieved:", downloadURL);
+      requestData.fileURL = downloadURL;
+
+      return db.ref(`6-SupplyRequests/${uniqueKey}`).set(requestData);
+    })
+    .then(() => {
+      console.log("Data successfully pushed to Firebase.");
+      swal("Success", "Request submitted successfully!", "success");
+
+      document.getElementById("requestForm").reset();
+      document.getElementById("fileUpload").value = "";
+
+      showRequestTab("submittedRequestsTab");
+    });
+}
 
 function fetchRequests() {
   const requestListBody = document.getElementById("requestListBody");
@@ -996,13 +1040,13 @@ function fetchRequests() {
             : "No file uploaded";
 
           row.innerHTML = `
-                <td>${request.name}</td>
-                <td>${request.email}</td>
-                <td>${request.type}</td>
-                <td>${request.description}</td>
-                <td>${fileColumnContent}</td>
-                <td>${request.status}</td>
-              `;
+                  <td>${request.name}</td>
+                  <td>${request.email}</td>
+                  <td>${request.type}</td>
+                  <td>${request.description}</td>
+                  <td>${fileColumnContent}</td>
+                  <td>${request.status}</td>
+                `;
           requestListBody.appendChild(row);
         });
       } else {
@@ -1017,24 +1061,6 @@ function fetchRequests() {
       row.innerHTML = "<td colspan='6'>Error loading requests.</td>";
       requestListBody.appendChild(row);
     });
-}
-
-function showRequestTab(tabId) {
-  document.querySelectorAll(".tab-content").forEach((tab) => {
-    tab.style.display = "none";
-  });
-
-  document.getElementById(tabId).style.display = "block";
-
-  document.querySelectorAll(".nav-link").forEach((tab) => {
-    tab.classList.remove("active");
-  });
-
-  document.querySelector(`[data-tab="${tabId}"]`).classList.add("active");
-
-  if (tabId === "submittedRequestsTab") {
-    fetchRequests();
-  }
 }
 
 function timeIn() {

@@ -49,10 +49,10 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
       document.getElementById("PreNatalSection").style.display = "block";
     } else if (sectionName === "Family Planning") {
       document.getElementById("FamilyPlanSection").style.display = "block";
-    } else if (sectionName === "Reports") {
-      document.getElementById("reportSection").style.display = "block";
-    } else if (sectionName === "Change Account") {
-      document.getElementById("changeAccountSection").style.display = "block";
+    } else if (sectionName === "Prenatal Care Records") {
+      document.getElementById("familyPlanningRecords").style.display = "block";
+    } else if (sectionName === "Family Planning Records") {
+      document.getElementById("prenatalCareRecords").style.display = "block";
     }
   });
 });
@@ -513,3 +513,474 @@ document.querySelector(".nav-item a").addEventListener("click", function () {
     fetchHealthFormData();
   }
 });
+
+function validatePrenatalForm() {
+  const bloodPressure = document.getElementById("bloodPressure").value;
+  const weight = document.getElementById("weight").value;
+  const height = document.getElementById("height").value;
+  const fundalHeight = document.getElementById("fundalHeight").value;
+  const fetalHeartTone = document.getElementById("fetalHeartTone").value;
+  const currentGestation = document.getElementById("currentGestation").value;
+  const pregnancyWeeks = document.getElementById("pregnancyWeeks").value;
+  const dueDate = document.getElementById("dueDate").value;
+
+  if (
+    !bloodPressure ||
+    !weight ||
+    !height ||
+    !fundalHeight ||
+    !fetalHeartTone ||
+    !currentGestation ||
+    !pregnancyWeeks ||
+    !dueDate
+  ) {
+    swal({
+      title: "Warning",
+      text: "Please fill out all required fields.",
+      icon: "warning",
+      button: "OK",
+    });
+    return false;
+  }
+  return true;
+}
+
+function submitPrenatalDetails() {
+  if (!validatePrenatalForm()) return;
+
+  const patientId = document.getElementById("patientId").textContent;
+  const bloodPressure = document.getElementById("bloodPressure").value;
+  const weight = document.getElementById("weight").value;
+  const height = document.getElementById("height").value;
+  const fundalHeight = document.getElementById("fundalHeight").value;
+  const fetalHeartTone = document.getElementById("fetalHeartTone").value;
+  const currentGestation = document.getElementById("currentGestation").value;
+  const nausea = document.getElementById("nausea").checked ? "Yes" : "No";
+  const backPain = document.getElementById("backPain").checked ? "Yes" : "No";
+  const fatigue = document.getElementById("fatigue").checked ? "Yes" : "No";
+  const swelling = document.getElementById("swelling").checked ? "Yes" : "No";
+  const headaches = document.getElementById("headaches").checked ? "Yes" : "No";
+  const smoking = document.getElementById("smokingYes").checked ? "Yes" : "No";
+  const alcohol = document.getElementById("alcoholYes").checked ? "Yes" : "No";
+  const caffeine = document.getElementById("caffeineYes").checked
+    ? "Yes"
+    : "No";
+  const exercise = document.getElementById("exerciseYes").checked
+    ? "Yes"
+    : "No";
+  const pregnancyWeeks = document.getElementById("pregnancyWeeks").value;
+  const dueDate = document.getElementById("dueDate").value;
+
+  const highBloodPressure = document.getElementById("highBloodPressure").checked
+    ? "Yes"
+    : "No";
+  const diabetes = document.getElementById("diabetes").checked ? "Yes" : "No";
+  const thyroidDisorder = document.getElementById("thyroidDisorder").checked
+    ? "Yes"
+    : "No";
+  const heartDisease = document.getElementById("heartDisease").checked
+    ? "Yes"
+    : "No";
+  const kidneyIssues = document.getElementById("kidneyIssues").checked
+    ? "Yes"
+    : "No";
+  const asthma = document.getElementById("asthma").checked ? "Yes" : "No";
+  const arthritis = document.getElementById("arthritis").checked ? "Yes" : "No";
+  const cancer = document.getElementById("cancer").checked
+    ? document.getElementById("cancerType").value
+    : "None";
+  const otherConditions = document.getElementById("otherConditions").checked
+    ? document.getElementById("otherConditionsDetails").value
+    : "None";
+
+  const formId = `${patientId}-${Math.floor(100000 + Math.random() * 900000)}`;
+
+  const prenatalData = {
+    patientId,
+    bloodPressure,
+    weight,
+    height,
+    fundalHeight,
+    fetalHeartTone,
+    currentGestation,
+    nausea,
+    backPain,
+    fatigue,
+    swelling,
+    headaches,
+    smoking,
+    alcohol,
+    caffeine,
+    exercise,
+    pregnancyWeeks,
+    dueDate,
+    highBloodPressure,
+    diabetes,
+    thyroidDisorder,
+    heartDisease,
+    kidneyIssues,
+    asthma,
+    arthritis,
+    cancer,
+    otherConditions,
+    formId,
+    timestamp: new Date().toISOString(),
+  };
+
+  firebase
+    .database()
+    .ref(`6-PrenatalCare/${formId}`)
+    .set(prenatalData)
+    .then(() => {
+      swal(
+        "Success",
+        `Prenatal form submitted successfully! Appointment ID: ${formId}`,
+        "success"
+      );
+      clearForm();
+    })
+    .catch((error) => {
+      console.error("Error submitting prenatal form: ", error);
+      swal("Error", "Failed to submit the form. Please try again.", "error");
+    });
+}
+
+function clearForm() {
+  document.getElementById("bloodPressure").value = "";
+  document.getElementById("weight").value = "";
+  document.getElementById("height").value = "";
+  document.getElementById("fundalHeight").value = "";
+  document.getElementById("fetalHeartTone").value = "";
+  document.getElementById("currentGestation").value = "";
+  document.getElementById("pregnancyWeeks").value = "";
+  document.getElementById("dueDate").value = "";
+  document.getElementById("nausea").checked = false;
+  document.getElementById("backPain").checked = false;
+  document.getElementById("fatigue").checked = false;
+  document.getElementById("swelling").checked = false;
+  document.getElementById("headaches").checked = false;
+  document.getElementById("smokingYes").checked = false;
+  document.getElementById("alcoholYes").checked = false;
+  document.getElementById("caffeineYes").checked = false;
+  document.getElementById("exerciseYes").checked = false;
+}
+
+function submitFamilyPlan() {
+  const patientIdFamilyPlan = document.getElementById(
+    "patientIdInputFamilyPlan"
+  ).value;
+  const numChildren = document.getElementById("numChildren").value;
+  const bloodPressure = document.getElementById("bloodPressure").value;
+  const weight = document.getElementById("weight").value;
+  const gravida = document.getElementById("gravida").value;
+  const para = document.getElementById("para").value;
+  const lmp = document.getElementById("lmp").value;
+  const menstrualCycle = document.querySelector(
+    'input[name="menstrualCycle"]:checked'
+  )
+    ? document.querySelector('input[name="menstrualCycle"]:checked').value
+    : "";
+  const hypertension = document.getElementById("hypertension").checked;
+  const diabetes = document.getElementById("diabetes").checked;
+  const heartDisease = document.getElementById("heartDisease").checked;
+  const allergies = document.getElementById("allergies").value;
+  const otherMedical = document.getElementById("otherMedical").value;
+  const contraceptiveUse = document.querySelector(
+    'input[name="contraceptiveUse"]:checked'
+  )
+    ? document.querySelector('input[name="contraceptiveUse"]:checked').value
+    : "";
+  const contraceptiveMethod = document.getElementById(
+    "contraceptiveMethod"
+  ).value;
+  const consultationReason = {
+    firstTimeUser: document.getElementById("firstTimeUser").checked,
+    switchingMethods: document.getElementById("switchingMethods").checked,
+    counseling: document.getElementById("counseling").checked,
+  };
+  const preferredMethods = {
+    naturalFamilyPlanning: document.getElementById("naturalFamilyPlanning")
+      .checked,
+    barrierMethods: document.getElementById("barrierMethods").checked,
+    hormonalMethods: document.getElementById("hormonalMethods").checked,
+    IUD: document.getElementById("IUD").checked,
+    permanentMethods: document.getElementById("permanentMethods").checked,
+    othersMethod: document.getElementById("othersMethod").value,
+  };
+  const counselingAndEducation = {
+    properUse: document.getElementById("properUse").checked,
+    sideEffects: document.getElementById("sideEffects").checked,
+    importanceFollowUp: document.getElementById("importanceFollowUp").checked,
+  };
+
+  const familyPlanData = {
+    patientIdFamilyPlan,
+    numChildren,
+    bloodPressure,
+    weight,
+    gravida,
+    para,
+    lmp,
+    menstrualCycle,
+    hypertension,
+    diabetes,
+    heartDisease,
+    allergies,
+    otherMedical,
+    contraceptiveUse,
+    contraceptiveMethod,
+    consultationReason,
+    preferredMethods,
+    counselingAndEducation,
+  };
+
+  const formId = `${patientIdFamilyPlan}-${new Date().getTime()}`;
+
+  firebase
+    .database()
+    .ref(`6-FamilyPlanning/${formId}`)
+    .set(familyPlanData)
+    .then(() => {
+      swal(
+        "Success",
+        `Family plan form submitted successfully! Appointment ID: ${formId}`,
+        "success"
+      );
+      clearForms();
+    })
+    .catch((error) => {
+      console.error("Error submitting family plan form: ", error);
+      swal("Error", "Failed to submit the form. Please try again.", "error");
+    });
+}
+
+function clearForms() {
+  document.getElementById("numChildren").value = "";
+  document.getElementById("bloodPressure").value = "";
+  document.getElementById("weight").value = "";
+  document.getElementById("gravida").value = "";
+  document.getElementById("para").value = "";
+  document.getElementById("lmp").value = "";
+  document
+    .querySelectorAll('input[name="menstrualCycle"]')
+    .forEach((input) => (input.checked = false));
+  document.getElementById("hypertension").checked = false;
+  document.getElementById("diabetes").checked = false;
+  document.getElementById("heartDisease").checked = false;
+  document.getElementById("allergies").value = "";
+  document.getElementById("otherMedical").value = "";
+  document
+    .querySelectorAll('input[name="contraceptiveUse"]')
+    .forEach((input) => (input.checked = false));
+  document.getElementById("contraceptiveMethod").value = "";
+  document.getElementById("firstTimeUser").checked = false;
+  document.getElementById("switchingMethods").checked = false;
+  document.getElementById("counseling").checked = false;
+  document.getElementById("naturalFamilyPlanning").checked = false;
+  document.getElementById("barrierMethods").checked = false;
+  document.getElementById("hormonalMethods").checked = false;
+  document.getElementById("IUD").checked = false;
+  document.getElementById("permanentMethods").checked = false;
+  document.getElementById("othersMethod").value = "";
+  document.getElementById("properUse").checked = false;
+  document.getElementById("sideEffects").checked = false;
+  document.getElementById("importanceFollowUp").checked = false;
+}
+
+// function searchFamilyPlanning() {
+//   let input = document
+//     .getElementById("searchFamilyPlanning")
+//     .value.toLowerCase();
+//   let records = document
+//     .getElementById("familyPlanningListData")
+//     .getElementsByTagName("tr");
+//   for (let i = 0; i < records.length; i++) {
+//     let record = records[i];
+//     let formId = record.cells[0].textContent.toLowerCase();
+//     let patientName = record.cells[1].textContent.toLowerCase();
+//     if (formId.includes(input) || patientName.includes(input)) {
+//       record.style.display = "";
+//     } else {
+//       record.style.display = "none";
+//     }
+//   }
+// }
+
+// function searchPrenatal() {
+//   let input = document.getElementById("searchPrenatal").value.toLowerCase();
+//   let records = document
+//     .getElementById("prenatalCareListData")
+//     .getElementsByTagName("tr");
+//   for (let i = 0; i < records.length; i++) {
+//     let record = records[i];
+//     let formId = record.cells[0].textContent.toLowerCase();
+//     let patientName = record.cells[1].textContent.toLowerCase();
+//     if (formId.includes(input) || patientName.includes(input)) {
+//       record.style.display = "";
+//     } else {
+//       record.style.display = "none";
+//     }
+//   }
+// }
+
+// let currentPageFamily = 1;
+// let recordsPerPageFamily = 5;
+
+// function prevPageFamily() {
+//   if (currentPageFamily > 1) {
+//     currentPageFamily--;
+//     loadFamilyPlanningData();
+//   }
+// }
+
+// function nextPageFamily() {
+//   currentPageFamily++;
+//   loadFamilyPlanningData();
+// }
+
+// let currentPagePrenatal = 1;
+// let recordsPerPagePrenatal = 5;
+
+// function prevPagePrenatal() {
+//   if (currentPagePrenatal > 1) {
+//     currentPagePrenatal--;
+//     loadPrenatalCareData();
+//   }
+// }
+
+// function nextPagePrenatal() {
+//   currentPagePrenatal++;
+//   loadPrenatalCareData();
+// }
+
+// function loadFamilyPlanningData() {
+
+//   const records = [
+//     {
+//       formId: "FP-001",
+//       patientName: "Jane Doe",
+//       numChildren: 2,
+//       weight: "60",
+//       bloodPressure: "120/80",
+//       consultationReason: "First consultation",
+//       preferredMethod: "Pill",
+//     },
+//     {
+//       formId: "FP-002",
+//       patientName: "John Smith",
+//       numChildren: 1,
+//       weight: "75",
+//       bloodPressure: "130/85",
+//       consultationReason: "Switching method",
+//       preferredMethod: "IUD",
+//     },
+//   ];
+
+//   let tableBody = document.getElementById("familyPlanningListData");
+//   tableBody.innerHTML = "";
+
+//   records
+//     .slice(
+//       (currentPageFamily - 1) * recordsPerPageFamily,
+//       currentPageFamily * recordsPerPageFamily
+//     )
+//     .forEach((record) => {
+//       let row = document.createElement("tr");
+//       row.innerHTML = `
+//           <td>${record.formId}</td>
+//           <td>${record.patientName}</td>
+//           <td>${record.numChildren}</td>
+//           <td>${record.weight}</td>
+//           <td>${record.bloodPressure}</td>
+//           <td>${record.consultationReason}</td>
+//           <td>${record.preferredMethod}</td>
+//           <td><button onclick="viewFamilyPlanningRecord('${record.formId}')">View</button></td>
+//       `;
+//       tableBody.appendChild(row);
+//     });
+
+//   document.getElementById(
+//     "pageInfoFamily"
+//   ).textContent = `Page ${currentPageFamily}`;
+// }
+
+// function loadPrenatalCareData() {
+//   const records = [
+//     {
+//       formId: "PN-001",
+//       patientName: "Sarah Lee",
+//       gestationWeeks: 20,
+//       weight: "65",
+//       bloodPressure: "110/70",
+//       dueDate: "2025-05-10",
+//       consultationReason: "Routine checkup",
+//     },
+//     {
+//       formId: "PN-002",
+//       patientName: "Michael Brown",
+//       gestationWeeks: 15,
+//       weight: "80",
+//       bloodPressure: "125/85",
+//       dueDate: "2025-06-15",
+//       consultationReason: "Ultrasound",
+//     },
+//   ];
+
+//   let tableBody = document.getElementById("prenatalCareListData");
+//   tableBody.innerHTML = "";
+
+//   records
+//     .slice(
+//       (currentPagePrenatal - 1) * recordsPerPagePrenatal,
+//       currentPagePrenatal * recordsPerPagePrenatal
+//     )
+//     .forEach((record) => {
+//       let row = document.createElement("tr");
+//       row.innerHTML = `
+//           <td>${record.formId}</td>
+//           <td>${record.patientName}</td>
+//           <td>${record.gestationWeeks}</td>
+//           <td>${record.weight}</td>
+//           <td>${record.bloodPressure}</td>
+//           <td>${record.dueDate}</td>
+//           <td>${record.consultationReason}</td>
+//           <td><button onclick="viewPrenatalCareRecord('${record.formId}')">View</button></td>
+//       `;
+//       tableBody.appendChild(row);
+//     });
+
+//   document.getElementById(
+//     "pageInfoPrenatal"
+//   ).textContent = `Page ${currentPagePrenatal}`;
+// }
+
+// function viewFamilyPlanningRecord(formId) {
+//   document.getElementById("familyPlanningModalContent").innerHTML = `
+//       <p>Form ID: ${formId}</p>
+//       <p>Patient Name: Jane Doe</p>
+//       <p>Preferred Method: Pill</p>
+//       <p>Consultation Reason: First consultation</p>
+//   `;
+//   document.getElementById("familyPlanningModal").style.display = "block";
+// }
+
+// function viewPrenatalCareRecord(formId) {
+//   document.getElementById("prenatalCareModalContent").innerHTML = `
+//       <p>Form ID: ${formId}</p>
+//       <p>Patient Name: Sarah Lee</p>
+//       <p>Gestation Weeks: 20</p>
+//       <p>Due Date: 2025-05-10</p>
+//   `;
+//   document.getElementById("prenatalCareModal").style.display = "block";
+// }
+
+// function closeFamilyPlanningModal() {
+//   document.getElementById("familyPlanningModal").style.display = "none";
+// }
+
+// function closePrenatalCareModal() {
+//   document.getElementById("prenatalCareModal").style.display = "none";
+// }
+
+// loadFamilyPlanningData();
+// loadPrenatalCareData();

@@ -72,6 +72,18 @@
                 Family Planning
             </a>
         </li>
+        <!-- <li class="nav-item">
+            <a class="nav-link d-flex align-items-center" href="#">
+                <i class="fa-solid fa-baby mr-2"></i> 
+                Prenatal Care Records
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center" href="#">
+                <i class="fa-solid fa-users mr-2"></i> 
+                Family Planning Records
+            </a>
+        </li> -->
     </ul>
 </div>
 
@@ -339,8 +351,8 @@
                 <input type="date" id="dueDate" required />
                 <br />  
             </div>         
-        <div>
-            <button class="btn-primary" onclick="submitPrenatalDetails()">Submit</button>
+        <div class="mb-5 flexend">
+            <button class="btn-primary" onclick="submitPrenatalDetails()">Submit Prenatal Records</button>
         </div>
     </div>
     
@@ -459,10 +471,96 @@
                 <input type="checkbox" id="importanceFollowUp" />                    
                 <label for="importanceFollowUp">Importance of Follow-Up</label><br />  
             </div>    
-    
-    </div>
+            <div class="mb-5 flexend">
+                <button class="btn-primary" onclick="submitFamilyPlan()">Submit Family Plan</button>
+            </div>
+        </div>  
+        </div>  
 
-    
+
+        <!-- <div id="familyPlanningRecords" class="content-section" style="display: none;">
+            <h1 class="mt-5">Family Planning Records</h1>
+            
+            <input type="text" id="searchFamilyPlanning" placeholder="Search Family Planning Records" onkeyup="searchFamilyPlanning()" style="width: 20%;">
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Form ID</th>
+                        <th>Patient Name</th>
+                        <th>Number of Children</th>
+                        <th>Weight (kg)</th>
+                        <th>Blood Pressure</th>
+                        <th>Consultation Reason</th>
+                        <th>Preferred Method</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="familyPlanningListData">
+                </tbody>
+            </table>
+            
+            <div class="pagination">
+                <button id="prevPageFamily" onclick="prevPageFamily()">Previous</button>
+                <span id="pageInfoFamily">Page 1</span>
+                <button id="nextPageFamily" onclick="nextPageFamily()">Next</button>
+            </div>
+        </div>
+
+
+        <div id="familyPlanningModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeFamilyPlanningModal()">&times;</span>
+                <h2>Family Planning Record</h2>
+                <div id="familyPlanningModalContent">
+
+                </div>
+            </div>
+        </div>
+
+
+        <div id="prenatalCareRecords" class="content-section" style="display: none;">
+            <h1 class="mt-5">Prenatal Care Records</h1>
+            
+            <input type="text" id="searchPrenatal" placeholder="Search Prenatal Records" onkeyup="searchPrenatal()" style="width: 20%;">
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Form ID</th>
+                        <th>Patient Name</th>
+                        <th>Gestation Weeks</th>
+                        <th>Weight (kg)</th>
+                        <th>Blood Pressure</th>
+                        <th>Due Date</th>
+                        <th>Consultation Reason</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="prenatalCareListData">
+                </tbody>
+            </table>
+            
+            <div class="pagination">
+                <button id="prevPagePrenatal" onclick="prevPagePrenatal()">Previous</button>
+                <span id="pageInfoPrenatal">Page 1</span>
+                <button id="nextPagePrenatal" onclick="nextPagePrenatal()">Next</button>
+            </div>
+        </div>
+
+
+        <div id="prenatalCareModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closePrenatalCareModal()">&times;</span>
+                <h2>Prenatal Care Record</h2>
+                <div id="prenatalCareModalContent">
+
+                </div>
+            </div>
+        </div> -->
+
+
+   
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

@@ -274,7 +274,7 @@
       </div>
 
     <div id="medicineSection" class="content-section" style="display: none;">
-        <h1 class="mt-5">Medicine Management</h1>
+        <h1 class="mt-5">Medicine Stocks</h1>
         <ul class="nav nav-tabs" id="medicineTab" role="tablist" style="margin: 8px;">
             <li class="nav-item">
                 <button class="nav-link active" data-tab="medicineTabPane" onclick="showMedicineTab('medicineTabPane')">Medicine & Stocks</button>
@@ -286,7 +286,7 @@
     
         <div class="tab-content" id="medicineTabContent">
             <div class="tab-pane fade show active" id="medicineTabPane" role="tabpanel">
-                <h1 class="fonts mt-5">Add New Stock</h1>
+                <!-- <h1 class="fonts mt-5">Add New Stock</h1>
                 <form id="addStockForm" class="mt-4">
                     <div class="row">
                         <div class="col-md-6">
@@ -361,7 +361,7 @@
                     <div class="flexend">
                         <button type="submit" class="btn-primary mt-3">Add Stock</button>
                     </div>    
-                </form>
+                </form> -->
 
                 <div id="medicineReleaseModal" class="modal" style="display: none;">
                     <div class="modal-content">
@@ -373,7 +373,7 @@
                   
                         <div id="batchDetails"></div> 
                   
-                        <button type="submit" class="btn btn-primary">Release</button>
+                        <button type="button" class="btn btn-primary" onclick="handleMedicineRelease()">Release</button>
                       </form>
                     </div>
                   </div>
@@ -400,7 +400,7 @@
           
             <!-- Guidelines Tab Pane -->
             <div class="tab-pane fade" id="guidelinesTabPane" role="tabpanel">
-                <h1 class="fonts">Family Planning Services</h1>
+                <h1 class="fonts mt-5">Family Planning Services</h1>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -430,7 +430,7 @@
                     </table>
                 </div>
             
-                <h1 class="fonts">Common Medications</h1>
+                <h1 class="fonts mt-5">Common Medications</h1>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -460,7 +460,7 @@
                     </table>
                 </div>
             
-                <h1 class="fonts">Vaccines for Children</h1>
+                <h1 class="fonts mt-5">Vaccines for Children</h1>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -486,11 +486,31 @@
                                 <td>For diphtheria, pertussis, tetanus, hepatitis B, and Hib.</td>
                                 <td>3 doses (at 6, 10, and 14 weeks).</td>
                             </tr>
+                            <tr>
+                                <td>Oral Polio Vaccine (OPV)</td>
+                                <td>For Polio, given at 6 weeks, 10 weeks, and 14 weeks.</td>
+                                <td>3 doses.</td>
+                            </tr>
+                            <tr>
+                                <td>Rotavirus Vaccine</td>
+                                <td>For Diarrhea, given at 6 weeks, 10 weeks, and 14 weeks (if 3 doses).</td>
+                                <td>2–3 doses.</td>
+                            </tr>
+                            <tr>
+                                <td>Japanese Encephalitis (JE) Vaccine</td>
+                                <td>For Japanese Encephalitis, given at 9 months and above.</td>
+                                <td>Single dose.</td>
+                            </tr>
+                            <tr>
+                                <td>Tigdas (Measles) Vaccine</td>
+                                <td>For Measles, given at 9 months, with a booster at 12–15 months.</td>
+                                <td>2 doses.</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             
-                <h1 class="fonts">Medications for Pregnant Women</h1>
+                <h1 class="fonts mt-5">Medications for Pregnant Women</h1>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -575,10 +595,11 @@
                 </div>
     
                 <div class="col-12 flexend">
-                    <button type="submit" class="btn-primary">Submit Request</button>
+                    <button type="button" class="btn-primary" onclick="handleSubmitRequest()">Submit Request</button>
                 </div>
             </form>
         </div>
+          
     
         <div id="submittedRequestsTab" class="tab-content" style="display: none;">
             <h1 class="mt-5">Request List</h1>

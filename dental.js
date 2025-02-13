@@ -322,21 +322,18 @@ function updateAppointmentDashboard(appointments) {
   document.getElementById("canceledAppointments").textContent = canceled;
 }
 
-// Set the datepicker to the current date
 function setDefaultDate() {
   const today = new Date();
-  const formattedDate = today.toISOString().split("T")[0]; // YYYY-MM-DD format
+  const formattedDate = today.toISOString().split("T")[0];
   document.getElementById("appointmentDatepicker").value = formattedDate;
 }
 
-// Fetch appointments for the selected or default date
 function fetchAppointmentsByDate() {
   const selectedDate = document.getElementById("appointmentDatepicker").value;
 
-  // Ensure a date is selected (fallback to today's date)
   if (!selectedDate) {
     console.error("No date selected, setting to today.");
-    setDefaultDate(); // Reset to today's date
+    setDefaultDate();
     return;
   }
 
@@ -354,7 +351,7 @@ function fetchAppointmentsByDate() {
     .once("value")
     .then((snapshot) => {
       const patientList = document.getElementById("patientList");
-      patientList.innerHTML = ""; // Clear previous list
+      patientList.innerHTML = "";
 
       if (!snapshot.exists()) {
         console.log("No appointments found for the selected date");
@@ -385,7 +382,6 @@ function fetchAppointmentsByDate() {
         patientList.appendChild(row);
       });
 
-      // Update the dashboard counters
       updateAppointmentDashboard(appointments);
     })
     .catch((error) => {
@@ -393,13 +389,11 @@ function fetchAppointmentsByDate() {
     });
 }
 
-// Automatically set the datepicker and fetch data for today on page load
 window.onload = function () {
   setDefaultDate();
-  fetchAppointmentsByDate(); // Fetch appointments for the current date
+  fetchAppointmentsByDate();
 };
 
-// Update appointment status
 function updateAppointmentStatus(appointmentKey, newStatus) {
   const appointmentRef = db.ref(`6-Health-Appointment/${appointmentKey}`);
 

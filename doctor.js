@@ -47,8 +47,8 @@ document.querySelectorAll(".nav-item a").forEach((link) => {
       document.getElementById("ConsultationSection").style.display = "block";
     } else if (sectionName === "Babies Vaccination") {
       document.getElementById("VaccineSection").style.display = "block";
-    } else if (sectionName === "Babies Vaccination Records") {
-      document.getElementById("babiesVaccineRecord").style.display = "block";
+      // } else if (sectionName === "Babies Vaccination Records") {
+      //   document.getElementById("babiesVaccineRecord").style.display = "block";
     } else if (sectionName === "Patient Records") {
       document.getElementById("generalCheckupRecords").style.display = "block";
       fetchCheckupData();
@@ -330,6 +330,93 @@ function updateAppointmentDashboard(appointments) {
   document.getElementById("canceledAppointments").textContent = canceled;
 }
 
+function setDefaultDate() {
+  const today = new Date();
+  const formattedDate =
+    (today.getMonth() + 1).toString().padStart(2, "0") +
+    "/" +
+    today.getDate().toString().padStart(2, "0") +
+    "/" +
+    today.getFullYear();
+  document.getElementById("appointmentDatepicker").value = formattedDate;
+}
+
+function fetchAppointmentsByDate() {
+  const selectedDate = document.getElementById("appointmentDatepicker").value;
+
+  if (!selectedDate) {
+    console.error("No date selected, setting to today.");
+    // setDefaultDate();
+    return;
+  }
+
+  const formattedDate = selectedDate;
+
+  const appointmentsRef = db.ref("6-Health-Appointments");
+
+  appointmentsRef
+    .orderByChild("appointmentDate")
+    .equalTo(formattedDate)
+    .once("value")
+    .then((snapshot) => {
+      const patientList = document.getElementById("patientList");
+      patientList.innerHTML = "";
+
+      if (!snapshot.exists()) {
+        console.log("No appointments found for the selected date");
+        patientList.innerHTML =
+          "<tr><td colspan='8'>No appointments found for the selected date.</td></tr>";
+        return;
+      }
+
+      const appointments = [];
+      snapshot.forEach((childSnapshot) => {
+        const data = childSnapshot.val();
+        appointments.push(data);
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.residentId}</td>
+          <td>${data.appointmentDate}</td>
+          <td>${data.appointmentTime}</td>
+          <td>${data.healthService}</td>
+          <td>${data.healthcareProvider}</td>
+          <td>${data.remarks}</td>
+          <td>${data.status}</td>
+          <td>
+            <button onclick="updateAppointmentStatus('${childSnapshot.key}', 'COMPLETED')" class="btn btn-success btn-sm">Complete</button>
+            <button onclick="updateAppointmentStatus('${childSnapshot.key}', 'CANCELED')" class="btn btn-danger btn-sm">Cancel</button>
+          </td>
+        `;
+        patientList.appendChild(row);
+      });
+
+      updateAppointmentDashboard(appointments);
+    })
+    .catch((error) => {
+      console.error("Error fetching appointments: ", error);
+    });
+}
+
+function updateAppointmentStatus(appointmentKey, newStatus) {
+  const appointmentRef = db.ref(`6-Health-Appointments/${appointmentKey}`);
+
+  appointmentRef
+    .update({ status: newStatus })
+    .then(() => {
+      alert(`Appointment marked as ${newStatus}.`);
+      fetchAppointmentsByDate();
+    })
+    .catch((error) => {
+      console.error("Error updating appointment status: ", error);
+    });
+}
+
+window.onload = function () {
+  setDefaultDate();
+  fetchAppointmentsByDate();
+};
+
 function fetchPatientData() {
   const patientId = document.getElementById("patientIdInput").value;
 
@@ -401,7 +488,7 @@ function fetchPatientBabysData() {
       title: "Warning",
       text: "Please enter a valid Resident ID.",
       icon: "warning",
-      button: "OK",
+      buttons: "OK",
     });
     return;
   }
@@ -415,7 +502,6 @@ function fetchPatientBabysData() {
         const firstName = resident.firstName || "";
         const middleName = resident.middleName || "";
         const lastName = resident.lastName || "";
-
         const fullName = `${firstName} ${
           middleName ? middleName + " " : ""
         }${lastName}`;
@@ -434,25 +520,167 @@ function fetchPatientBabysData() {
         );
         if (patientDataSection) {
           patientDataSection.style.display = "block";
-        } else {
-          console.error("Element with ID 'patientDataSectionBabys' not found.");
         }
       } else {
         swal({
           title: "Warning",
           text: "Resident ID not found.",
           icon: "warning",
-          button: "OK",
+          buttons: "OK",
         });
       }
     })
     .catch((error) => {
-      console.error("Error fetching patient data:", error);
+      console.error("Error fetching resident data:", error);
       swal({
         title: "Warning",
         text: "An error occurred while loading resident data.",
         icon: "warning",
-        button: "OK",
+        buttons: "OK",
+      });
+    });
+}
+
+function fetchPatientBabysForm() {
+  const patientId = document.getElementById("fetchPatientId").value;
+
+  if (patientId.trim() === "") {
+    swal({
+      title: "Warning",
+      text: "Please enter a valid Resident ID.",
+      icon: "warning",
+      buttons: "OK",
+    });
+    return;
+  }
+
+  db.ref(`6-BabiesVaccine/${patientId}`)
+    .once("value")
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        const babyRecords = snapshot.val();
+        console.log("Baby Records:", babyRecords);
+
+        const tableBody = document.getElementById("vaccineTableBody");
+        tableBody.innerHTML = "";
+
+        const defaultVaccines = [
+          "BCG (Bacillus Calmette-Guerin)",
+          "Hepatitis B",
+          "Pentavalent (DPT-HepB-Hib)",
+          "Oral Polio Vaccine (OPV)",
+          "Rotavirus Vaccine",
+          "Japanese Encephalitis (JE) Vaccine",
+          "Tigdas (Measles) Vaccine",
+        ];
+
+        Object.keys(babyRecords).forEach((formId) => {
+          const babyData = babyRecords[formId];
+          console.log("Form ID:", formId, "Data:", babyData);
+
+          document.getElementById("babiesName").value = babyData.name || "";
+          document.getElementById("birthday").value = babyData.birthday || "";
+          document.getElementById("babysheight").value = babyData.height || "";
+          document.getElementById("babysweight").value = babyData.weight || "";
+          document.getElementById("babystemperature").value =
+            babyData.temperature || "";
+
+          const vaccines = babyData.vaccines || {};
+          defaultVaccines.forEach((vaccineName) => {
+            if (!vaccines[vaccineName]) {
+              vaccines[vaccineName] = { taken: false, nextVisit: "" };
+            }
+          });
+
+          Object.keys(vaccines).forEach((vaccineName) => {
+            const vaccineInfo = vaccines[vaccineName];
+
+            const row = document.createElement("tr");
+            const vaccineCell = document.createElement("td");
+            const statusCell = document.createElement("td");
+            const nextDateCell = document.createElement("td");
+            const actionCell = document.createElement("td");
+
+            vaccineCell.textContent = vaccineName;
+            statusCell.textContent = vaccineInfo.taken ? "Yes" : "No";
+
+            const nextDateInput = document.createElement("input");
+            nextDateInput.type = "date";
+            nextDateInput.value = vaccineInfo.nextVisit || "";
+            nextDateInput.id = `nextVisit-${vaccineName}`;
+
+            nextDateCell.appendChild(nextDateInput);
+
+            const updateButton = document.createElement("button");
+            updateButton.textContent = "Update";
+            updateButton.onclick = () =>
+              updateNextVisit(patientId, vaccineName, nextDateInput.value);
+
+            actionCell.appendChild(updateButton);
+
+            row.appendChild(vaccineCell);
+            row.appendChild(statusCell);
+            row.appendChild(nextDateCell);
+            row.appendChild(actionCell);
+            tableBody.appendChild(row);
+          });
+
+          if (!babyData.vaccines) {
+            db.ref(`6-BabiesVaccine/${patientId}/${formId}/vaccines`)
+              .set(vaccines)
+              .then(() =>
+                console.log("Default vaccines added to the database.")
+              )
+              .catch((error) =>
+                console.error("Error adding default vaccines:", error)
+              );
+          }
+        });
+      } else {
+        swal({
+          title: "Warning",
+          text: "Baby's data not found.",
+          icon: "warning",
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching baby data:", error);
+      swal({
+        title: "Error",
+        text: "An error occurred while loading baby data.",
+        icon: "error",
+      });
+    });
+}
+
+function updateNextVisit(patientId, vaccineName, nextVisitDate) {
+  if (!nextVisitDate) {
+    swal({
+      title: "Error",
+      text: "Please select a valid next visit date.",
+      icon: "error",
+    });
+    return;
+  }
+
+  const dbRef = db.ref(`6-BabiesVaccine/${patientId}/vaccines/${vaccineName}`);
+
+  dbRef
+    .update({ nextVisit: nextVisitDate })
+    .then(() => {
+      swal({
+        title: "Success",
+        text: `${vaccineName} next visit updated to ${nextVisitDate}.`,
+        icon: "success",
+      });
+    })
+    .catch((error) => {
+      console.error("Error updating next visit date:", error);
+      swal({
+        title: "Error",
+        text: "Failed to update next visit date. Please try again.",
+        icon: "error",
       });
     });
 }
@@ -556,16 +784,21 @@ function toggleVaccineCheckbox(checkedId) {
 }
 
 function updateStatus() {
+  const setStatus = (element, status, color) => {
+    element.textContent = status;
+    element.style.color = color;
+  };
+
   const bloodPressure = document.getElementById("bloodPressure").value;
   const bloodPressureStatus = document.getElementById("bloodPressureStatus");
   if (bloodPressure) {
     const [systolic, diastolic] = bloodPressure.split("/").map(Number);
     if (systolic < 90 || diastolic < 60) {
-      bloodPressureStatus.textContent = "Low (hypotension)";
+      setStatus(bloodPressureStatus, "Low (hypotension)", "green");
     } else if (systolic >= 130 || diastolic >= 80) {
-      bloodPressureStatus.textContent = "High (hypertension)";
+      setStatus(bloodPressureStatus, "High (hypertension)", "red");
     } else {
-      bloodPressureStatus.textContent = "Normal";
+      setStatus(bloodPressureStatus, "Normal", "blue");
     }
   }
 
@@ -574,11 +807,11 @@ function updateStatus() {
   if (temperature) {
     const tempValue = parseFloat(temperature);
     if (tempValue < 36.5) {
-      temperatureStatus.textContent = "Low (hypothermia)";
+      setStatus(temperatureStatus, "Low (hypothermia)", "green");
     } else if (tempValue > 38.2) {
-      temperatureStatus.textContent = "High (fever)";
+      setStatus(temperatureStatus, "High (fever)", "red");
     } else {
-      temperatureStatus.textContent = "Normal";
+      setStatus(temperatureStatus, "Normal", "blue");
     }
   }
 
@@ -587,11 +820,11 @@ function updateStatus() {
   if (pulseRate) {
     const pulse = parseInt(pulseRate, 10);
     if (pulse < 60) {
-      pulseRateStatus.textContent = "Low (slow heart rate)";
+      setStatus(pulseRateStatus, "Low (slow heart rate)", "green");
     } else if (pulse > 100) {
-      pulseRateStatus.textContent = "High (fast heart rate)";
+      setStatus(pulseRateStatus, "High (fast heart rate)", "red");
     } else {
-      pulseRateStatus.textContent = "Normal";
+      setStatus(pulseRateStatus, "Normal", "blue");
     }
   }
 
@@ -602,11 +835,11 @@ function updateStatus() {
   if (respiratoryRate) {
     const rate = parseInt(respiratoryRate, 10);
     if (rate < 12) {
-      respiratoryRateStatus.textContent = "Low (slow breathing)";
+      setStatus(respiratoryRateStatus, "Low (slow breathing)", "green");
     } else if (rate > 20) {
-      respiratoryRateStatus.textContent = "High (fast breathing)";
+      setStatus(respiratoryRateStatus, "High (fast breathing)", "red");
     } else {
-      respiratoryRateStatus.textContent = "Normal";
+      setStatus(respiratoryRateStatus, "Normal", "blue");
     }
   }
 }
@@ -691,6 +924,18 @@ function validateForm() {
 }
 
 function submitGeneralCheckup() {
+  const patientIdInput = document.getElementById("patientIdInput").value.trim();
+
+  if (!patientIdInput) {
+    swal({
+      title: "Error",
+      text: "Please enter a valid Resident ID before submitting.",
+      icon: "error",
+      button: "OK",
+    });
+    return;
+  }
+
   if (!validateForm()) return;
 
   const patientId = document.getElementById("patientId").textContent;
@@ -838,16 +1083,6 @@ function BabiesSubmitForm() {
     .getElementById("babystemperature")
     ?.value?.trim();
 
-  const vaccines = {
-    BCG: document.getElementById("BCG")?.checked || false,
-    HepatitisB: document.getElementById("HepatitisB")?.checked || false,
-    Pentavalent: document.getElementById("Pentavalent")?.checked || false,
-    OPV: document.getElementById("OPV")?.checked || false,
-    Rotavirus: document.getElementById("Rotavirus")?.checked || false,
-    JE: document.getElementById("JE")?.checked || false,
-    Measles: document.getElementById("Measles")?.checked || false,
-  };
-
   if (
     !patientId ||
     !babiesName ||
@@ -878,43 +1113,49 @@ function BabiesSubmitForm() {
     height: height,
     weight: weight,
     temperature: temperature,
-    vaccines: vaccines,
-    nextVisit: calculateNextVisit(vaccines),
     timestamp: new Date().toISOString(),
   };
 
-  const dbRef = db.ref("6-BabiesVaccine");
+  const dbRef = db.ref("6-BabiesVaccine").child(patientId);
 
   dbRef
-    .orderByChild("patientId")
-    .equalTo(patientId)
-    .once("value", (snapshot) => {
-      if (snapshot.exists()) {
-        swal(
-          "Warning",
-          "A record for this patient already exists. Please verify before submitting.",
-          "warning"
-        );
+    .once("value")
+    .then((snapshot) => {
+      if (snapshot.hasChild(formId)) {
+        swal({
+          title: "Warning",
+          text: "A record for this patient already exists. Please verify before submitting.",
+          icon: "warning",
+        });
       } else {
         dbRef
-          .push(babyData)
+          .child(formId)
+          .set(babyData)
           .then(() => {
-            swal(
-              "Success",
-              `Baby's vaccination data submitted successfully.\nForm ID: ${formId}\nNext Visit: ${babyData.nextVisit}`,
-              "success"
-            );
+            swal({
+              title: "Success",
+              text: `Baby's vaccination data submitted successfully.\nForm ID: ${formId}`,
+              icon: "success",
+            });
             clearBabysForm();
           })
           .catch((error) => {
             console.error("Error submitting data:", error);
-            swal(
-              "Error",
-              `Error submitting data. Please try again.\nForm ID: ${formId}`,
-              "error"
-            );
+            swal({
+              title: "Error",
+              text: `Error submitting data. Please try again.\nForm ID: ${formId}`,
+              icon: "error",
+            });
           });
       }
+    })
+    .catch((error) => {
+      console.error("Error checking for existing data:", error);
+      swal({
+        title: "Error",
+        text: "An error occurred. Please try again.",
+        icon: "error",
+      });
     });
 }
 
@@ -966,125 +1207,6 @@ function clearBabysForm() {
   });
 }
 
-function calculateNextVisit(vaccines) {
-  const nextVisitDates = [];
-  const today = new Date();
-
-  if (vaccines.BCG && !vaccines.HepatitisB) {
-    nextVisitDates.push(addDays(today, 28));
-  }
-  if (vaccines.Pentavalent && !vaccines.OPV) {
-    nextVisitDates.push(addDays(today, 30));
-  }
-
-  if (nextVisitDates.length > 0) {
-    return formatDate(new Date(Math.min(...nextVisitDates)));
-  }
-  return "No upcoming schedule.";
-}
-
-function addDays(date, days) {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
-}
-
-function formatDate(date) {
-  return date.toISOString().split("T")[0];
-}
-
-function populateBabiesVaccineRecords(data) {
-  const tableBody = document.getElementById("babiesRecordTableBody");
-  tableBody.innerHTML = "";
-
-  if (!data || data.length === 0) {
-    tableBody.innerHTML = "<tr><td colspan='9'>No records found.</td></tr>";
-    return;
-  }
-
-  data.forEach((record) => {
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-          <td>${record.formId}</td>
-          <td>${record.patientId}</td>
-          <td>${record.name}</td>
-          <td>${record.birthday}</td>
-          <td>${record.height}</td>
-          <td>${record.weight}</td>
-          <td>${record.temperature}</td>
-          <td>${Object.keys(record.vaccines)
-            .filter((vaccine) => record.vaccines[vaccine])
-            .join(", ")}</td>
-          <td>${record.timestamp}</td>
-      `;
-
-    tableBody.appendChild(row);
-  });
-}
-
-function filterBabiesRecord() {
-  const searchInput = document
-    .getElementById("searchBabiesRecord")
-    .value.toLowerCase();
-  const tableRows = document
-    .getElementById("babiesRecordTableBody")
-    .querySelectorAll("tr");
-
-  tableRows.forEach((row) => {
-    const cells = row.querySelectorAll("td");
-    const rowText = Array.from(cells)
-      .map((cell) => cell.textContent.toLowerCase())
-      .join(" ");
-    row.style.display = rowText.includes(searchInput) ? "" : "none";
-  });
-}
-
-const dbRef = db.ref("6-BabiesVaccine");
-
-dbRef
-  .once("value")
-  .then((snapshot) => {
-    const records = [];
-    snapshot.forEach((childSnapshot) => {
-      records.push(childSnapshot.val());
-    });
-    populateBabiesVaccineRecords(records);
-  })
-  .catch((error) => {
-    console.error("Error fetching vaccine records:", error);
-  });
-
-document
-  .getElementById("babiesRecordTableBody")
-  .addEventListener("click", (event) => {
-    const row = event.target.closest("tr");
-    if (!row) return;
-
-    const cells = row.querySelectorAll("td");
-    const formId = cells[0].textContent.trim();
-    const patientId = cells[1].textContent.trim();
-    const name = cells[2].textContent.trim();
-
-    document.getElementById("modalBabyName").textContent = name;
-    document.getElementById("modalResidentId").textContent = patientId;
-
-    const vaccineCheckboxIds = [
-      "modalBCG",
-      "modalHepatitisB",
-      "modalPentavalent",
-      "modalOPV",
-      "modalRotavirus",
-      "modalJE",
-      "modalMeasles",
-    ];
-    vaccineCheckboxIds.forEach((id) => {
-      document.getElementById(id).checked = false;
-    });
-
-    $("#vaccineUpdateModal").modal("show");
-  });
-
 let allCheckups = [];
 let filteredCheckups = [];
 let currentPage = 1;
@@ -1103,7 +1225,6 @@ function fetchCheckupData() {
           const checkup = childSnapshot.val();
           const checkupData = {
             formId: childSnapshot.key,
-            patientName: checkup.patientName,
             height: checkup.height,
             weight: checkup.weight,
             bloodPressure: checkup.bloodPressure,
@@ -1140,7 +1261,6 @@ function displayCheckups() {
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${checkup.formId}</td>
-        <td>${checkup.patientName}</td>
         <td>${checkup.height}</td>
         <td>${checkup.weight}</td>
         <td>${checkup.bloodPressure}</td>
@@ -1253,21 +1373,6 @@ function openCheckupModal(checkup) {
       console.error("Error fetching checkup details:", error);
     });
 }
-
-// function downloadPDF() {
-//   const modalContent = document.getElementById("modalContent");
-//   const doc = new jsPDF();
-
-//   doc.setFontSize(16);
-//   doc.text("Patient Record", 14, 10);
-
-//   doc.setFontSize(12);
-//   const content = modalContent.innerText;
-
-//   doc.text(content, 14, 20);
-
-//   doc.save("patient_record.pdf");
-// }
 
 function closeModal() {
   const modal = document.getElementById("checkupModal");
